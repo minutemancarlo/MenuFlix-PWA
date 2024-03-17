@@ -1,12 +1,66 @@
 @page "/login"
 @using Client.Identity
 @inject IAccountManagement Acct
+@layout AuthLayout
 
-<PageTitle>Login</PageTitle>
+<PageTitle>MenuFlix - Login</PageTitle>
+    <MudGrid Spacing="1" Justify="Justify.SpaceBetween">
+        <MudItem>
+            <MudImage Width="60" Height="60" Src="icon-192.png" Alt="Logo"></MudImage>
+        </MudItem>
+        <MudItem>
+            <MudText Class="pt-2" Typo="Typo.h4" Color="Color.Error">MenuFlix</MudText>
+        </MudItem>
+    </MudGrid>
+    <MudTextField T="string"
+                  @bind-Value="email"
+                  Label="Username"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Required="true"
+                  OnlyValidateIfDirty="true"
+                  Immediate="true"
+                  Class="my-6">
+    </MudTextField>
 
-<h1>Login</h1>
+    <MudPasswordField @bind-Value="password"
+                      Label="Password"
+                      PasswordMode="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="my-6"
+                      Required="true">
+    </MudPasswordField>
+    <MudLoadingButton Variant="Variant.Filled"
+                      Color="Color.Warning"
+                      Size="Size.Large"
+                      Loading="@(_loading)"
+                      OnClick="DoLoginAsync"
+                      ButtonType="ButtonType.Button"
+                      FullWidth="true">
+        <LoadingContent>Authenticating...</LoadingContent>
+        <ChildContent>Sign In</ChildContent>
+    </MudLoadingButton>
+<MudText Class="text-center">Or</MudText>
+<MudLoadingButton Variant="Variant.Filled"
+                  StartIcon="@Icons.Custom.Brands.Google"
+                  Color="Color.Error"
+                  Size="Size.Large"
+                  Loading="@(_loading)"
+                  
+                  ButtonType="ButtonType.Button"
+                  FullWidth="true">
+    <LoadingContent>Redirecting...</LoadingContent>
+    <ChildContent>Sign In using Google</ChildContent>
+</MudLoadingButton>
 
-<AuthorizeView>
+<MudItem Class="pt-5">
+    <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
+</MudItem>
+
+
+
+@* <AuthorizeView>
     <Authorized>
         <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
     </Authorized>
@@ -36,17 +90,18 @@
             </div>
         </div>
     </NotAuthorized>
-</AuthorizeView>
+</AuthorizeView> *@
 
 @code {
     private bool success, errors;
     private string email = string.Empty;
     private string password = string.Empty;
     private string[] errorList = [];
-
+    private bool _loading;
     public async Task DoLoginAsync()
     {
-        success = errors = false;
+
+        success = errors = _loading = false;
         errorList = [];
 
         if (string.IsNullOrWhiteSpace(email))
