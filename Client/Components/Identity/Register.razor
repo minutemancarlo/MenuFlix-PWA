@@ -1,12 +1,65 @@
 @page "/register"
 @using Client.Identity
 @inject IAccountManagement Acct
+@layout AuthLayout
+@inject NavigationManager _navigationManager
+<PageTitle>MenuFlix - Register</PageTitle>
 
-<PageTitle>Register</PageTitle>
 
-<h1>Register</h1>
 
-<AuthorizeView>
+<MudGrid Spacing="1" Justify="Justify.SpaceBetween">
+    <MudItem>
+        <MudImage Width="60" Height="60" Src="icon-192.png" Alt="Logo"></MudImage>
+    </MudItem>
+    <MudItem>
+        <MudText Class="pt-2" Typo="Typo.h4" Color="Color.Error">MenuFlix</MudText>
+    </MudItem>
+</MudGrid>
+
+<MudTextField T="string"
+              @bind-Value="email"
+              Label="Email Address"
+              Variant="Variant.Outlined"
+              Margin="Margin.Dense"
+              Required="true"
+              OnlyValidateIfDirty="true"
+              Immediate="true"
+              Class="my-6">
+</MudTextField>
+
+<MudPasswordField @bind-Value="password"
+                  Label="Password"
+                  PasswordMode="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="my-6"                 
+                  Required="true">
+</MudPasswordField>
+
+    <MudPasswordField @bind-Value="confirmPassword"
+                  Label="Confirm Password"
+                  PasswordMode="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="my-6"
+                  Required="true">
+</MudPasswordField>
+
+<MudLoadingButton Variant="Variant.Filled"
+                  Color="Color.Warning"
+                  Size="Size.Large"
+                  Loading="@(_loading)"
+                  OnClick="DoRegisterAsync"
+                  ButtonType="ButtonType.Button"
+                  FullWidth="true">
+    <LoadingContent>Creating your Account...</LoadingContent>
+    <ChildContent>Register</ChildContent>
+</MudLoadingButton>
+
+<MudItem Class="pt-5">
+    <MudFab Color="Color.Primary" Size="Size.Small" OnClick="RedirectToLogin" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
+</MudItem>
+@* <AuthorizeView>
     <Authorized>
         <div class="alert alert-success">You're already logged in as @context.User.Identity?.Name.</div>
     </Authorized>
@@ -49,7 +102,7 @@
             </div>
         }
     </NotAuthorized>
-</AuthorizeView>
+</AuthorizeView> *@
 
 @code {
     private bool success, errors;
@@ -57,41 +110,19 @@
     private string password = string.Empty;
     private string confirmPassword = string.Empty;
     private string[] errorList = [];
-
+    private bool _loading;
     public async Task DoRegisterAsync()
     {
-        success = errors = false;
+        success = errors = _loading = false;
         errorList = [];
+        _loading = true;
 
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            errors = true;
-            errorList = ["Email is required."];
-
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            errors = true;
-            errorList = ["Password is required."];
-
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(confirmPassword))
-        {
-            errors = true;
-            errorList = ["Please confirm your password."];
-
-            return;
-        }
 
         if (password != confirmPassword)
         {
             errors = true;
-            errorList = ["Passwords don't match."];
-
+            Snackbar.Add("Passwords don't match.", Severity.Error);
+            _loading = false;
             return;
         }
 
@@ -101,11 +132,28 @@
         {
             success = true;
             email = password = confirmPassword = string.Empty;
+            Snackbar.Add("Account Created. Please Login to continue", Severity.Success);            
+            RedirectToLogin();
         }
         else
         {
             errors = true;
             errorList = result.ErrorList;
+            foreach (var item in errorList)
+            {
+                Snackbar.Add(item, Severity.Error);
+            }
         }
+        _loading = false;
+    }
+
+    private void RedirectToIndex()
+    {
+        _navigationManager.NavigateTo("/");
+    }
+
+    private void RedirectToLogin()
+    {
+        _navigationManager.NavigateTo("/login");
     }
 }

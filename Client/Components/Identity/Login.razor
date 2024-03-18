@@ -2,7 +2,7 @@
 @using Client.Identity
 @inject IAccountManagement Acct
 @layout AuthLayout
-
+@inject NavigationManager _navigationManager
 <PageTitle>MenuFlix - Login</PageTitle>
     <MudGrid Spacing="1" Justify="Justify.SpaceBetween">
         <MudItem>
@@ -14,7 +14,7 @@
     </MudGrid>
     <MudTextField T="string"
                   @bind-Value="email"
-                  Label="Username"
+                  Label="Email Address"
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   Required="true"
@@ -55,42 +55,9 @@
 </MudLoadingButton>
 
 <MudItem Class="pt-5">
-    <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
+    <MudFab Color="Color.Primary" Size="Size.Small" OnClick="RedirectToIndex" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
 </MudItem>
 
-
-
-@* <AuthorizeView>
-    <Authorized>
-        <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
-    </Authorized>
-    <NotAuthorized>
-        @if (errors)
-        {
-            @foreach (var error in errorList)
-            {
-                <div class="alert alert-danger">@error</div>
-            }
-        }
-        <div class="flex-outer">
-            <div>
-                <label for="email">
-                    Email:
-                </label>
-                <input required id="email" name="emailInput" placeholder="Enter your email address" type="email" @bind-value="email" />
-            </div>
-            <div>
-                <label for="password">
-                    Password:
-                </label>
-                <input required id="password" name="passwordInput" placeholder="Enter your password" type="password" @bind-value="password" />
-            </div>
-            <div>
-                <button class="btn btn-primary" @onclick="DoLoginAsync">Login</button>
-            </div>
-        </div>
-    </NotAuthorized>
-</AuthorizeView> *@
 
 @code {
     private bool success, errors;
@@ -100,37 +67,29 @@
     private bool _loading;
     public async Task DoLoginAsync()
     {
-
         success = errors = _loading = false;
-        errorList = [];
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            errors = true;
-            errorList = ["Email is required."];
-
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            errors = true;
-            errorList = ["Password is required."];
-
-            return;
-        }
-
+        errorList = [];      
+        _loading = true;
         var result = await Acct.LoginAsync(email, password);
 
         if (result.Succeeded)
         {
-            success = true;
-            email = password = string.Empty;
+            RedirectToIndex();
         }
         else
         {
             errors = true;
             errorList = result.ErrorList;
+            foreach(var item in errorList)
+            {
+                Snackbar.Add(item,Severity.Error);
+            }
         }
+        _loading = false;
+    }
+
+    private void RedirectToIndex()
+    {
+        _navigationManager.NavigateTo("/");
     }
 }
