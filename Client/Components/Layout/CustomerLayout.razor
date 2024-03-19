@@ -3,7 +3,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<AuthorizeView>
+<AuthorizeView Roles="Customer">
     <NotAuthorized>
         <MudLayout>
             <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
@@ -28,21 +28,15 @@
     <Authorized>
         <MudLayout>
             <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudGrid Class="pa-3 ">
+                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                        <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                        <MudText Typo="Typo.h6" Class="d-inline-block px-2" Color="Color.Error">MenuFlix</MudText>
+                    </MudStack>
+                </MudGrid>
                 <MudSpacer />
                 <AccessControl />
-            </MudAppBar>
-            <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
-                <MudDrawerHeader>
-                    <MudGrid Class="pa-3 ">
-                        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                            <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
-                            <MudText Typo="Typo.h6" Class="d-inline-block px-2" Style="@($"color: {Colors.Grey.Darken4}")">MenuFlix</MudText>
-                        </MudStack>
-                    </MudGrid>
-                </MudDrawerHeader>
-                <NavMenu />
-            </MudDrawer>
+            </MudAppBar>            
             <MudMainContent>
                 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
                     <MudGrid Class="pt-4">
@@ -52,7 +46,6 @@
             </MudMainContent>
         </MudLayout>
     </Authorized>
-
 </AuthorizeView>
 
 

@@ -1,16 +1,51 @@
 ﻿@page "/"
+@using Client.Identity
+@layout CustomerLayout
 @inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager _navigationManager
+@inject IAccountManagement Acct
 
-
-
-
+<MudItem xs="6">
+    <MudPopup @ref="_popup" Open="@_open" Style="background-color: #c0392b " Text="Register your business now" Icon="@Icons.Material.Filled.Info" PopupPosition="MudExtensions.Enums.PopupPosition.Bottom" EnableAnimation>
+        <ChildContent>
+            <MudStack Class="mud-width-full">
+                <div class="d-flex align-center">
+                    <MudItem xs="12">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color: white;" />
+                            <MudText Typo="Typo.h6" Style="color: white;">Revolutionize your business and join us!</MudText>
+                            <MudButton Variant="Variant.Filled" Color="Color.Warning">Sign Up My Business</MudButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: white;" OnClick="@(() => _open = false)" />
+                        </MudStack>
+                    </MudItem>
+                </div>
+            </MudStack>
+        </ChildContent>
+    </MudPopup>
+</MudItem>
 
 
 @code
 {
-    protected override void OnInitialized()
+    MudPopup _popup;
+    bool _open = true;
+    private bool IsCustomer { get; set; }
+    protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        IsCustomer = user.IsInRole("Customer");
 
+        if (!IsCustomer)
+        {
+            RedirectToHome();
+        }       
         base.OnInitialized();
+    }
+
+    
+    private void RedirectToHome()
+    {
+        _navigationManager.NavigateTo("/Home");
     }
 }

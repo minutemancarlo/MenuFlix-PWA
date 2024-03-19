@@ -1,10 +1,10 @@
 ﻿@using Client.Identity
 @using System.Security.Claims
-
-@inject NavigationManager _navigationManager
 @inject IAccountManagement Acct
 @inject AuthenticationStateProvider AuthProvider
-<AuthorizeView Roles="Administrator">
+@inject NavigationManager _navigationManager
+
+<AuthorizeView>
     <NotAuthorized>
         <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
             @* <MudButton Variant="Variant.Filled" Color="@(IsCustomer ? Color.Warning : Color.Dark)" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton> *@
@@ -84,15 +84,7 @@
             // Handle the case where the user is not authenticated
         }
     }
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender && isFirstRender)
-    //     {
-    //         isFirstRender = false;
-
-    //     }
-    // }
+   
 
     private async Task BeginLogout()
     {

@@ -22,24 +22,14 @@
                     <FocusOnNavigate RouteData="@routeData" Selector="h1" />
                 </Authorized>
                 <NotAuthorized>
-                    <Router AppAssembly="@typeof(App).Assembly">
-                        <Found Context="notAuthorizedRouteData">
-                            <RouteView RouteData="@notAuthorizedRouteData" DefaultLayout="@typeof(CustomerLayout)" />
-                            <FocusOnNavigate RouteData="@notAuthorizedRouteData" Selector="h1" />
-                        </Found>
-                        <NotFound>
-                            <PageTitle>Not found</PageTitle>
-                            <LayoutView Layout="@typeof(CustomerLayout)">
-                                <p role="alert">Sorry, there's nothing at this address for unauthorized users.</p>
-                            </LayoutView>
-                        </NotFound>
-                    </Router>
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(CustomerLayout)" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="h1" />                                          
                 </NotAuthorized>
             </AuthorizeView>
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
+            <LayoutView Layout="@typeof(AuthLayout)">
                 <p role="alert">Sorry, there's nothing at this address.</p>
             </LayoutView>
         </NotFound>

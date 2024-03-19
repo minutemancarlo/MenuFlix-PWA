@@ -1,6 +1,7 @@
 @page "/login"
 @using Client.Identity
 @inject IAccountManagement Acct
+@inject AuthenticationStateProvider AuthProvider
 @layout AuthLayout
 @inject NavigationManager _navigationManager
 <PageTitle>MenuFlix - Login</PageTitle>
@@ -63,9 +64,10 @@
 @code {
     private bool success, errors;
     private string email = string.Empty;
-    private string password = string.Empty;
+    private string password = "Admin123!";
     private string[] errorList = [];
-    private bool _loading;
+    private bool _loading;    
+    private bool IsCustomer { get; set; }
     public async Task DoLoginAsync()
     {
         success = errors = _loading = false;
@@ -75,7 +77,18 @@
 
         if (result.Succeeded)
         {
-            RedirectToIndex();
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            IsCustomer = user.IsInRole("Customer");
+
+            if (IsCustomer)
+            {
+                RedirectToIndex();
+            }
+            else
+            {
+                RedirectToHome();
+            }
         }
         else
         {
@@ -92,5 +105,9 @@
     private void RedirectToIndex()
     {
         _navigationManager.NavigateTo("/");
+    }
+    private void RedirectToHome()
+    {
+        _navigationManager.NavigateTo("/Home");
     }
 }

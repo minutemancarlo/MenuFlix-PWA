@@ -2,6 +2,10 @@
 @layout MainLayout
 @using System.Net.Http.Json
 @using SharedLibrary
+@using Client.Identity
+@using System.Security.Claims
+@inject IAccountManagement Acct
+@inject AuthenticationStateProvider AuthProvider
 @inject HttpClient httpClient
 @attribute [Authorize(Roles = "Administrator")]
 
@@ -10,7 +14,7 @@
 <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
     <MudCard Elevation="4" Class="pa-3 pt-5">
         <MudCardContent>
-            <MudDataGrid Items="@users" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
+            <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Assignable Users List</MudText>
                     <MudSpacer />
@@ -21,12 +25,15 @@
                     <PropertyColumn Property="x => x.Name" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
                     <PropertyColumn Property="x => x.Email" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
                     <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                    <TemplateColumn Title="User Role"  HeaderClass="blue darken-1 shades-text text-white">
+                    <PropertyColumn Property="x => x.Role" Title="Current Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                    <TemplateColumn Title="Change Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">                        
                         <CellTemplate>  
-                            <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="context.Item.Role" Dense Color="Color.Primary" CheckMark FixedContent>
+                            <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Tag="@context.Item" ValueChanged="@HandleRoleChange"
+                                            Dense Color="Color.Primary" CheckMark FixedContent>
                                 <MudToggleItem Value="@("Administrator")" Text="Administrator" />
-                                <MudToggleItem Value="@("Accounting")" Text="Accounting" />                                
-                            </MudToggleGroup>                      
+                                <MudToggleItem Value="@("Accounting")" Text="Accounting" />
+                            </MudToggleGroup>
+
                         </CellTemplate>
                      </TemplateColumn>
                 </Columns>
@@ -41,7 +48,7 @@
 
 
 
-    
+
         
 
 @code {
@@ -49,13 +56,108 @@
     private List<UserDataGrid> users = new List<UserDataGrid>();
     private bool _loading = false;
     private string _searchString;
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private bool IsCurrentUser = false;
+    private UserDataGrid _currentDto = new UserDataGrid();
+    private HashSet<UserDataGrid> _selectedItems = new();
+    private string emailaddress;
+    private MudToggleGroup<string> toggleGroupRef;
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    IsCurrentUser = true;
+                    emailaddress = item.Value;
+                }
+            }
+        }
+        else
+        {
+            // Handle the case where the user is not authenticated
+        }
+        await loadGrid();
+    }
+
+    private async Task loadGrid()
+    {
         _loading = true;
-        users = await httpClient.GetFromJsonAsync<List<UserDataGrid>>("UserManagement/getallusers");
+        var allUsers = await httpClient.GetFromJsonAsync<List<UserDataGrid>>("UserManagement/getallusers");
+        users = allUsers.Where(u => u.Email != emailaddress).ToList();
         _loading = false;
     }
 
+    private async Task HandleRoleChange(string newValue)
+    {
+        if (_currentDto.UserId == null)
+        {
+            return;
+        }
+        else
+        {
+            await ChangeRole(newValue);
+        }
+
+    }
+
+
+
+    private async Task ChangeRole(string role)
+    {        
+        var res = await DialogService.ShowConfirmationDialogAsync("Confirmation", $"Change User Role from {_currentDto.Role} to {role}?", "Yes", "No");
+        if (res)
+        {            
+            _currentDto.Role = role;
+            if (await UpdateUserRole(_currentDto))
+            {
+                Snackbar.Add("User Role Changed", Severity.Success);
+                await loadGrid();
+            }
+            else
+            {
+                Snackbar.Add("Failed to change ", Severity.Error);
+            }
+
+            
+        }        
+    }
+
+    public async Task<bool> UpdateUserRole(UserDataGrid userDataGrid)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("RoleManager/updateuserrole", userDataGrid);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Role updated successfully
+                return true;
+            }
+            else
+            {
+                // Failed to update role
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception
+            Console.WriteLine($"Error: {ex.Message}");
+            return false;
+        }
+    }
+    
+
+    
     private Func<UserDataGrid, bool> _quickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
