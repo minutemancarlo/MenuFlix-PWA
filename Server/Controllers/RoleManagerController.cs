@@ -41,5 +41,31 @@ namespace Server.Controllers
 
             return Ok("Role assigned successfully"); // Or redirect to appropriate page
         }
+
+        [HttpPost("updateuserrole")]
+        public async Task<IActionResult> UpdateUserRole([FromBody] RoleAssign roleAssign)
+        {
+            var userManager = _userManager;
+
+            int usercount = await userManager.Users.CountAsync();
+            roleAssign.Role = usercount > 1 ? "Customer" : "Administrator";
+            var user = await userManager.FindByNameAsync(roleAssign.Email);
+            Console.WriteLine($"Users: {user}");
+            if (user == null)
+            {
+                return NotFound(); // Handle user not found
+            }
+
+            var result = await userManager.AddToRoleAsync(user, roleAssign.Role);
+            Console.WriteLine($"Result: {result}");
+            if (!result.Succeeded)
+            {
+                // Handle adding role failure (e.g., display error messages)
+                //return BadRequest(result.Errors);
+                return BadRequest($"Users: {user} Result: {result}");
+            }
+
+            return Ok("Role assigned successfully"); // Or redirect to appropriate page
+        }
     }
 }

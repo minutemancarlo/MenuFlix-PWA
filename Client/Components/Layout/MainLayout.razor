@@ -3,6 +3,8 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<AuthorizeView Roles="Administrator,Accounting,Manager,Delivery">
+ <Authorized>
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Error">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
@@ -28,7 +30,8 @@
          </MudContainer>
      </MudMainContent>
 </MudLayout>
-
+    </Authorized>
+</AuthorizeView>
 @code {
     bool _drawerOpen = true;
 

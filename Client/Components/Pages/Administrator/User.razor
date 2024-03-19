@@ -1,5 +1,82 @@
-﻿<h3>User</h3>
+﻿@page "/users"
+@layout MainLayout
+@using System.Net.Http.Json
+@using SharedLibrary
+@inject HttpClient httpClient
+@attribute [Authorize(Roles = "Administrator")]
+
+<PageTitle>User Management</PageTitle>
+<MudStack>
+<MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    <MudCard Elevation="4" Class="pa-3 pt-5">
+        <MudCardContent>
+            <MudDataGrid Items="@users" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Assignable Users List</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <Columns>
+                    <PropertyColumn Property="x => x.Name" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.Email" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                    <TemplateColumn Title="User Role"  HeaderClass="blue darken-1 shades-text text-white">
+                        <CellTemplate>  
+                            <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="context.Item.Role" Dense Color="Color.Primary" CheckMark FixedContent>
+                                <MudToggleItem Value="@("Administrator")" Text="Administrator" />
+                                <MudToggleItem Value="@("Accounting")" Text="Accounting" />                                
+                            </MudToggleGroup>                      
+                        </CellTemplate>
+                     </TemplateColumn>
+                </Columns>
+                <NoRecordsContent>No available records to show.</NoRecordsContent>
+                <PagerContent>
+                    <MudDataGridPager T="UserDataGrid" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudCardContent>
+    </MudCard>
+</MudStack>
+
+
+
+    
+        
 
 @code {
+    private MudDataGrid<UserDataGrid> _users = default!;
+    private List<UserDataGrid> users = new List<UserDataGrid>();
+    private bool _loading = false;
+    private string _searchString;
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        users = await httpClient.GetFromJsonAsync<List<UserDataGrid>>("UserManagement/getallusers");
+        _loading = false;
+    }
 
-}
+    private Func<UserDataGrid, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+            
+
+        return false;
+    };
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Administrator", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("User Management", href: "#", icon: Icons.Material.Filled.Groups)
+    };
+}                    

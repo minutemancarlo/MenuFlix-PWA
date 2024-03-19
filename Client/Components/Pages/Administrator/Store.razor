@@ -1,4 +1,5 @@
 ﻿@page "/store"
+@attribute [Authorize(Roles = "Administrator")]
 <PageTitle>Store Management</PageTitle>
 <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
 

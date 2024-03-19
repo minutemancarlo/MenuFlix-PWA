@@ -12,7 +12,7 @@
             <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>
 
             <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
-                <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart" ButtonType="ButtonType.Button" Size="Size.Medium" Color="Color.Error" />
+                <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart" Variant="Variant.Filled" ButtonType="ButtonType.Button" Size="Size.Small" Color="Color.Error" />
             </MudBadge>
 
         </MudStack>
@@ -94,12 +94,14 @@
     //     }
     // }
 
-    private async Task BeginLogout(MouseEventArgs args)
+    private async Task BeginLogout()
     {
         if (await Acct.CheckAuthenticatedAsync())
         {
             await Acct.LogoutAsync();
+            _navigationManager.NavigateTo("/");
         }
+        
     }
 
     private void AuthAction(string action)
