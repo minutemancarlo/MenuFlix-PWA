@@ -6,6 +6,7 @@ using Client.Identity.Models;
 using System.Text;
 using System.Net;
 using SharedLibrary;
+
 namespace Client.Identity
 {
     /// <summary>
@@ -187,7 +188,7 @@ namespace Client.Identity
                     var claims = new List<Claim>
                     {
                         new(ClaimTypes.Name, userInfo.Email),
-                        new(ClaimTypes.Email, userInfo.Email)
+                        new(ClaimTypes.Email, userInfo.Email)                        
                     };
 
                     // add any additional claims
@@ -244,6 +245,8 @@ namespace Client.Identity
             await GetAuthenticationStateAsync();
             return _authenticated;
         }
+
+      
 
         public async Task<FormResult> AssignUserRoleAsync(RoleAssign roleAssign)
         {

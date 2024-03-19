@@ -41,13 +41,14 @@
         <LoadingContent>Authenticating...</LoadingContent>
         <ChildContent>Sign In</ChildContent>
     </MudLoadingButton>
-<MudText Class="text-center">Or</MudText>
+
+<MudText Class="text-center py-3">Or</MudText>
+
 <MudLoadingButton Variant="Variant.Filled"
                   StartIcon="@Icons.Custom.Brands.Google"
                   Color="Color.Error"
                   Size="Size.Large"
-                  Loading="@(_loading)"
-                  
+                  Loading="@(_loading)"                  
                   ButtonType="ButtonType.Button"
                   FullWidth="true">
     <LoadingContent>Redirecting...</LoadingContent>

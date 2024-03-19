@@ -1,23 +1,39 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-    <main>
-        <div class="top-row px-4">
-            <AuthorizeView>
-                <Authorized>
-                    Logged in as @context.User.Identity?.Name. <a href="logout"><span class="bi bi-door-closed-fill" aria-hidden="true" style="vertical-align:middle"></span> Logout</a>
-                </Authorized>
-                <NotAuthorized>
-                    <a href="login"><span class="bi bi-door-open" aria-hidden="true" style="vertical-align:middle"></span> Login</a>
-                    <a href="register"><span class="bi bi-pencil-square" aria-hidden="true" style="vertical-align:middle"></span> Register</a>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Error">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <AccessControl/>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Style="overflow:hidden;">
+        <MudDrawerHeader Style="background-color: #e74c3c">
+            <MudGrid Class="pa-3 ">
+                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                        <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                         <MudText Typo="Typo.h6" Class="d-inline-block px-2" Style="color: white;">MenuFlix</MudText>                    
+                 </MudStack>
+            </MudGrid>
+        </MudDrawerHeader>
+         <NavMenu />
+    </MudDrawer>
+     <MudMainContent>
+         <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+             <MudGrid Class="pt-4">
+                 @Body
+             </MudGrid>             
+         </MudContainer>
+     </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

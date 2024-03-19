@@ -1,63 +1,90 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Blazor WASM Auth</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+@inject IJSRuntime _jsRuntime;
+@implements IAsyncDisposable
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="data-processing">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Process Data
-            </NavLink>
-        </div>
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="private-page">
-                        <span class="bi bi-key" aria-hidden="true"></span> Private Page
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="private-manager-page">
-                        <span class="bi bi-key" aria-hidden="true"></span> Private Manager Page
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="private-editor-page">
-                        <span class="bi bi-key" aria-hidden="true"></span> Private Editor Page
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-    </nav>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+<MudPaper Width="250px" Style="height: 100%;overflow: hidden" Elevation="0">
+    @if (IsOnline)
     {
-        collapseNavMenu = !collapseNavMenu;
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudChip Class="fixed-bottom" Size="Size.Small" Icon="@Icons.Material.Filled.CloudDone" Color="Color.Success"></MudChip>
+        </MudStack>
+    }
+    else
+    {
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudChip Class="fixed-bottom" Size="Size.Small" Icon="@Icons.Material.Filled.CloudOff" Color="Color.Error"></MudChip>
+        </MudStack>
+    }
+    <MudNavMenu Style="height: 95%;overflow: hidden" Bordered>                      
+        <MudDivider Class="my-2" />        
+        <AuthorizeView Roles="Administrator">
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/users">User Management</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Storefront" Href="/store">Store Management</MudNavLink>           
+        </AuthorizeView>        
+
+        <AuthorizeView Roles="Manager">
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.RestaurantMenu" Href="/menu">Menu</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.ReceiptLong" Href="/orders">Orders</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Store" Href="/my-store">My Store</MudNavLink>
+            @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
+                <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
+                <MudNavLink Href="/counter">Security</MudNavLink>
+            </MudNavGroup> *@
+        </AuthorizeView>       
+        <AuthorizeView Roles="Accounting">
+            <MudNavLink Href="/">Point of Sale</MudNavLink>
+            <MudNavLink Href="/fetchdata">Orders</MudNavLink>
+            <MudNavLink Href="/billing">Cash Management</MudNavLink>            
+            @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
+            <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
+            <MudNavLink Href="/counter">Security</MudNavLink>
+            </MudNavGroup> *@
+        </AuthorizeView>
+       
+        <AuthorizeView Roles="Delivery">
+            <MudNavLink Href="/">Dashboard</MudNavLink>
+            <MudNavLink Href="/fetchdata">Order Details</MudNavLink>
+            <MudNavLink Href="/billing">Chat</MudNavLink>            
+            @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
+            <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
+            <MudNavLink Href="/counter">Security</MudNavLink>
+            </MudNavGroup> *@
+        </AuthorizeView>       
+    </MudNavMenu>
+   
+       
+</MudPaper>
+
+@code{
+    [Parameter]
+    public RenderFragment Online { get; set; }
+    
+    [Parameter]
+    public RenderFragment Offline { get; set; }
+
+    public bool IsOnline { get; set; }
+
+    [JSInvokable("Connection.StatusChanged")]
+    public void OnConnectionStatusChanged(bool isOnline)
+    {
+        if (IsOnline != isOnline)
+        {
+            IsOnline = isOnline;
+        }
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await _jsRuntime.InvokeVoidAsync("Connection.Initialize", DotNetObjectReference.Create(this));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _jsRuntime.InvokeVoidAsync("Connection.Dispose");
     }
 }

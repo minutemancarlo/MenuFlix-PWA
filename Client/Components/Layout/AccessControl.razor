@@ -1,0 +1,131 @@
+﻿@using Client.Identity
+@using System.Security.Claims
+
+@inject NavigationManager _navigationManager
+@inject IAccountManagement Acct
+@inject AuthenticationStateProvider AuthProvider
+<AuthorizeView Roles="Administrator">
+    <NotAuthorized>
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
+            @* <MudButton Variant="Variant.Filled" Color="@(IsCustomer ? Color.Warning : Color.Dark)" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton> *@
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>
+
+            <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
+                <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart" ButtonType="ButtonType.Button" Size="Size.Medium" Color="Color.Error" />
+            </MudBadge>
+
+        </MudStack>
+    </NotAuthorized>
+    <Authorizing>
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
+            <MudSkeleton Width="30px" Height="42px;" />
+            <MudSkeleton Width="30px" Height="42px;" />
+        </MudStack>
+    </Authorizing>
+
+    <Authorized>
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
+            @if (IsCustomer)
+            {
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
+                <MudSpacer />
+                <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
+                    <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
+                </MudBadge>
+            }
+            <MudMenu Class="my-3" Dense AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.CenterLeft">
+                <ActivatorContent>
+                    @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
+                    <MudAvatar Color="Color.Primary">AB</MudAvatar>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem IconSize="Size.Medium" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>
+                    <MudMenuItem IconSize="Size.Medium" OnClick="BeginLogout" Icon="@Icons.Material.Filled.Logout">Log Out</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </MudStack>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    string profilePic = String.Empty;
+    string name = String.Empty;
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private bool IsCustomer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        IsCustomer = user.IsInRole("Customer");
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+
+            foreach (var item in UserClaims)
+            {                
+                if (item.Type == "picture")
+                {
+                    profilePic = item.Value;
+                }
+                if (item.Type == "nickname")
+                {
+                    name = item.Value;
+                }              
+            }          
+        }
+        else
+        {
+            // Handle the case where the user is not authenticated
+        }
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender && isFirstRender)
+    //     {
+    //         isFirstRender = false;
+
+    //     }
+    // }
+
+    private async Task BeginLogout(MouseEventArgs args)
+    {
+        if (await Acct.CheckAuthenticatedAsync())
+        {
+            await Acct.LogoutAsync();
+        }
+    }
+
+    private void AuthAction(string action)
+    {
+        _navigationManager.NavigateTo(action);
+    }
+
+
+
+
+    // private async Task Prompt()
+    // {
+    //     var options = new DialogOptionsEx
+    //         {
+    //             CloseButton = true,
+    //             Position = DialogPosition.Center,
+    //             Animation = AnimationType.SlideIn,
+    //             AnimationDuration = TimeSpan.FromMilliseconds(500),
+    //             FullWidth = true,
+    //             MaxWidth = MaxWidth.Medium,
+    //             MaxHeight = MaxHeight.Medium
+    //         };
+
+    //     var parameters = new DialogParameters<LoginDialog> { { x => x.server, "Hello" } };
+    //     var dialog = await DialogService.ShowEx<LoginDialog>("Your Dialog Title", parameters, options);
+    // }
+
+
+}

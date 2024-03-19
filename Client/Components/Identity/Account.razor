@@ -1,0 +1,125 @@
+﻿@page "/account"
+@using Client.Validations
+@using FluentValidation
+@using SharedLibrary
+@using Client.Identity
+@using System.Security.Claims
+@inject AuthenticationStateProvider authProvider
+@inject HttpClient httpClient
+
+<MudGrid class="d-flex justify-center align-center" style="height: 100vh;">
+    <MudItem>
+        <MudCard Elevation="4" Class="pa-3">
+            <MudCardContent>
+                <MudForm Model="@model" @ref="@form" Validation="@(modelValidator.ValidateValue)" ValidationDelay="0">
+                    <MudStack Row>
+                        <MudTextField @bind-Value="model.FirstName"
+                                      For="@(() => model.FirstName)"
+                                      Label="First Name" />
+                        <MudTextField @bind-Value="model.LastName"
+                                      For="@(() => model.LastName)"
+                                      Label="Last Name" />
+                    </MudStack>
+
+                    <MudTextField @bind-Value="model.PhoneNumber"
+                                  For="@(() => model.PhoneNumber)"
+                                  HelperText="09123456789"
+                                  Label="Phone Number" />
+                    <MudTextField @bind-Value="model.AddressLine1"
+                                  For="@(() => model.AddressLine1)"
+                                  Label="Address Line 1" />
+                    <MudTextField @bind-Value="model.AddressLine2"
+                                  For="@(() => model.AddressLine2)"
+                                  Label="Address Line 2" />
+                    <MudStack Row>
+                        <MudTextField @bind-Value="model.CityTown"
+                                      For="@(() => model.CityTown)"
+                                      Label="City/Town" />
+                        <MudTextField @bind-Value="model.Province"
+                                      For="@(() => model.Province)"
+                                      Label="Province" />
+                        <MudTextField @bind-Value="model.PostalCode"
+                                      For="@(() => model.PostalCode)"
+                                      Label="Postal Code" />
+                    </MudStack>
+                </MudForm>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="Submit">Order</MudButton>
+                </MudCardActions>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    MudForm form;
+    UserAdditionalDetails model = new UserAdditionalDetails();
+    UserAccountInfoValidator modelValidator = new UserAccountInfoValidator();
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    string emailaddress = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {                
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;                                        
+                }
+            }
+
+        }
+        await GetUserAdditionalDetails();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            model.Email = emailaddress;
+
+            // Make API call to create or update user additional details
+            var response = await httpClient.PostAsJsonAsync("UserAdditionalDetails/createupdate", model);
+            response.EnsureSuccessStatusCode();
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task GetUserAdditionalDetails()
+    {
+        var response = await httpClient.GetAsync($"UserAdditionalDetails?emailaddress={emailaddress}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            UserAdditionalDetails userAdditionalDetails = await response.Content.ReadFromJsonAsync<UserAdditionalDetails>();
+            // Update form fields with retrieved details
+            model.FirstName = userAdditionalDetails.FirstName;
+            model.LastName = userAdditionalDetails.LastName;
+            model.PhoneNumber = userAdditionalDetails.PhoneNumber;
+            model.AddressLine1 = userAdditionalDetails.AddressLine1;
+            model.AddressLine2 = userAdditionalDetails.AddressLine2;
+            model.CityTown = userAdditionalDetails.CityTown;
+            model.Province = userAdditionalDetails.Province;
+            model.PostalCode = userAdditionalDetails.PostalCode;
+        }
+        else
+        {
+            Snackbar.Add("Failed to retrieve user details.", MudBlazor.Severity.Error);
+        }
+    }
+}

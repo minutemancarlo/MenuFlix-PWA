@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<AuthorizeView>
+    <NotAuthorized>
+        <MudLayout>
+            <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
+                <MudGrid Class="pa-3 ">
+                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                        <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                        <MudText Typo="Typo.h6" Class="d-inline-block px-2" Style="@($"color: {Colors.Grey.Darken4}")">MenuFlix</MudText>
+                    </MudStack>
+                </MudGrid>
+                <MudSpacer />
+                <AccessControl />
+            </MudAppBar>
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+                    <MudGrid Class="pt-4">
+                        @Body
+                    </MudGrid>
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </NotAuthorized>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudSpacer />
+                <AccessControl />
+            </MudAppBar>
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
+                <MudDrawerHeader>
+                    <MudGrid Class="pa-3 ">
+                        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                            <MudText Typo="Typo.h6" Class="d-inline-block px-2" Style="@($"color: {Colors.Grey.Darken4}")">MenuFlix</MudText>
+                        </MudStack>
+                    </MudGrid>
+                </MudDrawerHeader>
+                <NavMenu />
+            </MudDrawer>
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+                    <MudGrid Class="pt-4">
+                        @Body
+                    </MudGrid>
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </Authorized>
+
+</AuthorizeView>
+
+
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

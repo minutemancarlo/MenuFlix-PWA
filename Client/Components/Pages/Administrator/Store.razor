@@ -1,0 +1,11 @@
+﻿@page "/store"
+<PageTitle>Store Management</PageTitle>
+<MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+
+@code {
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Administrator", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Store Management", href: "#", icon: Icons.Material.Filled.Storefront)
+    };
+}

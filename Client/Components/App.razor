@@ -1,14 +1,47 @@
-﻿<CascadingAuthenticationState>
+﻿@* <CascadingAuthenticationState>
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+         <RouteView RouteData="@routeData" DefaultLayout="@typeof(CustomerLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
         <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
+        <LayoutView Layout="@typeof(CustomerLayout)">
             <p role="alert">Sorry, there's nothing at this address.</p>
         </LayoutView>
     </NotFound>
 </Router>
+</CascadingAuthenticationState> *@
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeView Roles="Administrator,Accounting,Delivery,Manager">
+                <Authorized>
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                </Authorized>
+                <NotAuthorized>
+                    <Router AppAssembly="@typeof(App).Assembly">
+                        <Found Context="notAuthorizedRouteData">
+                            <RouteView RouteData="@notAuthorizedRouteData" DefaultLayout="@typeof(CustomerLayout)" />
+                            <FocusOnNavigate RouteData="@notAuthorizedRouteData" Selector="h1" />
+                        </Found>
+                        <NotFound>
+                            <PageTitle>Not found</PageTitle>
+                            <LayoutView Layout="@typeof(CustomerLayout)">
+                                <p role="alert">Sorry, there's nothing at this address for unauthorized users.</p>
+                            </LayoutView>
+                        </NotFound>
+                    </Router>
+                </NotAuthorized>
+            </AuthorizeView>
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
 </CascadingAuthenticationState>

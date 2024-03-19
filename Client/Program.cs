@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -24,15 +25,18 @@ builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStat
 builder.Services.AddScoped(
     sp => (IAccountManagement)sp.GetRequiredService<AuthenticationStateProvider>());
 
-// set base address for default host
-builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri(builder.Configuration["FrontendUrl"] ?? "https://localhost:44302/") });
+// Add HttpClient for API requests with BaseAddressAuthorizationMessageHandler
+builder.Services.AddHttpClient("API", client =>
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
-// configure client for auth interactions
-builder.Services.AddHttpClient(
-    "Auth",
-    opt => opt.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:44303/"))
+// Configure client for authentication interactions
+builder.Services.AddHttpClient("Auth", client =>
+    client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:44303/"))
     .AddHttpMessageHandler<CookieHandler>();
+
+
+
 
 builder.Services.AddMudServices();
 
