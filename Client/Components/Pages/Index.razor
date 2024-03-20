@@ -4,6 +4,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager _navigationManager
 @inject IAccountManagement Acct
+@inject HttpClient httpClient
 
 <MudItem xs="6">
     <MudPopup @ref="_popup" Open="@_open" Style="background-color: #c0392b " Text="Register your business now" Icon="@Icons.Material.Filled.Info" PopupPosition="MudExtensions.Enums.PopupPosition.Bottom" EnableAnimation>
@@ -14,7 +15,7 @@
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Style="color: white;" />
                             <MudText Typo="Typo.h6" Style="color: white;">Revolutionize your business and join us!</MudText>
-                            <MudButton Variant="Variant.Filled" Color="Color.Warning">Sign Up My Business</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ConfirmDetailsInfo">Sign Up My Business</MudButton>
                             <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: white;" OnClick="@(() => _open = false)" />
                         </MudStack>
                     </MudItem>
@@ -24,7 +25,11 @@
     </MudPopup>
 </MudItem>
 
-
+<MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
+    <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
+        <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
+    </MudBadge>
+</MudHidden>
 @code
 {
     MudPopup _popup;
@@ -39,8 +44,15 @@
         if (!IsCustomer)
         {
             RedirectToHome();
-        }       
-        base.OnInitialized();
+        }
+        await base.OnInitializedAsync();
+    }
+
+
+    private async Task ConfirmDetailsInfo()
+    {
+        _navigationManager.NavigateTo("/register-business");
+        await Task.CompletedTask;
     }
 
     

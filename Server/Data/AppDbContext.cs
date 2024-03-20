@@ -8,6 +8,7 @@ namespace Server.Data
     public class AppDbContext : IdentityDbContext<AppUser>
     {
         public DbSet<UserAdditionalDetails> UserAdditionalDetails { get; set; }
+        public DbSet<StoreApplications> StoreApplications{ get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }

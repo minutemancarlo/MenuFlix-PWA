@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Dapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using SharedLibrary;
+using System.Data;
+using System.Data.SqlClient;
 using System.Net.Mail;
 
 namespace Server.Controllers
@@ -13,10 +16,12 @@ namespace Server.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly AppDbContext _context;
-        public UserManagementController(UserManager<AppUser> userManager, AppDbContext context)
+        private readonly string _connectionString;
+        public UserManagementController(UserManager<AppUser> userManager, AppDbContext context, IConfiguration configuration)
         {
             _userManager = userManager;
             _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         [HttpGet("getallusers")]
@@ -68,7 +73,20 @@ namespace Server.Controllers
             return users;
         }
 
+        [HttpGet("getuserdetails")]
+        public async Task<UserDataGrid> GetUserDetails(string email)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@Email", email);
+            
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                // Execute the stored procedure
+               var userDataGrid =  await connection.QueryAsync<UserDataGrid>("GetUserDetails", parameters, commandType: CommandType.StoredProcedure);
 
+                return (UserDataGrid)userDataGrid;
+            }
+        }
 
     }
 }

@@ -15,36 +15,63 @@
                     <MudStack Row>
                         <MudTextField @bind-Value="model.FirstName"
                                       For="@(() => model.FirstName)"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
                                       Label="First Name" />
                         <MudTextField @bind-Value="model.LastName"
                                       For="@(() => model.LastName)"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined"
                                       Label="Last Name" />
                     </MudStack>
 
                     <MudTextField @bind-Value="model.PhoneNumber"
                                   For="@(() => model.PhoneNumber)"
+                                  MaxLength="11"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
                                   HelperText="09123456789"
                                   Label="Phone Number" />
                     <MudTextField @bind-Value="model.AddressLine1"
                                   For="@(() => model.AddressLine1)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
                                   Label="Address Line 1" />
                     <MudTextField @bind-Value="model.AddressLine2"
                                   For="@(() => model.AddressLine2)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="Optional"
                                   Label="Address Line 2" />
                     <MudStack Row>
                         <MudTextField @bind-Value="model.CityTown"
                                       For="@(() => model.CityTown)"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
                                       Label="City/Town" />
                         <MudTextField @bind-Value="model.Province"
                                       For="@(() => model.Province)"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
                                       Label="Province" />
                         <MudTextField @bind-Value="model.PostalCode"
                                       For="@(() => model.PostalCode)"
+                                      MaxLength="4"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined"                                      
                                       Label="Postal Code" />
                     </MudStack>
                 </MudForm>
                 <MudCardActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="Submit">Order</MudButton>
+                    <MudLoadingButton Variant="Variant.Filled"
+                                      Color="Color.Success"
+                                      Size="Size.Large"
+                                      Loading="@(_loading)"
+                                      OnClick="Submit"
+                                      ButtonType="ButtonType.Button">
+                        <LoadingContent>Submitting...</LoadingContent>
+                        <ChildContent>Submit</ChildContent>
+                    </MudLoadingButton>                    
                 </MudCardActions>
             </MudCardContent>
         </MudCard>
@@ -57,7 +84,7 @@
     UserAccountInfoValidator modelValidator = new UserAccountInfoValidator();
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     string emailaddress = String.Empty;
-
+    private bool _loading = false;
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -80,6 +107,7 @@
 
     private async Task Submit()
     {
+        _loading=true;
         await form.Validate();
 
         if (form.IsValid)
@@ -98,6 +126,7 @@
                 Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
             }
         }
+        _loading = false;
     }
 
     private async Task GetUserAdditionalDetails()

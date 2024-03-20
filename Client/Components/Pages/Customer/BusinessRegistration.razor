@@ -1,0 +1,225 @@
+﻿@page "/register-business"
+@using SharedLibrary
+@using Client.Validations
+@using FluentValidation
+@using System.Security.Claims
+@layout CustomerLayout
+@inject AuthenticationStateProvider AuthProvider
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
+@attribute [Authorize(Roles = "Customer")]
+<MudGrid Class="d-flex justify-center align-center" Style="height: 100vh;">
+    <MudStack Class="my-3">
+        <MudCard Elevation="4">
+            <MudCardContent>
+
+                <MudForm Model="@store" @ref="@form" Validation="@(modelValidator.ValidateValue)" ValidationDelay="0">
+                    <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
+                        <MudPaper Style="width: 192; height: 192;">
+                            <MudImage Src="@imageUrl" Height="192" Width="192" />                           
+                            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" >
+                                <ButtonTemplate>
+                                    <MudFab HtmlTag="label"
+                                            Size="Size.Small"
+                                            Color="Color.Secondary"
+                                            Icon="@Icons.Material.Filled.Image"
+                                            Label="Select Image"
+                                            for="@context.Id" />
+                                </ButtonTemplate>
+                            </MudFileUpload>
+
+                        </MudPaper>
+                        <MudSpacer />
+                        <MudStack>
+                            <MudTextField Label="Store Name"
+                                          Margin="Margin.Dense"
+                                          Variant="Variant.Outlined"
+                                          @bind-Value="store.Name"
+                                          For="@(() => store.Name)" />
+                            <MudTextField Label="T.I.N No."
+                                          Margin="Margin.Dense"
+                                          Variant="Variant.Outlined"
+                                          @bind-Value="store.TIN"
+                                          For="@(() => store.TIN)" />
+                            <MudTextField Label="Email Address"
+                                          Margin="Margin.Dense"
+                                          Variant="Variant.Outlined"
+                                          @bind-Value="store.Email"
+                                          For="@(() => store.Email)" />
+                            <MudTextField Label="Phone Number"
+                                          Margin="Margin.Dense"
+                                          MaxLength="11"
+                                          Variant="Variant.Outlined"
+                                          @bind-Value="store.PhoneNumber"
+                                          For="@(() => store.PhoneNumber)" />
+                        </MudStack>
+                    </MudStack>
+                    <MudTextField @bind-Value="store.AddressLine1"
+                                  For="@(() => store.AddressLine1)"
+                                  Margin="Margin.Dense"
+                                  Class="pa-4"
+                                  Variant="Variant.Outlined"
+                                  Label="Address Line 1" />
+                    <MudTextField @bind-Value="store.AddressLine2"
+                                  For="@(() => store.AddressLine2)"
+                                  Margin="Margin.Dense"
+                                  Class="pa-1"
+                                  Variant="Variant.Outlined"
+                                  Label="Address Line 2" />
+                    <MudStack Row>
+                        <MudTextField @bind-Value="store.CityTown"
+                                      For="@(() => store.CityTown)"
+                                      Margin="Margin.Dense"
+                                      Class="pa-1"
+                                      Variant="Variant.Outlined"
+                                      Label="City/Town" />
+                        <MudTextField @bind-Value="store.Province"
+                                      For="@(() => store.Province)"
+                                      Margin="Margin.Dense"
+                                      Class="pa-1"
+                                      Variant="Variant.Outlined"
+                                      Label="Province" />
+                        <MudTextField @bind-Value="store.PostalCode"
+                                      For="@(() => store.PostalCode)"
+                                      Margin="Margin.Dense"
+                                      Class="pa-1"
+                                      MaxLength="4"
+                                      Variant="Variant.Outlined"
+                                      Label="Postal Code" />
+                    </MudStack>
+                </MudForm>
+                <MudCardActions>
+                    <MudLoadingButton Variant="Variant.Filled"
+                                      Color="Color.Success"
+                                      Size="Size.Large"
+                                      Loading="@(_loading)"
+                                      OnClick="Submit"
+                                      ButtonType="ButtonType.Button">
+                        <LoadingContent>Submitting...</LoadingContent>
+                        <ChildContent>Submit</ChildContent>
+                    </MudLoadingButton>
+                </MudCardActions>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudGrid>
+
+@code {
+    private string first = String.Empty;
+    StoreApplications store = new StoreApplications();
+    StoreValidator modelValidator = new StoreValidator();
+    MudForm? form;
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    string emailaddress = String.Empty;
+    private bool _loading = false;
+    private string imageUrl="add-image.png";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+
+        }
+        await base.OnInitializedAsync();
+    }
+
+    
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        // Read the content of the file as a byte array
+        using (var memoryStream = new MemoryStream())
+        {
+            await file.OpenReadStream().CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+
+            // Convert the byte array to a base64 string
+            var base64String = Convert.ToBase64String(bytes);
+
+            // Construct the data URL
+            imageUrl = $"data:{file.ContentType};base64,{base64String}";
+        }
+    }
+
+
+
+    private async Task Submit()
+    {
+        try
+        {
+            _loading = true;
+            await form.Validate();
+
+            if (form.IsValid)
+            {
+                store.OwnerId = emailaddress;
+                store.Logo = imageUrl;
+                store.Id = string.IsNullOrEmpty(store.Id) ? "N/A" : store.Id;
+                store.AddressLine2 = string.IsNullOrEmpty(store.AddressLine2) ? "N/A" : store.AddressLine2;
+                var options = new DialogOptions{
+                    MaxWidth = MaxWidth.Medium                    
+                    };
+                bool? result = await DialogService.ShowMessageBox("Confirmation","Do you want to continue?", "Continue", null, "Cancel",options);
+
+
+                if (result == true)
+                {
+                    if (await AddStore(store))
+                    {
+                        Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
+                    }
+                }
+            }
+            _loading = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
+            Console.WriteLine(ex.Message);
+            _loading = false;
+        }
+
+
+    }
+
+    public async Task<bool> AddStore(StoreApplications storeApplications)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/registerstore", storeApplications);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Role updated successfully
+                return true;
+            }
+            else
+            {
+                // Failed to update role
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception
+            Console.WriteLine($"Error: {ex.Message}");
+            return false;
+        }
+    }
+}

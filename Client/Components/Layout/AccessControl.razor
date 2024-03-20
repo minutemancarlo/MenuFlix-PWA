@@ -24,18 +24,20 @@
         </MudStack>
     </Authorizing>
 
-    <Authorized>
+    <Authorized>        
+        <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
         <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
             @if (IsCustomer)
-            {
-                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
-                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
-                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
-                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
-                <MudSpacer />
-                <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
-                    <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
-                </MudBadge>
+            {                
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/about" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/contact" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
+                    <MudSpacer />
+                    <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
+                        <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
+                    </MudBadge>
+                
             }
             <MudMenu Class="my-3" Dense AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.CenterLeft">
                 <ActivatorContent>
@@ -48,6 +50,7 @@
                 </ChildContent>
             </MudMenu>
         </MudStack>
+        </MudHidden>
     </Authorized>
 </AuthorizeView>
 
@@ -68,7 +71,7 @@
             UserClaims = user.Claims.ToList();
 
             foreach (var item in UserClaims)
-            {                
+            {
                 if (item.Type == "picture")
                 {
                     profilePic = item.Value;
@@ -76,15 +79,16 @@
                 if (item.Type == "nickname")
                 {
                     name = item.Value;
-                }              
-            }          
+                }
+            }
         }
         else
         {
             // Handle the case where the user is not authenticated
         }
+        await base.OnInitializedAsync();
     }
-   
+
 
     private async Task BeginLogout()
     {
@@ -93,7 +97,7 @@
             await Acct.LogoutAsync();
             _navigationManager.NavigateTo("/");
         }
-        
+
     }
 
     private void AuthAction(string action)
