@@ -22,6 +22,7 @@ namespace SharedLibrary
         public string PostalCode { get; set; }
         public string OwnerId { get; set; }
         public string Logo { get; set; }
+        public string Status { get; set; }
 
     }
 }

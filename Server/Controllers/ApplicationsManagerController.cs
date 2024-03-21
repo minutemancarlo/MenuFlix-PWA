@@ -25,6 +25,9 @@ namespace Server.Controllers
         {
             try
             {
+                // Save the file to the server
+                string imagePath = SaveImageToDisk(storeApplication.Logo); // Save the image and get the saved path
+
                 // Create parameters for the stored procedure
                 var parameters = new DynamicParameters();
                 parameters.Add("@Name", storeApplication.Name);
@@ -36,13 +39,13 @@ namespace Server.Controllers
                 parameters.Add("@CityTown", storeApplication.CityTown);
                 parameters.Add("@Province", storeApplication.Province);
                 parameters.Add("@PostalCode", storeApplication.PostalCode);
-                parameters.Add("@Logo", storeApplication.Logo);
+                parameters.Add("@Logo", imagePath); // Save the path to the database
                 parameters.Add("@OwnerId", storeApplication.OwnerId); // Assuming OwnerId is the UserId
 
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     // Execute the stored procedure
-                    await connection.ExecuteAsync("InsertStoreApplication", parameters,commandType: CommandType.StoredProcedure);
+                    await connection.ExecuteAsync("InsertStoreApplication", parameters, commandType: CommandType.StoredProcedure);
 
                     return Ok("Store registered successfully!");
                 }
@@ -57,6 +60,56 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult<StoreApplications>> GetStoreApplication(string emailaddress)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", emailaddress);
+                parameters.Add("@Type", 0);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    var userDataGrid = await connection.QueryAsync<StoreApplications>("GetStoreApplication", parameters, commandType: CommandType.StoredProcedure);
+
+                    if (userDataGrid.Any())
+                    {
+                        // Return the first StoreApplications object from the list
+                        return userDataGrid.First();
+                    }
+                    else
+                    {
+                        // If no StoreApplications found, return NotFound
+                        return NotFound();
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+            
+        }
+
+        private string SaveImageToDisk(string base64String)
+        {
+            string filePath = ""; // Define a variable to hold the file path
+
+            // Convert the base64 string back to byte array
+            byte[] bytes = Convert.FromBase64String(base64String);
+
+            // Generate a unique filename
+            string fileName = Guid.NewGuid().ToString() + ".jpg"; // You can change the extension based on the image type
+
+            // Combine the file path with the file name
+            filePath = Path.Combine("C:\\MenuFlix", fileName); // Modify the path as needed
+
+            // Write the byte array to the file
+            System.IO.File.WriteAllBytes(filePath, bytes);
+            
+            return filePath; // Return the saved file path
+        }
 
     }
 }

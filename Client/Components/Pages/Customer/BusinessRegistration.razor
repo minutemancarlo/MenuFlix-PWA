@@ -11,22 +11,25 @@
 <MudGrid Class="d-flex justify-center align-center" Style="height: 100vh;">
     <MudStack Class="my-3">
         <MudCard Elevation="4">
+            <MudLoading Overlap Darken @bind-Loading="@dataloading">
             <MudCardContent>
-
                 <MudForm Model="@store" @ref="@form" Validation="@(modelValidator.ValidateValue)" ValidationDelay="0">
                     <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
-                        <MudPaper Style="width: 192; height: 192;">
-                            <MudImage Src="@imageUrl" Height="192" Width="192" />                           
-                            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" >
-                                <ButtonTemplate>
-                                    <MudFab HtmlTag="label"
-                                            Size="Size.Small"
-                                            Color="Color.Secondary"
-                                            Icon="@Icons.Material.Filled.Image"
-                                            Label="Select Image"
-                                            for="@context.Id" />
-                                </ButtonTemplate>
-                            </MudFileUpload>
+                        <MudPaper Style="width: 192; height: 192;" Class="text-center">
+                            <MudImage Src="@imageUrl" Height="192" Width="192" />
+                            @if (!_read)
+                            {
+                                <MudFileUpload T="IBrowserFile" Accept=".png" MaximumFileCount="1" FilesChanged="UploadFiles">
+                                    <ButtonTemplate>
+                                        <MudFab HtmlTag="label"
+                                                Size="MudBlazor.Size.Small"
+                                                Color="MudBlazor.Color.Secondary"
+                                                StartIcon="@Icons.Material.Filled.Image"
+                                                Label="Select Image"
+                                                for="@context.Id" />
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+                            }
 
                         </MudPaper>
                         <MudSpacer />
@@ -35,19 +38,23 @@
                                           Margin="Margin.Dense"
                                           Variant="Variant.Outlined"
                                           @bind-Value="store.Name"
+                                          ReadOnly="@_read"
                                           For="@(() => store.Name)" />
                             <MudTextField Label="T.I.N No."
                                           Margin="Margin.Dense"
+                                          ReadOnly="@_read"
                                           Variant="Variant.Outlined"
                                           @bind-Value="store.TIN"
                                           For="@(() => store.TIN)" />
                             <MudTextField Label="Email Address"
                                           Margin="Margin.Dense"
+                                          ReadOnly="@_read"
                                           Variant="Variant.Outlined"
                                           @bind-Value="store.Email"
                                           For="@(() => store.Email)" />
                             <MudTextField Label="Phone Number"
                                           Margin="Margin.Dense"
+                                          ReadOnly="@_read"
                                           MaxLength="11"
                                           Variant="Variant.Outlined"
                                           @bind-Value="store.PhoneNumber"
@@ -56,14 +63,16 @@
                     </MudStack>
                     <MudTextField @bind-Value="store.AddressLine1"
                                   For="@(() => store.AddressLine1)"
+                                  ReadOnly="@_read"
                                   Margin="Margin.Dense"
-                                  Class="pa-4"
+                                  Class="pt-4 pb-1 px-1"
                                   Variant="Variant.Outlined"
                                   Label="Address Line 1" />
                     <MudTextField @bind-Value="store.AddressLine2"
                                   For="@(() => store.AddressLine2)"
                                   Margin="Margin.Dense"
                                   Class="pa-1"
+                                  ReadOnly="@_read"
                                   Variant="Variant.Outlined"
                                   Label="Address Line 2" />
                     <MudStack Row>
@@ -71,17 +80,20 @@
                                       For="@(() => store.CityTown)"
                                       Margin="Margin.Dense"
                                       Class="pa-1"
+                                      ReadOnly="@_read"
                                       Variant="Variant.Outlined"
                                       Label="City/Town" />
                         <MudTextField @bind-Value="store.Province"
                                       For="@(() => store.Province)"
                                       Margin="Margin.Dense"
+                                      ReadOnly="@_read"
                                       Class="pa-1"
                                       Variant="Variant.Outlined"
                                       Label="Province" />
                         <MudTextField @bind-Value="store.PostalCode"
                                       For="@(() => store.PostalCode)"
                                       Margin="Margin.Dense"
+                                      ReadOnly="@_read"
                                       Class="pa-1"
                                       MaxLength="4"
                                       Variant="Variant.Outlined"
@@ -90,16 +102,20 @@
                 </MudForm>
                 <MudCardActions>
                     <MudLoadingButton Variant="Variant.Filled"
-                                      Color="Color.Success"
-                                      Size="Size.Large"
+                                      Color="MudBlazor.Color.Success"
+                                      Size="MudBlazor.Size.Small"
                                       Loading="@(_loading)"
-                                      OnClick="Submit"
+                                      Disabled="@_read"
+                                      OnClick="Submit"                                     
                                       ButtonType="ButtonType.Button">
                         <LoadingContent>Submitting...</LoadingContent>
                         <ChildContent>Submit</ChildContent>
                     </MudLoadingButton>
+                    <MudSpacer />
+                    <MudAlert Severity="@((store.Status == "1") ? MudBlazor.Severity.Success : MudBlazor.Severity.Warning)" Variant="Variant.Filled" Dense="true" Class="my-2">@((store.Status == "1") ? "Approved" : "For Approval")</MudAlert>
                 </MudCardActions>
             </MudCardContent>
+            </MudLoading>
         </MudCard>
     </MudStack>
 </MudGrid>
@@ -112,11 +128,12 @@
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     string emailaddress = String.Empty;
     private bool _loading = false;
-    private string imageUrl="add-image.png";
-
+    private string imageUrl = "add-image.png";
+    private bool _read = false;
+    private bool dataloading = false;
     protected override async Task OnInitializedAsync()
     {
-
+        dataloading = true;
         var auth = await authProvider.GetAuthenticationStateAsync();
         var user = auth.User;
         if (user.Identity != null && user.Identity.IsAuthenticated)
@@ -129,27 +146,64 @@
                     emailaddress = item.Value;
                 }
             }
-
         }
+
+        var response = await httpClient.GetAsync($"ApplicationsManager?emailaddress={emailaddress}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            StoreApplications info = await response.Content.ReadFromJsonAsync<StoreApplications>();
+            // Update form fields with retrieved details
+            store.TIN = info.TIN;
+            store.Name = info.Name;
+            store.Logo = info.Logo;
+            store.Status = info.Status;
+            store.PhoneNumber = info.PhoneNumber;
+            store.Email = info.Email;
+            store.AddressLine1 = info.AddressLine1;
+            store.AddressLine2 = info.AddressLine2;
+            store.CityTown = info.CityTown;
+            store.Province = info.Province;
+            store.PostalCode = info.PostalCode;
+            store.OwnerId = info.OwnerId;
+            store.Id = info.Id;
+            _read = true;
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(errorMessage);
+            _read = false;
+        }
+        dataloading = false;
         await base.OnInitializedAsync();
     }
 
-    
+
     private async Task UploadFiles(IBrowserFile file)
     {
-        // Read the content of the file as a byte array
-        using (var memoryStream = new MemoryStream())
+        try
         {
-            await file.OpenReadStream().CopyToAsync(memoryStream);
-            var bytes = memoryStream.ToArray();
+            // Read the content of the file as a byte array
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(5120000).CopyToAsync(memoryStream); //Maximum file size is 5 mb
+                var bytes = memoryStream.ToArray();
 
-            // Convert the byte array to a base64 string
-            var base64String = Convert.ToBase64String(bytes);
-
-            // Construct the data URL
-            imageUrl = $"data:{file.ContentType};base64,{base64String}";
+                // Convert the byte array to a base64 string
+                var base64String = Convert.ToBase64String(bytes);
+                store.Logo = base64String;
+                // Construct the data URL
+                imageUrl = $"data:{file.ContentType};base64,{base64String}";
+            }
         }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Maximum image file size is 5 MB", MudBlazor.Severity.Success);
+        }
+
     }
+
 
 
 
@@ -163,13 +217,14 @@
             if (form.IsValid)
             {
                 store.OwnerId = emailaddress;
-                store.Logo = imageUrl;
                 store.Id = string.IsNullOrEmpty(store.Id) ? "N/A" : store.Id;
                 store.AddressLine2 = string.IsNullOrEmpty(store.AddressLine2) ? "N/A" : store.AddressLine2;
-                var options = new DialogOptions{
-                    MaxWidth = MaxWidth.Medium                    
+                store.Status = "0";
+                var options = new DialogOptions
+                    {
+                        MaxWidth = MaxWidth.Medium
                     };
-                bool? result = await DialogService.ShowMessageBox("Confirmation","Do you want to continue?", "Continue", null, "Cancel",options);
+                bool? result = await DialogService.ShowMessageBox("Confirmation", "Do you want to continue?", "Continue", null, "Cancel", options);
 
 
                 if (result == true)
