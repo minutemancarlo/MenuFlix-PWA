@@ -148,7 +148,7 @@
             }
         }
 
-        var response = await httpClient.GetAsync($"ApplicationsManager?emailaddress={emailaddress}");
+        var response = await httpClient.GetAsync($"ApplicationsManager/getstore?emailaddress={emailaddress}");
 
         if (response.IsSuccessStatusCode)
         {

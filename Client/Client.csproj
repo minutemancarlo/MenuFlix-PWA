@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Components\Pages\Manager\" />
     <Folder Include="Identity\Models\" />
   </ItemGroup>
 

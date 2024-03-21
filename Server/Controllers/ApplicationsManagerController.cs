@@ -60,7 +60,7 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("getstore")]
         public async Task<ActionResult<StoreApplications>> GetStoreApplication(string emailaddress)
         {
             try
@@ -91,6 +91,28 @@ namespace Server.Controllers
             }
             
         }
+
+        [HttpGet("getstoreall")]
+        public async Task<ActionResult<IEnumerable<StoreApplications>>> GetStoreApplicationAll()
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", String.Empty);
+                parameters.Add("@Type", 1);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    var userDataGrid = await connection.QueryAsync<StoreApplications>("GetStoreApplication", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(userDataGrid.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
 
         private string SaveImageToDisk(string base64String)
         {
