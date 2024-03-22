@@ -2,7 +2,7 @@
 @implements IAsyncDisposable
 
 <MudPaper Width="250px" Style="height: 100%;overflow: hidden" Elevation="0">
-    @if (IsOnline)
+   @*  @if (IsOnline)
     {
         <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
             <MudChip Class="fixed-bottom" Size="Size.Small" Icon="@Icons.Material.Filled.CloudDone" Color="Color.Success"></MudChip>
@@ -13,7 +13,7 @@
         <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
             <MudChip Class="fixed-bottom" Size="Size.Small" Icon="@Icons.Material.Filled.CloudOff" Color="Color.Error"></MudChip>
         </MudStack>
-    }
+    } *@
     <MudNavMenu Style="height: 95%;overflow: hidden" Bordered>                      
         <MudDivider Class="my-2" />        
         <AuthorizeView Roles="Administrator">
@@ -23,10 +23,10 @@
         </AuthorizeView>        
 
         <AuthorizeView Roles="Manager">
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/">Dashboard</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.RestaurantMenu" Href="/menu">Menu</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.ReceiptLong" Href="/orders">Orders</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.Store" Href="/my-store">My Store</MudNavLink>
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/manager-dashboard">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.RestaurantMenu" Href="/manager-menu">Menu</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.ReceiptLong" Href="/manager-orders">Orders</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Store" Href="/manager-mystore">My Store</MudNavLink>
             @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
                 <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
                 <MudNavLink Href="/counter">Security</MudNavLink>
@@ -59,7 +59,7 @@
 @code{
     [Parameter]
     public RenderFragment Online { get; set; }
-    
+
     [Parameter]
     public RenderFragment Offline { get; set; }
 
@@ -71,6 +71,12 @@
         if (IsOnline != isOnline)
         {
             IsOnline = isOnline;
+        }
+        if(IsOnline)
+        {
+            Snackbar.Add("You are back online", Severity.Success);
+        }else{
+            Snackbar.Add("You are offline", Severity.Error);
         }
 
         StateHasChanged();

@@ -39,11 +39,16 @@
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        IsCustomer = user.IsInRole("Customer");
+        
 
-        if (!IsCustomer)
+        if (user.IsInRole("Manager"))
         {
-            RedirectToHome();
+            RedirectToHome("manager-dashboard");
+        }
+
+        if (user.IsInRole("Administrator"))
+        {
+            RedirectToHome("admin-dashboard");
         }
         await base.OnInitializedAsync();
     }
@@ -56,8 +61,8 @@
     }
 
     
-    private void RedirectToHome()
+    private void RedirectToHome(string path)
     {
-        _navigationManager.NavigateTo("/Home");
+        _navigationManager.NavigateTo($"/{path}");
     }
 }

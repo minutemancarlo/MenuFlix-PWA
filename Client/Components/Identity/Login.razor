@@ -78,17 +78,24 @@
         if (result.Succeeded)
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            IsCustomer = user.IsInRole("Customer");
+            var user = authState.User;            
 
-            if (IsCustomer)
+            if (user.IsInRole("Manager"))
+            {
+                RedirectToHome("manager-dashboard");
+            }
+
+            if (user.IsInRole("Administrator"))
+            {
+                RedirectToHome("admin-dashboard");
+            }
+
+
+            if (user.IsInRole("Customer"))
             {
                 RedirectToIndex();
             }
-            else
-            {
-                RedirectToHome();
-            }
+           
         }
         else
         {
@@ -106,8 +113,8 @@
     {
         _navigationManager.NavigateTo("/");
     }
-    private void RedirectToHome()
+    private void RedirectToHome(string path)
     {
-        _navigationManager.NavigateTo("/Home");
+        _navigationManager.NavigateTo($"/{path}");
     }
 }
