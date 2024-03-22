@@ -20,7 +20,7 @@
                 @*Item Info*@
                 <MudCard Elevation="4">
                     <MudCardContent>
-                        <MudExpansionPanel IsExpanded="true">
+                        <MudExpansionPanel>
                             <TitleContent>
                                 <div class="d-flex">
                                     <MudIcon Icon="@Icons.Material.Filled.LunchDining" class="mr-3"></MudIcon>
@@ -48,10 +48,12 @@
                                             <MudTextField Label="Item Name"
                                                           Margin="Margin.Dense"
                                                           Variant="Variant.Outlined"
+                                                          Immediate="false"
                                                           For="@(() => foodItem.Name)"
                                                           @bind-Value="foodItem.Name" />
                                             <MudAutocomplete T="string"
                                                              Label="Category Name"
+                                                             Immediate="false"
                                                              @bind-Value="searchCategory"
                                                              SearchFunc="@Search1"
                                                              Margin="Margin.Dense"
@@ -78,11 +80,13 @@
                                             </MudAutocomplete>
                                             <MudTextField Label="Description"
                                                           Margin="Margin.Dense"
+                                                          Immediate="false"
                                                           Variant="Variant.Outlined"
                                                           For="@(() => foodItem.Description)"
                                                           @bind-Value="foodItem.Description" />
                                             <MudNumericField @bind-Value="foodItem.Price" AdornmentText="Php"
                                                              Adornment="Adornment.Start" Margin="Margin.Dense"
+                                                             Immediate="false"
                                                              For="@(() => foodItem.Price)"
                                                              HideSpinButtons
                                                              Label="Price" Format="F1" Variant="Variant.Outlined" />
@@ -109,7 +113,7 @@
                 @*Category Name*@
                 <MudCard Elevation="4" Class="pt-1">
                     <MudCardContent>
-                        <MudExpansionPanel IsExpanded="true">
+                        <MudExpansionPanel>
                             <TitleContent>
                                 <div class="d-flex">
                                     <MudIcon Icon="@Icons.Material.Filled.RoomService" class="mr-3"></MudIcon>
@@ -158,7 +162,7 @@
                 @*Discounts*@
                 <MudCard Elevation="4" Class="pt-1">
                     <MudCardContent>
-                        <MudExpansionPanel IsExpanded="true">
+                        <MudExpansionPanel>
                             <TitleContent>
                                 <div class="d-flex">
                                     <MudIcon Icon="@Icons.Material.Filled.LocalOffer" class="mr-3"></MudIcon>
@@ -166,38 +170,64 @@
                                 </div>
                             </TitleContent>
                             <ChildContent>
+                                <MudForm @ref="@foodItemDiscountForm" Model="@discounts" Validation="@(foodItemDiscountValidator.ValidateValue)" ValidationDelay="0">
                                 <MudStack Row>
                                     <MudPaper Style="width: 192; height: 192;" Class="text-center">
                                     </MudPaper>
                                     <MudStack>
-                                        <MudTextField Label="Item"
+                                        <MudAutocomplete T="string"
+                                                         Label="Food Item Name"
+                                                         Immediate="false"
+                                                         @bind-Value="SearchFoodItem"
+                                                         For="@(() => discounts.FoodItemId)"
+                                                         SearchFunc="@Search2"
+                                                         Margin="Margin.Dense"                                                         
+                                                         Dense
+                                                         Variant="Variant.Outlined">
+                                            <ProgressIndicatorInPopoverTemplate>
+                                                <MudList Clickable="false">
+                                                    <MudListItem>
+                                                        Loading...
+                                                    </MudListItem>
+                                                </MudList>
+                                            </ProgressIndicatorInPopoverTemplate>
+                                            <MoreItemsTemplate>
+                                                <MudText Align="Align.Center" Class="px-4 py-1">
+                                                    Only the first 10 Items are shown
+                                                </MudText>
+                                            </MoreItemsTemplate>
+                                            <NoItemsTemplate>
+                                                <MudText Align="Align.Center" Class="px-4 py-1">
+                                                    No items found
+                                                </MudText>
+                                            </NoItemsTemplate>
+                                        </MudAutocomplete>
+                                        <MudTextField Label="Discount Name"
                                                       Margin="Margin.Dense"
+                                                      Immediate="false"
                                                       Variant="Variant.Outlined"
-                                                      @bind-Value="sample" />
-                                        <MudTextField Label="Original Price"
-                                                      Margin="Margin.Dense"
-                                                      AdornmentText="Php"
-                                                      Adornment="Adornment.Start"
-                                                      Variant="Variant.Outlined"
-                                                      @bind-Value="sample" />
-                                        <MudTextField Label="Discount"
-                                                      Margin="Margin.Dense"
-                                                      AdornmentText="Php"
-                                                      Adornment="Adornment.Start"
-                                                      Variant="Variant.Outlined"
-                                                      @bind-Value="sample" />
+                                                      For="@(() => discounts.DiscountName)"
+                                                      @bind-Value="discounts.DiscountName" />
+                                        <MudNumericField @bind-Value="discounts.DiscountAmount" AdornmentText="Php"
+                                                         Adornment="Adornment.Start" Margin="Margin.Dense"
+                                                         Immediate="false"
+                                                         For="@(() => discounts.DiscountAmount)"
+                                                         HideSpinButtons
+                                                         Label="Discount" Format="F1" Variant="Variant.Outlined" />                                       
                                     </MudStack>
                                 </MudStack>
                                 <MudItem Class="float-end">
                                     <MudLoadingButton Variant="Variant.Filled"
                                                       Color="Color.Success"
                                                       Size="Size.Medium"
-                                                      Loading="false"
+                                                          Loading="@_foodItemDiscountLoading"
+                                                      OnClick="OnSaveDiscounts"
                                                       ButtonType="ButtonType.Button">
                                         <LoadingContent>Submitting...</LoadingContent>
                                         <ChildContent>Submit</ChildContent>
                                     </MudLoadingButton>
                                 </MudItem>
+                                </MudForm>
                             </ChildContent>
                         </MudExpansionPanel>
                     </MudCardContent>
@@ -206,31 +236,45 @@
         </MudStack>
         <MudItem Class="py-2">
             <MudPaper Elevation="4">
-                <MudDataGrid Items="@foodItemsGrid" Loading="_foodItemGridLoading" Hover ColumnResizeMode="ResizeMode.Container" 
-                     Dense>
+                <MudDataGrid Items="@foodItemsGrid" Loading="_foodItemGridLoading"
+                             Hover
+                             ColumnResizeMode="ResizeMode.Container"
+                             QuickFilter="@_quickFilter"
+                             HeaderClass="align-center"
+                             Dense>
+                    <ToolBarContent>
+                        <MudButton Variant="Variant.Filled" Class="my-2 mx-1" OnClick="OnGetFoodItems" Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh" Color="Color.Success">Reload</MudButton>                        
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
                     <Columns>
-                        <TemplateColumn Title="Food Item Image" Class="d-flex justify-content-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light">
+                        <TemplateColumn Title="Food Item Image" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
                             <CellTemplate>
                                 <MudTooltip Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" Duration="1000" Text="Duration: 1000">
                                     <ChildContent>
                                         <MudImage Src="icon-192.png" Width="50" Height="50" />
                                     </ChildContent>
-                                    <TooltipContent>                                        
+                                    <TooltipContent>
                                         <MudText Typo="Typo.body2"><strong>@context.Item.Description</strong></MudText>
                                     </TooltipContent>
-                                </MudTooltip>                                
+                                </MudTooltip>
                             </CellTemplate>
                         </TemplateColumn>
-                        <PropertyColumn Property="x => x.Name" Title="Item Name" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.Price" Title="Item Price" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.Category" Title="Category" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.DiscountAmount" Title="Discount Amount" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.DiscountedPrice" Title="Discount Price" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
+                        <PropertyColumn Property="x => x.Name" CellClass="text-center" Title="Item Name" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.Price" CellClass="text-center" Title="Item Price" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.Category" CellClass="text-center" Title="Category" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.DiscountAmount" CellClass="text-center" Title="Discount Amount" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.DiscountedPrice" CellClass="text-center" Title="Discount Price" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
                         <PropertyColumn Property="x => x.CreatedBy" Title="Created By" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                         <PropertyColumn Property="x => x.CreatedOn" Title="Created On" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                         <PropertyColumn Property="x => x.UpdatedBy" Title="Updated By" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                         <PropertyColumn Property="x => x.UpdatedOn" Title="Updated On" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                     </Columns>
+                    <NoRecordsContent>No available records to show.</NoRecordsContent>
+                    <PagerContent>
+                        <MudDataGridPager T="FoodItemDataGrid" />
+                    </PagerContent>
                 </MudDataGrid>
             </MudPaper>
         </MudItem>
@@ -244,23 +288,42 @@
         new BreadcrumbItem("Menu Management", href: "#", icon: Icons.Material.Filled.RestaurantMenu)
     };
     private string imageUrl = "add-image.png";
-    private string sample;
-    private string emailaddress;
+    private string? sample;
+    private string? emailaddress;
+    private string? _searchString;
     private bool _categoryLoading = false;
     private bool _itemLoading = false;
     private bool _foodItemGridLoading = false;
+    private bool _foodItemDiscountLoading = false;
     private List<FoodItem> itemsList = new List<FoodItem>(); //overall item info
     private List<FoodItemDataGrid> foodItemsGrid = new List<FoodItemDataGrid>();
     private List<Category> categoryParent = new List<Category>();
+    private List<FoodItemDataGrid> foodItemParent = new List<FoodItemDataGrid>();
     private FoodItem foodItem = new FoodItem(); // Single Food Item for saving
+    private FoodItemDiscount discounts = new FoodItemDiscount();
     FoodItemValidator foodItemValidator = new FoodItemValidator();
+    FoodItemDiscountValidator foodItemDiscountValidator = new FoodItemDiscountValidator();
+
+
     private Category category = new Category();
     CategoryValidator categoryValidator = new CategoryValidator();
     MudForm? categoryForm;
     MudForm? foodItemForm;
+    MudForm? foodItemDiscountForm;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private string[]? searchBoxCategory;
-    private string searchCategory;
+    private string[]? searchBoxFoodItem;
+    private string? searchCategory;
+    private string? searchFoodItem { get; set; }
+    public string? SearchFoodItem
+    {
+        get { return searchFoodItem; }
+        private set
+        {
+            searchFoodItem = value;
+            discounts.FoodItemId = foodItemParent.Where(category => category.Name == searchFoodItem).Select(category => category.ItemId).FirstOrDefault().ToString();
+        }
+    }
     private async Task UploadFiles(IBrowserFile file)
     {
         try
@@ -313,6 +376,16 @@
             return searchBoxCategory;
         return searchBoxCategory.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
+
+    private async Task<IEnumerable<string>> Search2(string value)
+    {
+        await Task.Delay(5);
+
+        if (string.IsNullOrEmpty(value))
+            return searchBoxFoodItem;
+        return searchBoxFoodItem.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
     private async Task OnGetCategories()
     {
         categoryParent = await httpClient.GetFromJsonAsync<List<Category>>($"FoodCategory/getcategories?email={emailaddress}");
@@ -372,19 +445,20 @@
             foodItem.Logo = "add-image.png";
             foodItem.Email = emailaddress;
             foodItem.ItemId = 0;
-            foodItem.Discount= 0;
+            foodItem.Discount = 0;
             foodItem.CreatedBy = emailaddress;
-            foodItem.UpdatedBy= emailaddress;
+            foodItem.UpdatedBy = emailaddress;
             await foodItemForm.Validate();
 
             if (foodItemForm.IsValid)
-            {                                
+            {
                 var response = await httpClient.PostAsJsonAsync("FoodItem/addfooditem", foodItem);
 
                 if (response.IsSuccessStatusCode)
                 {
                     Snackbar.Add("Food Item Added", Severity.Success);
                     foodItem = new();
+                    searchCategory = "";
                     await OnGetFoodItems();
                 }
                 else if (response.StatusCode == HttpStatusCode.Conflict)
@@ -409,10 +483,67 @@
         _itemLoading = false;
     }
 
+    private async Task OnSaveDiscounts()
+    {
+        _foodItemDiscountLoading = true;        
+        discounts.CreatedBy = emailaddress;
+        discounts.isActive = 0;
+        discounts.UpdatedBy = "0";
+        await foodItemDiscountForm.Validate();
+        try
+        {
+            if (foodItemDiscountForm.IsValid)
+            {
+                var response = await httpClient.PostAsJsonAsync("FoodItemDiscount/addfooddiscount", discounts);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Food Item Discount Added", Severity.Success);
+                    foodItem = new();
+                    searchCategory = "";
+                    await OnGetFoodItems();
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    Snackbar.Add("Food Item Discount Name already exists", Severity.Warning);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+                }
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            _foodItemDiscountLoading = false;
+        }
+        finally
+        {
+            _foodItemDiscountLoading = false;
+        }
+
+    }
+
     private async Task OnGetFoodItems()
     {
         _foodItemGridLoading = true;
         foodItemsGrid = await httpClient.GetFromJsonAsync<List<FoodItemDataGrid>>($"FoodItem/getfooditems?email={emailaddress}");
+        foodItemParent = foodItemsGrid;
+        searchBoxFoodItem = foodItemParent.Select(category => category.Name).ToArray();
         _foodItemGridLoading = false;
     }
+
+    private Func<FoodItemDataGrid, bool> _quickFilter => x =>
+       {
+           if (string.IsNullOrWhiteSpace(_searchString))
+               return true;
+
+           if (x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           return false;
+       };
 }

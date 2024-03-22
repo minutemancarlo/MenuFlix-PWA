@@ -112,8 +112,7 @@
 
         if (form.IsValid)
         {
-            model.Email = emailaddress;
-
+            model.Email = emailaddress;            
             // Make API call to create or update user additional details
             var response = await httpClient.PostAsJsonAsync("UserAdditionalDetails/createupdate", model);
             response.EnsureSuccessStatusCode();
@@ -123,7 +122,9 @@
             }
             else
             {
-                Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred: {errorMessage}", MudBlazor.Severity.Error);
             }
         }
         _loading = false;
