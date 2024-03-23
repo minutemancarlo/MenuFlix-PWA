@@ -5,7 +5,7 @@
 @using SharedLibrary
 @using System.Security.Claims
 @using System.Net
-
+@using Client.Components.Pages.Manager.Components
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
 <PageTitle>Menu Management</PageTitle>
@@ -263,7 +263,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Actions" Sortable="false" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
                             <CellTemplate>            
-                                <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" OnClick="@(() => OnEditFoodItem(context.Item))" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => OnButtonStatusClicked(context.Item.ItemId.ToString()))" Size="Size.Small" aria-label="delete" Color="Color.Error"></MudIconButton>
                             </CellTemplate>
                         </TemplateColumn>
@@ -590,36 +590,36 @@
                         IsDisabled = 0,
                         Email = emailaddress
                     };
-                    var response = await httpClient.PostAsJsonAsync("FoodItem/changeitemstatus", fooditemstatus);
+                var response = await httpClient.PostAsJsonAsync("FoodItem/changeitemstatus", fooditemstatus);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Snackbar.Add("Item status has been changed to Active", Severity.Success);                        
-                        await OnGetFoodItems();
-                    }
-                    else if (response.StatusCode == HttpStatusCode.Conflict)
-                    {
-                        await OnGetFoodItems();
-                        Snackbar.Add("Unable to change food item status", Severity.Warning);
-                    }
-                    else
-                    {
-                        var errorMessage = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(errorMessage);
-                        Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
-                    }
-                
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Item status has been changed to Active", Severity.Success);                        
+                    await OnGetFoodItems();
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    await OnGetFoodItems();
+                    Snackbar.Add("Unable to change food item status", Severity.Warning);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+                }
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
-          
+
             }
-          
 
 
-            
+
+
         }else if (result == false)
         {
             try
@@ -656,9 +656,20 @@
                 Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
 
             }
-            
+
         }        
         StateHasChanged();
+    }
+
+    private async void OnEditFoodItem(FoodItemDataGrid item)
+    {
+        var parameters = new DialogParameters<EditFoodItemDialog>();
+        parameters.Add(x => x.model,item);
+        parameters.Add(x => x.emailaddress, emailaddress);
+            
+        
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, DisableBackdropClick = true };
+        DialogService.Show<EditFoodItemDialog>("Edit Food Item", parameters,options);
     }
 
     private Func<FoodItemDataGrid, bool> _quickFilter => x =>

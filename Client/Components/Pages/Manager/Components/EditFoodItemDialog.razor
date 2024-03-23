@@ -1,0 +1,154 @@
+﻿@using SharedLibrary
+@using Client.Validations
+@using System.Security.Claims
+@using System.Net.Http.Json
+
+@inject HttpClient httpClient
+
+<MudDialog>
+    <DialogContent>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body1" Class="py-3"><strong>Food Item Name: </strong>@model.Name</MudText>
+            <MudForm @ref="@foodItemForm" Model="@model" Validation="@(foodItemValidator.ValidateValue)" ValidationDelay="0">
+                <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
+                    <MudPaper Style="width: 192; height: 192;" Class="text-center">
+                        <MudImage Src="@imageUrl" Height="192" Width="192" />
+                        <MudFileUpload T="IBrowserFile" Accept=".png" Class="py-1" MaximumFileCount="1" FilesChanged="UploadFiles">
+                            <ButtonTemplate>
+                                <MudFab HtmlTag="label"
+                                        Size="MudBlazor.Size.Small"
+                                        Color="MudBlazor.Color.Secondary"
+                                        StartIcon="@Icons.Material.Filled.Image"
+                                        Label="Select Image"
+                                        for="@context.Id" />
+                            </ButtonTemplate>
+                        </MudFileUpload>
+                    </MudPaper>
+                    <MudSpacer />
+                    <MudStack>
+                        <MudTextField Label="Item Name"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined"
+                                      Immediate="false"
+                                      For="@(() => model.Name)"
+                                      @bind-Value="model.Name" />
+                        <MudAutocomplete T="string"
+                                         Label="Category Name"
+                                         Immediate="false"
+                                         @bind-Value="SearchCategory"
+                                         SearchFunc="@Search1"
+                                         Margin="Margin.Dense"
+                                         For="@(() => model.Category)"
+                                         Dense
+                                         Variant="Variant.Outlined">
+                            <ProgressIndicatorInPopoverTemplate>
+                                <MudList Clickable="false">
+                                    <MudListItem>
+                                        Loading...
+                                    </MudListItem>
+                                </MudList>
+                            </ProgressIndicatorInPopoverTemplate>
+                            <MoreItemsTemplate>
+                                <MudText Align="Align.Center" Class="px-4 py-1">
+                                    Only the first 10 Categories are shown
+                                </MudText>
+                            </MoreItemsTemplate>
+                            <NoItemsTemplate>
+                                <MudText Align="Align.Center" Class="px-4 py-1">
+                                    No items found
+                                </MudText>
+                            </NoItemsTemplate>
+                        </MudAutocomplete>
+                        <MudTextField Label="Description"
+                                      Margin="Margin.Dense"
+                                      Immediate="false"
+                                      Variant="Variant.Outlined"
+                                      For="@(() => model.Description)"
+                                      @bind-Value="model.Description" />
+                        <MudNumericField @bind-Value="model.Price" AdornmentText="Php"
+                                         Adornment="Adornment.Start" Margin="Margin.Dense"
+                                         Immediate="false"
+                                         For="@(() => model.Price)"
+                                         HideSpinButtons
+                                         Label="Price" Format="F1" Variant="Variant.Outlined" />
+                    </MudStack>
+                </MudStack>
+            </MudForm>
+        </MudItem>
+        
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public FoodItemDataGrid model { get; set; }
+    FoodItemValidator foodItemValidator = new FoodItemValidator();
+    MudForm? foodItemForm;
+    private List<Category> categoryParent = new List<Category>();
+    private string imageUrl = "add-image.png";
+    [Parameter] public string emailaddress { get; set; }
+    private string[]? searchBoxCategory;
+    private string? searchCategory;
+    public string? SearchCategory
+    {
+        get { return searchCategory; }
+        private set
+        {
+            searchCategory = value;
+            model.Category = categoryParent.Where(category => category.Name == searchCategory).Select(category => category.CategoryId).FirstOrDefault().ToString();
+        }
+    }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnGetCategories();
+        SearchCategory = model.Category;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        try
+        {
+            // Read the content of the file as a byte array
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(5120000).CopyToAsync(memoryStream); //Maximum file size is 5 mb
+                var bytes = memoryStream.ToArray();
+
+                // Convert the byte array to a base64 string
+                var base64String = Convert.ToBase64String(bytes);
+                // store.Logo = base64String;
+                // Construct the data URL
+                imageUrl = $"data:{file.ContentType};base64,{base64String}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Maximum image file size is 5 MB", MudBlazor.Severity.Success);
+        }
+
+    }
+
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+        await Task.Delay(5);
+
+        if (string.IsNullOrEmpty(value))
+            return searchBoxCategory;
+        return searchBoxCategory.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task OnGetCategories()
+    {
+        categoryParent = await httpClient.GetFromJsonAsync<List<Category>>($"FoodCategory/getcategories?email={emailaddress}");
+
+        searchBoxCategory = categoryParent.Select(category => category.Name).ToArray();
+    }
+}
