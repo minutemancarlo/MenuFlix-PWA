@@ -25,7 +25,7 @@
                 Hover 
                 ColumnResizeMode="ResizeMode.Container" 
                 Filterable="false"
-                HeaderClass="text-uppercase font-weight-bold">
+                         HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold">
                 <ToolBarContent>
                     <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnApprove" StartIcon="@Icons.Material.Filled.ThumbUp" Color="Color.Success">Approve</MudButton>
                     <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnReject" StartIcon="@Icons.Material.Filled.ThumbDown" Color="Color.Error">Reject</MudButton>
@@ -34,12 +34,21 @@
                                   AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                 </ToolBarContent>
                 <Columns>
-                    <SelectColumn T="StoreApplications"/>                    
-                    <TemplateColumn Title="Store Logo" HeaderClass="blue fw-bold darken-1 shades-text text-white" Filterable="false">
+                    <SelectColumn T="StoreApplications" />                    
+                    <TemplateColumn Title="Store Logo" Sortable="false" CellClass="text-center" HeaderClass="blue fw-bold darken-1 shades-text text-white" Filterable="false">
                         <CellTemplate>
-                            <MudImage Src="icon-192.png" Width="50" Height="50" />
+                            <MudTooltip>
+                                <ChildContent>
+                                    <MudImage Src="icon-192.png" Width="50" Height="50" />
+                                </ChildContent>
+                                <TooltipContent>
+                                    <MudText Typo="Typo.button">Additional Details:</MudText>
+                                    <MudText Typo="Typo.body2"><strong>TIN No: </strong>@context.Item.TIN</MudText>                                    
+                                </TooltipContent>
+                            </MudTooltip>
+                            
                         </CellTemplate>
-                    </TemplateColumn>
+                    </TemplateColumn>                    
                     <PropertyColumn Property="x => x.Name" Title="Store Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
                     <TemplateColumn Title="Business Address" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
                         <CellTemplate>
@@ -53,7 +62,7 @@
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.Email" Title="Business Email" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
                     <PropertyColumn Property="x => x.PhoneNumber" Title="Business Contact" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
-                    <TemplateColumn Title="Application Status" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
+                    <TemplateColumn Title="Application Status" CellClass="text-center" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
                         <CellTemplate>
                             @if (context.Item.Status == "1")
                             {

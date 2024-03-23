@@ -15,9 +15,11 @@ namespace Server.Controllers
     public class ApplicationsManagerController : ControllerBase
     {
         private readonly string _connectionString;
-        public ApplicationsManagerController(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+        public ApplicationsManagerController(IConfiguration configuration, IWebHostEnvironment env)
         {            
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _env = env;
         }
 
         [HttpPost("registerstore")]

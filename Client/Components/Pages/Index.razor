@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Client.Identity
+@using SharedLibrary
 @layout CustomerLayout
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager _navigationManager
@@ -30,8 +31,409 @@
         <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
     </MudBadge>
 </MudHidden>
+
+<MudCarousel Class="mud-width-full" Style="height:550px;" ShowArrows="@arrows" ShowBullets="@bullets" EnableSwipeGesture="@enableSwipeGesture" AutoCycle="@autocycle" TData="object">
+    
+    @foreach (var group in groups)
+    {
+        <MudCarouselItem Transition="transition" Color="@Color.Warning">
+            <section>
+                <div class="container py-5 text-dark">
+                    <div class="row">
+                        @foreach (var item in group)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-4 mb-md-0 d-flex">
+                                <div class="card flex-grow-1">
+                                    <div class="d-flex justify-content-between p-3">
+                                        <p class="lead mb-0 text-dark">@item.Store</p>
+                                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong" style="width: 35px; height: 35px;">
+                                            <p class="text-white mb-0 small">x3</p>
+                                        </div>
+                                    </div>
+                                    <img src="icon-192.png" style="width: 200px; height: 200px" class="card-img-top mx-auto d-block" alt="Gaming Laptop" />
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <p class="small"><a href="#!" class="text-muted">@item.Category</a></p>
+                                            <p class="small text-danger"><s>$1399</s></p>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <h5 class="mb-0 flex-grow-1 fs-6 text">@item.Name</h5>
+                                            <h5 class="text-dark mb-0">₱ @item.Price</h5>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <p class="text-muted mb-0"><MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart">Add to Cart</MudButton></p>
+                                            <div class="ms-auto text-warning">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        </MudCarouselItem>
+    }
+
+    @* <MudCarouselItem Transition="transition" Color="@Color.Primary">
+        <section>
+            <div class="container py-5 text-dark">
+                <div class="row">
+                    <div class="col-md-12 col-lg-4 mb-4 mb-lg-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyalemee</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x4</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1099</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Notebook</h5>
+                                    <h5 class="text-dark mb-0">$999</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">6</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyalemee</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x2</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1199</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Envy</h5>
+                                    <h5 class="text-dark mb-0">$1099</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">7</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyalemee</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x3</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Gaming Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1399</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">Toshiba B77</h5>
+                                    <h5 class="text-dark mb-0">$1299</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">5</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+        <section>
+            <div class="container py-5 text-dark">
+                <div class="row">
+                    <div class="col-md-12 col-lg-4 mb-4 mb-lg-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyakdo</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x4</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1099</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Notebook</h5>
+                                    <h5 class="text-dark mb-0">$999</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">6</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyakdo</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x2</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1199</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Envy</h5>
+                                    <h5 class="text-dark mb-0">$1099</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">7</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Nyakdo</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x3</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Gaming Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1399</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">Toshiba B77</h5>
+                                    <h5 class="text-dark mb-0">$1299</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">5</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="transition" Color="@Color.Warning">
+        <section>
+            <div class="container py-5 text-dark">
+                <div class="row">
+                    <div class="col-md-12 col-lg-4 mb-4 mb-lg-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Today's Combo Offer</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x4</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1099</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Notebook</h5>
+                                    <h5 class="text-dark mb-0">$999</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">6</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Today's Combo Offer</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x2</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1199</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">HP Envy</h5>
+                                    <h5 class="text-dark mb-0">$1099</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">7</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                        <div class="card">
+                            <div class="d-flex justify-content-between p-3">
+                                <p class="lead mb-0 text-dark">Today's Combo Offer</p>
+                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong"
+                                     style="width: 35px; height: 35px;">
+                                    <p class="text-white mb-0 small">x3</p>
+                                </div>
+                            </div>
+                            <img src="icon-192.png" style="width: 200px; height: 200px"
+                                 class="card-img-top mx-auto d-block" alt="Gaming Laptop" />
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="small"><a href="#!" class="text-muted">Laptops</a></p>
+                                    <p class="small text-danger"><s>$1399</s></p>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="mb-0">Toshiba B77</h5>
+                                    <h5 class="text-dark mb-0">$1299</h5>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="text-muted mb-0">Available: <span class="fw-bold">5</span></p>
+                                    <div class="ms-auto text-warning">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </MudCarouselItem> *@
+</MudCarousel>
+
+
+        
+
+
 @code
 {
+    private bool arrows = true;
+    private bool bullets = true;
+    private bool enableSwipeGesture = true;
+    private bool autocycle = true;
+    private Transition transition = Transition.Slide;
+    private List<CarouselDisplay> carouselDisplay = new List<CarouselDisplay>();
+    List<List<CarouselDisplay>> groups = new List<List<CarouselDisplay>>();
     MudPopup _popup;
     bool _open = true;
     private bool IsCustomer { get; set; }
@@ -39,7 +441,7 @@
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        
+
 
         if (user.IsInRole("Manager"))
         {
@@ -50,7 +452,17 @@
         {
             RedirectToHome("admin-dashboard");
         }
+
+
+        
+
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {        
+        await base.OnAfterRenderAsync(firstRender);
+        await OnGetFoodItemsRandom();
     }
 
 
@@ -65,4 +477,18 @@
     {
         _navigationManager.NavigateTo($"/{path}");
     }
+
+
+    private async Task OnGetFoodItemsRandom()
+    {
+        
+        carouselDisplay = await httpClient.GetFromJsonAsync<List<CarouselDisplay>>($"FoodItem/getfooditemsrandom");
+        groups = carouselDisplay
+     .Select((item, index) => new { Item = item, Index = index })
+     .GroupBy(x => x.Index / 3)
+     .Select(g => g.Select(x => x.Item).ToList())
+     .ToList();
+    }
+
+
 }

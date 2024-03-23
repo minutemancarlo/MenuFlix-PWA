@@ -78,6 +78,24 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("getfooditemsrandom")]
+        public async Task<ActionResult<IEnumerable<CarouselDisplay>>> GetFoodItemsRandom()
+        {
+            try
+            {
+                
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var fooditems = await connection.QueryAsync<CarouselDisplay>("GetFoodItemsCustomer", commandType: CommandType.StoredProcedure);
+                    return Ok(fooditems.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
         [HttpPost("changeitemstatus")]
         public async Task<IActionResult> ChangeItemStatus([FromBody] FoodItemStatus status)
         {
