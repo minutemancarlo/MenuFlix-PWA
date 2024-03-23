@@ -108,26 +108,40 @@
     private async Task Submit()
     {
         _loading=true;
-        await form.Validate();
-
-        if (form.IsValid)
+        try
         {
-            model.Email = emailaddress;            
-            // Make API call to create or update user additional details
-            var response = await httpClient.PostAsJsonAsync("UserAdditionalDetails/createupdate", model);
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
+            await form.Validate();
+
+            if (form.IsValid)
             {
-                Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
-            }
-            else
-            {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(errorMessage);
-                Snackbar.Add($"An exception occurred: {errorMessage}", MudBlazor.Severity.Error);
+                model.Email = emailaddress;
+                model.AddressLine2 = string.IsNullOrEmpty(model.AddressLine2) ? "N/A" : model.AddressLine2;
+                var response = await httpClient.PostAsJsonAsync("UserAdditionalDetails/createupdate", model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
+                    await GetUserAdditionalDetails();
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred: {errorMessage}", MudBlazor.Severity.Error);
+                }
+                _loading = false;
             }
         }
-        _loading = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", MudBlazor.Severity.Error);
+            _loading = false;
+        }
+
+
+        
+        
     }
 
     private async Task GetUserAdditionalDetails()

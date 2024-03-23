@@ -53,5 +53,24 @@ namespace Server.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpGet("getstorediscounts")]
+        public async Task<ActionResult<IEnumerable<FoodItemDiscount>>> GetStoreDiscounts(string email)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", email);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var fooditems = await connection.QueryAsync<FoodItemDiscount>("GetStoreDiscounts", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(fooditems.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
     }
 }

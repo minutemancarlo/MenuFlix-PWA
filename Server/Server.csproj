@@ -26,4 +26,9 @@
     <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\FoodItems\" />
+    <Folder Include="wwwroot\StoreLogos\" />
+  </ItemGroup>
+
 </Project>

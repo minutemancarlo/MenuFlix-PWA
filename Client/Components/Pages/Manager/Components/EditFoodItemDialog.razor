@@ -30,11 +30,13 @@
                                       Margin="Margin.Dense"
                                       Variant="Variant.Outlined"
                                       Immediate="false"
+                                      OnlyValidateIfDirty="true"
                                       For="@(() => model.Name)"
                                       @bind-Value="model.Name" />
                         <MudAutocomplete T="string"
                                          Label="Category Name"
                                          Immediate="false"
+                                         OnlyValidateIfDirty="true"
                                          @bind-Value="SearchCategory"
                                          SearchFunc="@Search1"
                                          Margin="Margin.Dense"
@@ -64,13 +66,15 @@
                                       Immediate="false"
                                       Variant="Variant.Outlined"
                                       For="@(() => model.Description)"
+                                      OnlyValidateIfDirty="true"
                                       @bind-Value="model.Description" />
                         <MudNumericField @bind-Value="model.Price" AdornmentText="Php"
                                          Adornment="Adornment.Start" Margin="Margin.Dense"
                                          Immediate="false"
                                          For="@(() => model.Price)"
                                          HideSpinButtons
-                                         Label="Price" Format="F1" Variant="Variant.Outlined" />
+                                         OnlyValidateIfDirty="true"
+                                         Label="Price" Format="F1" Variant="Variant.Outlined" />                        
                     </MudStack>
                 </MudStack>
             </MudForm>
@@ -79,7 +83,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit">Update</MudButton>
     </DialogActions>
 </MudDialog>
 @code {
@@ -87,11 +91,11 @@
     [Parameter] public FoodItemDataGrid model { get; set; }
     FoodItemValidator foodItemValidator = new FoodItemValidator();
     MudForm? foodItemForm;
-    private List<Category> categoryParent = new List<Category>();
+    private List<Category> categoryParent = new List<Category>();    
     private string imageUrl = "add-image.png";
     [Parameter] public string emailaddress { get; set; }
-    private string[]? searchBoxCategory;
-    private string? searchCategory;
+    private string[]? searchBoxCategory;    
+    [Parameter] public string? searchCategory { get; set; }
     public string? SearchCategory
     {
         get { return searchCategory; }
@@ -107,8 +111,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await OnGetCategories();
-        SearchCategory = model.Category;
+        await OnGetCategories();        
         await base.OnInitializedAsync();
     }
 
@@ -151,4 +154,6 @@
 
         searchBoxCategory = categoryParent.Select(category => category.Name).ToArray();
     }
+
+    
 }

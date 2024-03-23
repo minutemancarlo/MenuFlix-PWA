@@ -49,11 +49,13 @@
                                                           Margin="Margin.Dense"
                                                           Variant="Variant.Outlined"
                                                           Immediate="false"
+                                                          OnlyValidateIfDirty="true"
                                                           For="@(() => foodItem.Name)"
                                                           @bind-Value="foodItem.Name" />
                                             <MudAutocomplete T="string"
                                                              Label="Category Name"
                                                              Immediate="false"
+                                                             OnlyValidateIfDirty="true"
                                                              @bind-Value="SearchCategory"
                                                              SearchFunc="@Search1"
                                                              Margin="Margin.Dense"
@@ -81,12 +83,14 @@
                                             <MudTextField Label="Description"
                                                           Margin="Margin.Dense"
                                                           Immediate="false"
+                                                          OnlyValidateIfDirty="true"
                                                           Variant="Variant.Outlined"
                                                           For="@(() => foodItem.Description)"
                                                           @bind-Value="foodItem.Description" />
                                             <MudNumericField @bind-Value="foodItem.Price" AdornmentText="Php"
                                                              Adornment="Adornment.Start" Margin="Margin.Dense"
                                                              Immediate="false"
+                                                             OnlyValidateIfDirty="true"
                                                              For="@(() => foodItem.Price)"
                                                              HideSpinButtons
                                                              Label="Price" Format="F1" Variant="Variant.Outlined" />
@@ -131,11 +135,13 @@
                                             <MudTextField Label="Category"
                                                           Margin="Margin.Dense"
                                                           Variant="Variant.Outlined"
+                                                          OnlyValidateIfDirty="true"
                                                           For="@(() => category.Name)"
                                                           @bind-Value="category.Name" />
                                             <MudTextField Label="Description"
                                                           Margin="Margin.Dense"
                                                           HelperText="Optional"
+                                                          OnlyValidateIfDirty="true"
                                                           Variant="Variant.Outlined"
                                                           For="@(() => category.Description)"
                                                           @bind-Value="category.Description" />
@@ -178,6 +184,7 @@
                                         <MudAutocomplete T="string"
                                                          Label="Food Item Name"
                                                          Immediate="false"
+                                                         OnlyValidateIfDirty="true"
                                                          @bind-Value="SearchFoodItem"
                                                          For="@(() => discounts.FoodItemId)"
                                                          SearchFunc="@Search2"
@@ -205,12 +212,14 @@
                                         <MudTextField Label="Discount Name"
                                                       Margin="Margin.Dense"
                                                       Immediate="false"
+                                                          OnlyValidateIfDirty="true"
                                                       Variant="Variant.Outlined"
                                                       For="@(() => discounts.DiscountName)"
                                                       @bind-Value="discounts.DiscountName" />
                                         <MudNumericField @bind-Value="discounts.DiscountAmount" AdornmentText="Php"
                                                          Adornment="Adornment.Start" Margin="Margin.Dense"
                                                          Immediate="false"
+                                                             OnlyValidateIfDirty="true"
                                                          For="@(() => discounts.DiscountAmount)"
                                                          HideSpinButtons
                                                          Label="Discount" Format="F1" Variant="Variant.Outlined" />                                       
@@ -236,7 +245,7 @@
         </MudStack>
         <MudItem Class="py-2">
             <MudPaper Elevation="4" Class="pa-2">
-                <MudDataGrid Items="@foodItemsGrid" Loading="_foodItemGridLoading"
+                <MudDataGrid Items="@foodItemsGrid" Loading="@_foodItemGridLoading"
                              Hover
                              ColumnResizeMode="ResizeMode.Container"
                              QuickFilter="@_quickFilter"
@@ -263,7 +272,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Actions" Sortable="false" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
                             <CellTemplate>            
-                                <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" OnClick="@(() => OnEditFoodItem(context.Item))" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" OnClick="@(() => OnEditFoodItem(context.Item,context.Item.Category))" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => OnButtonStatusClicked(context.Item.ItemId.ToString()))" Size="Size.Small" aria-label="delete" Color="Color.Error"></MudIconButton>
                             </CellTemplate>
                         </TemplateColumn>
@@ -300,14 +309,13 @@
 </MudItem>
 
 
-<MudMessageBox @ref="mbox" Title="Confirmation" >
+<MudMessageBox @ref="mbox" Title="Confirmation" CancelText="Cancel" >
     <MessageContent>
         Change Status of the Item?
     </MessageContent>
     <NoButton>
         <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" Class="my-2 mx-1">Inactive</MudButton>
-    </NoButton>
-    
+    </NoButton>    
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" Class="my-2 mx-1">Active</MudButton>
     </YesButton>
@@ -528,7 +536,7 @@
     {
         _foodItemDiscountLoading = true;        
         discounts.CreatedBy = emailaddress;
-        discounts.isActive = 0;
+        discounts.isActive = 1;
         discounts.UpdatedBy = "0";
         await foodItemDiscountForm.Validate();
         try
@@ -627,7 +635,7 @@
                 var fooditemstatus = new FoodItemStatus
                     {
                         ItemId = itemId,
-                        IsDisabled = 0,
+                        IsDisabled = 1,
                         Email = emailaddress
                     };
                 var response = await httpClient.PostAsJsonAsync("FoodItem/changeitemstatus", fooditemstatus);
@@ -661,11 +669,12 @@
         StateHasChanged();
     }
 
-    private async void OnEditFoodItem(FoodItemDataGrid item)
+    private async void OnEditFoodItem(FoodItemDataGrid item,string searchItem)
     {
         var parameters = new DialogParameters<EditFoodItemDialog>();
         parameters.Add(x => x.model,item);
         parameters.Add(x => x.emailaddress, emailaddress);
+        parameters.Add(x => x.searchCategory, searchItem);
             
         
         var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, DisableBackdropClick = true };
