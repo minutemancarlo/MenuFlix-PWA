@@ -78,6 +78,46 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("changeitemstatus")]
+        public async Task<IActionResult> ChangeItemStatus([FromBody] FoodItemStatus status)
+        {
+            try
+            {
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@ItemId", status.ItemId);
+                parameters.Add("@IsDisabled", status.IsDisabled);
+                parameters.Add("@Email", status.Email);
+                parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteScalarAsync<int>(
+                      "UpdateFoodItemStatus",
+                      parameters,
+                      commandType: CommandType.StoredProcedure);
+                    var statusCode = parameters.Get<int>("@StatusCode");
+                    if (statusCode == 1)
+                    {
+                        return Ok();
+                    }
+                    else if (statusCode == 0)
+                    {
+                        return Conflict("Item already exists.");
+                    }
+                    else
+                    {
+                        return BadRequest($"An error occurred: {statusCode}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
 
     }
 }

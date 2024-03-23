@@ -54,7 +54,7 @@
                                             <MudAutocomplete T="string"
                                                              Label="Category Name"
                                                              Immediate="false"
-                                                             @bind-Value="searchCategory"
+                                                             @bind-Value="SearchCategory"
                                                              SearchFunc="@Search1"
                                                              Margin="Margin.Dense"
                                                              For="@(() => foodItem.CategoryName)"
@@ -235,7 +235,7 @@
             </MudItem>
         </MudStack>
         <MudItem Class="py-2">
-            <MudPaper Elevation="4">
+            <MudPaper Elevation="4" Class="pa-2">
                 <MudDataGrid Items="@foodItemsGrid" Loading="_foodItemGridLoading"
                              Hover
                              ColumnResizeMode="ResizeMode.Container"
@@ -249,27 +249,45 @@
                                       AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
                     <Columns>
-                        <TemplateColumn Title="Food Item Image" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
+                        <TemplateColumn Sortable="false" Title="Food Item Image" CellClass="text-center" HeaderClass="blue fw-bold darken-1 shades-text text-light justify-items-center">
                             <CellTemplate>
                                 <MudTooltip Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" Duration="1000" Text="Duration: 1000">
                                     <ChildContent>
                                         <MudImage Src="icon-192.png" Width="50" Height="50" />
                                     </ChildContent>
-                                    <TooltipContent>
+                                    <TooltipContent>                                        
                                         <MudText Typo="Typo.body2"><strong>@context.Item.Description</strong></MudText>
                                     </TooltipContent>
                                 </MudTooltip>
                             </CellTemplate>
                         </TemplateColumn>
-                        <PropertyColumn Property="x => x.Name" CellClass="text-center" Title="Item Name" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light" />
-                        <PropertyColumn Property="x => x.Price" CellClass="text-center" Title="Item Price" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
-                        <PropertyColumn Property="x => x.Category" CellClass="text-center" Title="Category" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
-                        <PropertyColumn Property="x => x.DiscountAmount" CellClass="text-center" Title="Discount Amount" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
-                        <PropertyColumn Property="x => x.DiscountedPrice" CellClass="text-center" Title="Discount Price" Class="text-center" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
-                        <PropertyColumn Property="x => x.CreatedBy" Title="Created By" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.CreatedOn" Title="Created On" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.UpdatedBy" Title="Updated By" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
-                        <PropertyColumn Property="x => x.UpdatedOn" Title="Updated On" Class="text-center" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
+                        <TemplateColumn Title="Actions" Sortable="false" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
+                            <CellTemplate>            
+                                <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => OnButtonStatusClicked(context.Item.ItemId.ToString()))" Size="Size.Small" aria-label="delete" Color="Color.Error"></MudIconButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Name" Title="Item Name" HeaderClass="blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.Price" Title="Item Price" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.Category" Title="Category" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.DiscountAmount" Title="Discount Amount" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <PropertyColumn Property="x => x.DiscountedPrice" Title="Discount Price" HeaderClass="text-center blue fw-bold darken-1 shades-text text-light" />
+                        <TemplateColumn Title="Active Status" Sortable="false" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
+                            <CellTemplate>
+                                @if (context.Item.IsDisabled == 0)
+                                {
+                                    <MudChip Color="Color.Success" Size="Size.Small">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip Color="Color.Error" Size="Size.Small">Inactive</MudChip>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.CreatedBy" Title="Created By" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
+                        <PropertyColumn Property="x => x.CreatedOn" Title="Created On" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
+                        <PropertyColumn Property="x => x.UpdatedBy" Title="Updated By" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
+                        <PropertyColumn Property="x => x.UpdatedOn" Title="Updated On" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                     </Columns>
                     <NoRecordsContent>No available records to show.</NoRecordsContent>
                     <PagerContent>
@@ -280,6 +298,20 @@
         </MudItem>
     </MudItem>
 </MudItem>
+
+
+<MudMessageBox @ref="mbox" Title="Confirmation" >
+    <MessageContent>
+        Change Status of the Item?
+    </MessageContent>
+    <NoButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" Class="my-2 mx-1">Inactive</MudButton>
+    </NoButton>
+    
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" Class="my-2 mx-1">Active</MudButton>
+    </YesButton>
+</MudMessageBox>
 
 @code {
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
@@ -310,10 +342,20 @@
     MudForm? categoryForm;
     MudForm? foodItemForm;
     MudForm? foodItemDiscountForm;
+    MudMessageBox mbox { get; set; }
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private string[]? searchBoxCategory;
     private string[]? searchBoxFoodItem;
     private string? searchCategory;
+    public string? SearchCategory
+    {
+        get { return searchCategory; }
+        private set
+        {
+            searchCategory = value;
+            foodItem.CategoryName = categoryParent.Where(category => category.Name == searchCategory).Select(category => category.CategoryId).FirstOrDefault().ToString();
+        }
+    }
     private string? searchFoodItem { get; set; }
     public string? SearchFoodItem
     {
@@ -440,8 +482,7 @@
         _itemLoading = true;
 
         try
-        {
-            foodItem.CategoryName = categoryParent.Where(category => category.Name == searchCategory).Select(category => category.CategoryId).FirstOrDefault().ToString();
+        {            
             foodItem.Logo = "add-image.png";
             foodItem.Email = emailaddress;
             foodItem.ItemId = 0;
@@ -499,8 +540,8 @@
                 if (response.IsSuccessStatusCode)
                 {
                     Snackbar.Add("Food Item Discount Added", Severity.Success);
-                    foodItem = new();
-                    searchCategory = "";
+                    discounts = new();
+                    searchFoodItem = "";
                     await OnGetFoodItems();
                 }
                 else if (response.StatusCode == HttpStatusCode.Conflict)
@@ -534,6 +575,90 @@
         foodItemParent = foodItemsGrid;
         searchBoxFoodItem = foodItemParent.Select(category => category.Name).ToArray();
         _foodItemGridLoading = false;
+    }
+
+    private async void OnButtonStatusClicked(string itemId)
+    {
+        bool? result = await mbox.Show();
+        if(result==true)
+        {            
+            try
+            {
+                var fooditemstatus = new FoodItemStatus
+                    {
+                        ItemId = itemId,
+                        IsDisabled = 0,
+                        Email = emailaddress
+                    };
+                    var response = await httpClient.PostAsJsonAsync("FoodItem/changeitemstatus", fooditemstatus);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Snackbar.Add("Item status has been changed to Active", Severity.Success);                        
+                        await OnGetFoodItems();
+                    }
+                    else if (response.StatusCode == HttpStatusCode.Conflict)
+                    {
+                        await OnGetFoodItems();
+                        Snackbar.Add("Unable to change food item status", Severity.Warning);
+                    }
+                    else
+                    {
+                        var errorMessage = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(errorMessage);
+                        Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+                    }
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+          
+            }
+          
+
+
+            
+        }else if (result == false)
+        {
+            try
+            {
+                var fooditemstatus = new FoodItemStatus
+                    {
+                        ItemId = itemId,
+                        IsDisabled = 0,
+                        Email = emailaddress
+                    };
+                var response = await httpClient.PostAsJsonAsync("FoodItem/changeitemstatus", fooditemstatus);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Item status has been changed to Inactive", Severity.Success);
+                    await OnGetFoodItems();
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    await OnGetFoodItems();
+                    Snackbar.Add("Unable to change food item status", Severity.Warning);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+            }
+            
+        }        
+        StateHasChanged();
     }
 
     private Func<FoodItemDataGrid, bool> _quickFilter => x =>
