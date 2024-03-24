@@ -53,6 +53,4 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
-builder.Services.AddSingleton<CartCount>();
-
 await builder.Build().RunAsync();

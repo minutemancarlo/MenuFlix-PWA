@@ -3,6 +3,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<CascadingValue Value="this">
 <AuthorizeView Roles="Customer">
     <NotAuthorized>
         <MudLayout>
@@ -47,7 +48,7 @@
         </MudLayout>
     </Authorized>
 </AuthorizeView>
-
+</CascadingValue>
 
 
 @code {
@@ -57,4 +58,15 @@
     {
         _drawerOpen = !_drawerOpen;
     }
+
+     private int count;
+        public int Count
+        {
+            get { return count; }
+            set
+            {                
+            count = value;                                    
+            InvokeAsync(() => StateHasChanged());
+            }
+        }
 }

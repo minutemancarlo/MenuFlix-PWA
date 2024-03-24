@@ -7,7 +7,6 @@
 @inject NavigationManager _navigationManager
 @inject IAccountManagement Acct
 @inject HttpClient httpClient
-@inject CartCount CartCount
 
 <MudItem xs="6">
     <MudPopup @ref="_popup" Open="@_open" Style="background-color: #c0392b " Text="Register your business now" Icon="@Icons.Material.Filled.Info" PopupPosition="MudExtensions.Enums.PopupPosition.Bottom" EnableAnimation>
@@ -48,9 +47,10 @@
                                     <div class="card flex-grow-1">
                                         <div class="d-flex justify-content-between p-3">
                                             <p class="lead mb-0 text-dark">@item.Store</p>
-                                            <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong" style="width: 35px; height: 35px;">
+                                            @* <div class="bg-info rounded-circle d-flex align-items-center justify-content-center shadow-1-strong" style="width: 35px; height: 35px;">
+
                                                 <p class="text-white mb-0 small">x3</p>
-                                            </div>
+                                            </div> *@
                                         </div>
                                         <img src="icon-192.png" style="width: 200px; height: 200px" class="card-img-top mx-auto d-block" alt="Gaming Laptop" />
                                         <div class="card-body">
@@ -91,9 +91,39 @@
         </MudItem>
     </MudItem>
 
+<div class="container col-xxl-8 px-4 py-5">
+    <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+        <div class="col-10 col-sm-8 col-lg-6">
+            <img src="2.webp" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="700" height="500" loading="lazy">
+        </div>
+        <div class="col-lg-6">
+            <h1 class="display-5 fw-bold lh-1 mb-3">Unlock Flavorful Adventures: Explore Our Delectable Food Line Now Available at Your Favorite Stores!</h1>
+            <p class="lead"></p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">Discover Stores</MudButton>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container col-xxl-8 px-4 py-5">
+    <div class="row flex-lg-row-reverse align-items-center g-5 py-5">        
+        <div class="col-lg-6">
+            <h1 class="display-5 fw-bold lh-1 mb-3">Savor Delight, Anywhere, Anytime: Taste Our Culinary Creations with Convenient Food Delivery!</h1>
+            <p class="lead"></p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">Order Now</MudButton>
+            </div>
+        </div>
+        <div class="col-10 col-sm-8 col-lg-6">
+            <img src="1.webp" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="700" height="500" loading="lazy">
+        </div>
+    </div>
+</div>
 
 @code
 {
+    [CascadingParameter] public CustomerLayout customerLayout { get; private set; }
     private string? searchQuery;
     private bool arrows = true;
     private bool bullets = true;
@@ -214,8 +244,8 @@
     {
         try
         {
-            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
-            CartCount.Count = response[0];
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");            
+            customerLayout.Count = response[0];
         }
         catch (Exception ex)
         {

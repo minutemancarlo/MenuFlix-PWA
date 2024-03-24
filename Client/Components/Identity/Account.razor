@@ -17,10 +17,12 @@
                                       For="@(() => model.FirstName)"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
+                                      OnlyValidateIfDirty="false"
                                       Label="First Name" />
                         <MudTextField @bind-Value="model.LastName"
                                       For="@(() => model.LastName)"
                                       Margin="Margin.Dense"
+                                      OnlyValidateIfDirty="false"
                                       Variant="Variant.Outlined"
                                       Label="Last Name" />
                     </MudStack>
@@ -29,17 +31,20 @@
                                   For="@(() => model.PhoneNumber)"
                                   MaxLength="11"
                                   Margin="Margin.Dense"
+                                  OnlyValidateIfDirty="false"
                                   Variant="Variant.Outlined"
                                   HelperText="09123456789"
                                   Label="Phone Number" />
                     <MudTextField @bind-Value="model.AddressLine1"
                                   For="@(() => model.AddressLine1)"
                                   Variant="Variant.Outlined"
+                                  OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
                                   Label="Address Line 1" />
                     <MudTextField @bind-Value="model.AddressLine2"
                                   For="@(() => model.AddressLine2)"
                                   Variant="Variant.Outlined"
+                                  OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
                                   HelperText="Optional"
                                   Label="Address Line 2" />
@@ -48,15 +53,18 @@
                                       For="@(() => model.CityTown)"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
+                                      OnlyValidateIfDirty="false"
                                       Label="City/Town" />
                         <MudTextField @bind-Value="model.Province"
                                       For="@(() => model.Province)"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
+                                      OnlyValidateIfDirty="false"
                                       Label="Province" />
                         <MudTextField @bind-Value="model.PostalCode"
                                       For="@(() => model.PostalCode)"
                                       MaxLength="4"
+                                      OnlyValidateIfDirty="false"
                                       Margin="Margin.Dense"
                                       Variant="Variant.Outlined"                                      
                                       Label="Postal Code" />

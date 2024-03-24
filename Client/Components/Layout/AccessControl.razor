@@ -5,7 +5,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager _navigationManager
 @inject HttpClient httpClient
-@inject CartCount CartCount
+
 <AuthorizeView>
     <NotAuthorized>
         <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">            
@@ -22,15 +22,20 @@
 
     <Authorized>        
         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
-        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">                            
-                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">      
+                @if (IsCustomer)
+                {
+                    
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/about" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/contact" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
                     <MudSpacer />
-                <MudBadge Content="@CartCount.Count" Overlap Color="Color.Warning">
+                           <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
                         <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/my-cart" Size="Size.Small" />
                     </MudBadge>                            
+                }
+
             <MudMenu Class="my-3" Dense AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.CenterLeft">
                 <ActivatorContent>
                     @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
@@ -47,6 +52,7 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter] public CustomerLayout customerLayout { get; private set; }
     string profilePic = String.Empty;
     string name = String.Empty;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
@@ -80,7 +86,11 @@
                     emailaddress = item.Value;
                 }
             }
-            await OnGetCartNumbers();
+            if (IsCustomer)
+            {
+                await OnGetCartNumbers();
+            }
+            
         }
         else
         {
@@ -109,8 +119,8 @@
     {
         try
         {           
-            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
-            CartCount.Count = response[0];
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");            
+            customerLayout.Count = response[0];
         }
         catch (Exception ex)
         {
