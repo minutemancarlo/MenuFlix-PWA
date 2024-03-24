@@ -1,20 +1,16 @@
 ﻿@using Client.Identity
 @using System.Security.Claims
+@using SharedLibrary
 @inject IAccountManagement Acct
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager _navigationManager
-
+@inject HttpClient httpClient
+@inject CartCount CartCount
 <AuthorizeView>
     <NotAuthorized>
-        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
-            @* <MudButton Variant="Variant.Filled" Color="@(IsCustomer ? Color.Warning : Color.Dark)" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton> *@
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">            
             <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>
-
-            <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
-                <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart" Variant="Variant.Filled" ButtonType="ButtonType.Button" Size="Size.Small" Color="Color.Error" />
-            </MudBadge>
-
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>                     
         </MudStack>
     </NotAuthorized>
     <Authorizing>
@@ -26,19 +22,15 @@
 
     <Authorized>        
         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
-        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
-            @if (IsCustomer)
-            {                
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">                            
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/about" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/contact" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
                     <MudSpacer />
-                    <MudBadge Content="3" Overlap Color="Color.Warning">
-                        <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Size="Size.Small" />
-                    </MudBadge>
-                
-            }
+                <MudBadge Content="@CartCount.Count" Overlap Color="Color.Warning">
+                        <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/my-cart" Size="Size.Small" />
+                    </MudBadge>                            
             <MudMenu Class="my-3" Dense AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.CenterLeft">
                 <ActivatorContent>
                     @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
@@ -59,13 +51,15 @@
     string name = String.Empty;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private bool IsCustomer { get; set; }
+    private bool isLoggedIn { get; set; }
+    private string emailaddress { get; set; }    
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         IsCustomer = user.IsInRole("Customer");
-
+        isLoggedIn = user.Identity.IsAuthenticated;
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
             UserClaims = user.Claims.ToList();
@@ -80,7 +74,13 @@
                 {
                     name = item.Value;
                 }
+
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
             }
+            await OnGetCartNumbers();
         }
         else
         {
@@ -105,6 +105,19 @@
         _navigationManager.NavigateTo(action);
     }
 
+    private async Task OnGetCartNumbers()
+    {
+        try
+        {           
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
+            CartCount.Count = response[0];
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
 
 
 

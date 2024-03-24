@@ -8,7 +8,7 @@ namespace SharedLibrary
 {
     public class CarouselDisplay
     {
-        public string Id { get; set; }
+        public string ItemId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Image { get; set; } = "icon-192.png";
@@ -18,6 +18,6 @@ namespace SharedLibrary
         public string Category { get; set; }        
         public string Store { get; set; } 
         public string StoreLogo { get; set; } = "icon-192.png";
-        public decimal Rating { get; set; } = 0;    
+        public int Rating { get; set; } = 0;    
     }
 }
