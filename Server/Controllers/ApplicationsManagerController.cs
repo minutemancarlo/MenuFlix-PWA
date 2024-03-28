@@ -64,8 +64,8 @@ namespace Server.Controllers
             }
         }
 
-        [HttpPost("updatestore")]
-        public async Task<IActionResult> UpdateStore([FromBody] UpdateStoreInfo store)
+        [HttpPost("updatestoreinfo")]
+        public async Task<IActionResult> UpdateStoreInfo([FromBody] UpdateStoreInfo store)
         {
             try
             {
@@ -91,6 +91,45 @@ namespace Server.Controllers
                     // Execute the stored procedure
                     await connection.ExecuteScalarAsync<int>(
                       "UpdateStoreApplication",
+                      parameters,
+                      commandType: CommandType.StoredProcedure);
+                    var statusCode = parameters.Get<int>("@StatusCode");
+                    if (statusCode == 1)
+                    {
+                        return Ok();
+                    }
+                    else if (statusCode == 0)
+                    {
+                        return Conflict("");
+                    }
+                    else
+                    {
+                        return BadRequest($"An error occurred: {statusCode}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("updatestore")]
+        public async Task<IActionResult> UpdateStore([FromBody] UpdateStore store)
+        {
+            try
+            {
+                
+                var parameters = new DynamicParameters();
+                parameters.Add("@Id", store.Id);
+                parameters.Add("@Status", store.Status);
+                parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteScalarAsync<int>(
+                      "UpdateStoreApproval",
                       parameters,
                       commandType: CommandType.StoredProcedure);
                     var statusCode = parameters.Get<int>("@StatusCode");

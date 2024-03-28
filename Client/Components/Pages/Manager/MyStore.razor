@@ -272,7 +272,7 @@
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/updatestore", storeApplications);
+            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/updatestoreinfo", storeApplications);
 
             if (response.IsSuccessStatusCode)
             {
