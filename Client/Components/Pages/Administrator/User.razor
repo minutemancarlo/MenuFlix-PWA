@@ -10,41 +10,44 @@
 @attribute [Authorize(Roles = "Administrator")]
 
 <PageTitle>User Management</PageTitle>
-<MudStack>
 <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
-    <MudCard Elevation="4" Class="pa-3 pt-5">
-        <MudCardContent>
-            <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Assignable Users List</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
-                <Columns>
-                    <PropertyColumn Property="x => x.Name" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.Email" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.Role" Title="Current Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                    <TemplateColumn Title="Change Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">                        
-                        <CellTemplate>  
-                            <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Tag="@context.Item" ValueChanged="@HandleRoleChange"
-                                            Dense Color="Color.Primary" CheckMark FixedContent>
-                                <MudToggleItem Value="@("Administrator")" Text="Administrator" />
-                                <MudToggleItem Value="@("Accounting")" Text="Accounting" />
-                            </MudToggleGroup>
+<MudGrid class="d-flex justify-center align-center">
+    <MudStack>        
+        <MudCard Elevation="4" Class="pa-3 pt-5">
+            <MudCardContent>
+                <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Assignable Users List</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.Name" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                        <PropertyColumn Property="x => x.Email" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                        <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                        <PropertyColumn Property="x => x.Role" Title="Current Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                        <TemplateColumn Title="Change Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">
+                            <CellTemplate>
+                                <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Tag="@context.Item" ValueChanged="@HandleRoleChange"
+                                                Dense Color="Color.Primary" CheckMark FixedContent>
+                                    <MudToggleItem Value="@("Administrator")" Text="Administrator" />
+                                    <MudToggleItem Value="@("Accounting")" Text="Accounting" />
+                                </MudToggleGroup>
 
-                        </CellTemplate>
-                     </TemplateColumn>
-                </Columns>
-                <NoRecordsContent>No available records to show.</NoRecordsContent>
-                <PagerContent>
-                    <MudDataGridPager T="UserDataGrid" />
-                </PagerContent>
-            </MudDataGrid>
-        </MudCardContent>
-    </MudCard>
-</MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <NoRecordsContent>No available records to show.</NoRecordsContent>
+                    <PagerContent>
+                        <MudDataGridPager T="UserDataGrid" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+
+</MudGrid>
 
 
 

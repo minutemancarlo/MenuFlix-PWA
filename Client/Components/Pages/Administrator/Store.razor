@@ -12,79 +12,82 @@
 @attribute [Authorize(Roles = "Administrator")]
 
 <PageTitle>Store Management</PageTitle>
-<MudStack>
-    <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
-    <MudCard Elevation="4" Class="pa-3 pt-5">
-        <MudCardContent>
-            <MudDataGrid Items="@stores" 
-                MultiSelection="false"                 
-                SelectOnRowClick="false" 
-                @bind-SelectedItems="_selectedItems" 
-                @bind-SelectedItem="_currentDto" 
-                Elevation="0" 
-                Loading="_loading" 
-                QuickFilter="@_quickFilter" 
-                Hover 
-                ColumnResizeMode="ResizeMode.Container" 
-                Filterable="false"
-                         HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold">
-                <ToolBarContent>
-                    <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnApprove" StartIcon="@Icons.Material.Filled.ThumbUp" Color="Color.Success">Approve</MudButton>
-                    <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnReject" StartIcon="@Icons.Material.Filled.ThumbDown" Color="Color.Error">Reject</MudButton>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
-                <Columns>
-                    <SelectColumn T="StoreApplications" ShowInFooter="false" ShowInHeader="false" />                    
-                    <TemplateColumn Title="Store Logo" Sortable="false" CellClass="text-center" HeaderClass="blue fw-bold darken-1 shades-text text-white" Filterable="false">
-                        <CellTemplate>
-                            <MudTooltip>
-                                <ChildContent>
-                                    <MudImage Src="@context.Item.Logo" Width="50" Height="50" />
-                                </ChildContent>
-                                <TooltipContent>
-                                    <MudText Typo="Typo.button">Additional Details:</MudText>
-                                    <MudText Typo="Typo.body2"><strong>TIN No: </strong>@context.Item.TIN</MudText>                                    
-                                </TooltipContent>
-                            </MudTooltip>
-                            
-                        </CellTemplate>
-                    </TemplateColumn>                    
-                    <PropertyColumn Property="x => x.Name" Title="Store Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
-                    <TemplateColumn Title="Business Address" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2" Class="fw-bold">@context.Item.AddressLine1</MudText>
-                            @if (context.Item.AddressLine2 != "N/A")
-                            {
-                                <MudText Typo="Typo.body2">@context.Item.AddressLine2</MudText>
-                            }
-                            <MudText Typo="Typo.body2">@context.Item.CityTown, @context.Item.Province @context.Item.PostalCode</MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <PropertyColumn Property="x => x.Email" Title="Business Email" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.PhoneNumber" Title="Business Contact" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
-                    <TemplateColumn Title="Application Status" CellClass="text-center" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
-                        <CellTemplate>
-                            @if (context.Item.Status == "1")
-                            {
-                                <MudChip Color="Color.Success">Approved</MudChip>
-                            }
-                            else
-                            {
-                                <MudChip Color="Color.Warning">For Approval</MudChip>
-                            }
-                        </CellTemplate>
-                    </TemplateColumn>
-                </Columns>
-                <NoRecordsContent>No available records to show.</NoRecordsContent>
-                <PagerContent>
-                    <MudDataGridPager T="StoreApplications" />
-                </PagerContent>
-            </MudDataGrid>
-        </MudCardContent>
-    </MudCard>
-</MudStack>
+<MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+<MudGrid class="d-flex justify-center align-center">
+    <MudStack>        
+        <MudCard Elevation="4" Class="pa-3 pt-5">
+            <MudCardContent>
+                <MudDataGrid Items="@stores"
+                             MultiSelection="false"
+                             SelectOnRowClick="false"
+                             @bind-SelectedItems="_selectedItems"
+                             @bind-SelectedItem="_currentDto"
+                             Elevation="0"
+                             Loading="_loading"
+                             QuickFilter="@_quickFilter"
+                             Hover
+                             ColumnResizeMode="ResizeMode.Container"
+                             Filterable="false"
+                             HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold">
+                    <ToolBarContent>
+                        <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnApprove" StartIcon="@Icons.Material.Filled.ThumbUp" Color="Color.Success">Approve</MudButton>
+                        <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="OnReject" StartIcon="@Icons.Material.Filled.ThumbDown" Color="Color.Error">Reject</MudButton>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="StoreApplications" ShowInFooter="false" ShowInHeader="false" />
+                        <TemplateColumn Title="Store Logo" Sortable="false" CellClass="text-center" HeaderClass="blue fw-bold darken-1 shades-text text-white" Filterable="false">
+                            <CellTemplate>
+                                <MudTooltip>
+                                    <ChildContent>
+                                        <MudImage Src="@context.Item.Logo" Width="50" Height="50" />
+                                    </ChildContent>
+                                    <TooltipContent>
+                                        <MudText Typo="Typo.button">Additional Details:</MudText>
+                                        <MudText Typo="Typo.body2"><strong>TIN No: </strong>@context.Item.TIN</MudText>
+                                    </TooltipContent>
+                                </MudTooltip>
+
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Name" Title="Store Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
+                        <TemplateColumn Title="Business Address" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Class="fw-bold">@context.Item.AddressLine1</MudText>
+                                @if (context.Item.AddressLine2 != "N/A")
+                                {
+                                    <MudText Typo="Typo.body2">@context.Item.AddressLine2</MudText>
+                                }
+                                <MudText Typo="Typo.body2">@context.Item.CityTown, @context.Item.Province @context.Item.PostalCode</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Email" Title="Business Email" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
+                        <PropertyColumn Property="x => x.PhoneNumber" Title="Business Contact" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false" />
+                        <TemplateColumn Title="Application Status" CellClass="text-center" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="false">
+                            <CellTemplate>
+                                @if (context.Item.Status == "1")
+                                {
+                                    <MudChip Color="Color.Success">Approved</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip Color="Color.Warning">For Approval</MudChip>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <NoRecordsContent>No available records to show.</NoRecordsContent>
+                    <PagerContent>
+                        <MudDataGridPager T="StoreApplications" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+
+</MudGrid>
 
 @code {
     private MudDataGrid<StoreApplications> _store = default!;

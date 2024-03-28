@@ -6,7 +6,7 @@
 @using System.Security.Claims
 @inject AuthenticationStateProvider authProvider
 @inject HttpClient httpClient
-
+<PageTitle>My Account</PageTitle>
 <MudGrid class="d-flex justify-center align-center" style="height: 100vh;">
     <MudItem>
         <MudCard Elevation="4" Class="pa-3">
@@ -15,6 +15,7 @@
                     <MudStack Row>
                         <MudTextField @bind-Value="model.FirstName"
                                       For="@(() => model.FirstName)"
+                                      Class="py-2"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
                                       OnlyValidateIfDirty="false"
@@ -22,6 +23,7 @@
                         <MudTextField @bind-Value="model.LastName"
                                       For="@(() => model.LastName)"
                                       Margin="Margin.Dense"
+                                      Class="py-2"
                                       OnlyValidateIfDirty="false"
                                       Variant="Variant.Outlined"
                                       Label="Last Name" />
@@ -30,6 +32,7 @@
                     <MudTextField @bind-Value="model.PhoneNumber"
                                   For="@(() => model.PhoneNumber)"
                                   MaxLength="11"
+                                  Class="py-2"
                                   Margin="Margin.Dense"
                                   OnlyValidateIfDirty="false"
                                   Variant="Variant.Outlined"
@@ -38,6 +41,7 @@
                     <MudTextField @bind-Value="model.AddressLine1"
                                   For="@(() => model.AddressLine1)"
                                   Variant="Variant.Outlined"
+                                  Class="py-2"
                                   OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
                                   Label="Address Line 1" />
@@ -46,24 +50,28 @@
                                   Variant="Variant.Outlined"
                                   OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
+                                  Class="py-2"
                                   HelperText="Optional"
                                   Label="Address Line 2" />
                     <MudStack Row>
                         <MudTextField @bind-Value="model.CityTown"
                                       For="@(() => model.CityTown)"
                                       Variant="Variant.Outlined"
+                                      Class="py-2"
                                       Margin="Margin.Dense"
                                       OnlyValidateIfDirty="false"
                                       Label="City/Town" />
                         <MudTextField @bind-Value="model.Province"
                                       For="@(() => model.Province)"
                                       Variant="Variant.Outlined"
+                                      Class="py-2"
                                       Margin="Margin.Dense"
                                       OnlyValidateIfDirty="false"
                                       Label="Province" />
                         <MudTextField @bind-Value="model.PostalCode"
                                       For="@(() => model.PostalCode)"
                                       MaxLength="4"
+                                      Class="py-2"
                                       OnlyValidateIfDirty="false"
                                       Margin="Margin.Dense"
                                       Variant="Variant.Outlined"                                      

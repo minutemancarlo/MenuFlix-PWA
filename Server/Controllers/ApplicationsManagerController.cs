@@ -65,20 +65,32 @@ namespace Server.Controllers
         }
 
         [HttpPost("updatestore")]
-        public async Task<IActionResult> UpdateStore([FromBody] UpdateStore store)
+        public async Task<IActionResult> UpdateStore([FromBody] UpdateStoreInfo store)
         {
             try
             {
-
+                string imagePath = "";
+                if (store.isLogoChanged)
+                {
+                    imagePath = SaveImageToDisk(store.Logo); // Save the image and get the saved path
+                }
                 var parameters = new DynamicParameters();
                 parameters.Add("@Id", store.Id);
-                parameters.Add("@Status", store.Status);              
+                parameters.Add("@Name", store.Name);
+                parameters.Add("@Email", store.Email);
+                parameters.Add("@PhoneNumber", store.Phone);
+                parameters.Add("@AddressLine1", store.AddressLine1);
+                parameters.Add("@AddressLine2", store.AddressLine2);
+                parameters.Add("@CityTown", store.CityTown);
+                parameters.Add("@Province", store.Province);
+                parameters.Add("@PostalCode", store.PostalCode);
+                parameters.Add("@Logo", imagePath);                                                
                 parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     // Execute the stored procedure
                     await connection.ExecuteScalarAsync<int>(
-                      "UpdateStoreApproval",
+                      "UpdateStoreApplication",
                       parameters,
                       commandType: CommandType.StoredProcedure);
                     var statusCode = parameters.Get<int>("@StatusCode");

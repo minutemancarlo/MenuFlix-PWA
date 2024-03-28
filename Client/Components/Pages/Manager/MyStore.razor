@@ -17,8 +17,7 @@
                         <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
                             <MudPaper Style="width: 192; height: 192;" Class="text-center">
                                 <MudImage Src="@imageUrl" Height="192" Width="192" />
-                                @if (!_read)
-                                {
+                                
                                     <MudFileUpload T="IBrowserFile" Accept=".png" MaximumFileCount="1" FilesChanged="UploadFiles">
                                         <ButtonTemplate>
                                             <MudFab HtmlTag="label"
@@ -29,7 +28,7 @@
                                                     for="@context.Id" />
                                         </ButtonTemplate>
                                     </MudFileUpload>
-                                }
+                                
 
                             </MudPaper>
                             <MudSpacer />
@@ -37,8 +36,7 @@
                                 <MudTextField Label="Store Name"
                                               Margin="Margin.Dense"
                                               Variant="Variant.Outlined"
-                                              @bind-Value="store.Name"
-                                              ReadOnly="@_read"
+                                              @bind-Value="store.Name"                                              
                                               OnlyValidateIfDirty="true"
                                               For="@(() => store.Name)" />
                                 <MudTextField Label="T.I.N No."
@@ -49,15 +47,13 @@
                                               @bind-Value="store.TIN"
                                               For="@(() => store.TIN)" />
                                 <MudTextField Label="Email Address"
-                                              Margin="Margin.Dense"
-                                              ReadOnly="@_read"
+                                              Margin="Margin.Dense"                                              
                                               OnlyValidateIfDirty="true"
                                               Variant="Variant.Outlined"
                                               @bind-Value="store.Email"
                                               For="@(() => store.Email)" />
                                 <MudTextField Label="Phone Number"
-                                              Margin="Margin.Dense"
-                                              ReadOnly="@_read"
+                                              Margin="Margin.Dense"                                              
                                               OnlyValidateIfDirty="true"
                                               MaxLength="11"
                                               Variant="Variant.Outlined"
@@ -66,8 +62,7 @@
                             </MudStack>
                         </MudStack>
                         <MudTextField @bind-Value="store.AddressLine1"
-                                      For="@(() => store.AddressLine1)"
-                                      ReadOnly="@_read"
+                                      For="@(() => store.AddressLine1)"                                      
                                       OnlyValidateIfDirty="true"
                                       Margin="Margin.Dense"
                                       Class="pt-4 pb-1 px-1"
@@ -76,8 +71,7 @@
                         <MudTextField @bind-Value="store.AddressLine2"
                                       For="@(() => store.AddressLine2)"
                                       Margin="Margin.Dense"
-                                      Class="pa-1"
-                                      ReadOnly="@_read"
+                                      Class="pa-1"                                      
                                       Variant="Variant.Outlined"
                                       Label="Address Line 2" />
                         <MudStack Row>
@@ -85,22 +79,19 @@
                                           For="@(() => store.CityTown)"
                                           Margin="Margin.Dense"
                                           Class="pa-1"
-                                          OnlyValidateIfDirty="true"
-                                          ReadOnly="@_read"
+                                          OnlyValidateIfDirty="true"                                          
                                           Variant="Variant.Outlined"
                                           Label="City/Town" />
                             <MudTextField @bind-Value="store.Province"
                                           For="@(() => store.Province)"
-                                          Margin="Margin.Dense"
-                                          ReadOnly="@_read"
+                                          Margin="Margin.Dense"                                          
                                           OnlyValidateIfDirty="true"
                                           Class="pa-1"
                                           Variant="Variant.Outlined"
                                           Label="Province" />
                             <MudTextField @bind-Value="store.PostalCode"
                                           For="@(() => store.PostalCode)"
-                                          Margin="Margin.Dense"
-                                          ReadOnly="@_read"
+                                          Margin="Margin.Dense"                                          
                                           OnlyValidateIfDirty="true"
                                           Class="pa-1"
                                           MaxLength="4"
@@ -112,8 +103,7 @@
                         <MudLoadingButton Variant="Variant.Filled"
                                           Color="MudBlazor.Color.Success"
                                           Size="MudBlazor.Size.Small"
-                                          Loading="@(_loading)"
-                                          Disabled="@_read"
+                                          Loading="@(_loading)"                                          
                                           OnClick="Submit"
                                           ButtonType="ButtonType.Button">
                             <LoadingContent>Submitting...</LoadingContent>
@@ -139,6 +129,8 @@
     private string imageUrl = "add-image.png";
     private bool _read = false;
     private bool dataloading = false;
+    private UpdateStoreInfo updateStoreInfo = new UpdateStoreInfo();
+
     protected override async Task OnInitializedAsync()
     {
         dataloading = true;
@@ -156,6 +148,12 @@
             }
         }
 
+        await OnGetStoreInfo();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnGetStoreInfo()
+    {
         var response = await httpClient.GetAsync($"ApplicationsManager/getstore?emailaddress={emailaddress}");
 
         if (response.IsSuccessStatusCode)
@@ -184,7 +182,7 @@
             _read = false;
         }
         dataloading = false;
-        await base.OnInitializedAsync();
+        updateStoreInfo.isLogoChanged = false;
     }
 
 
@@ -200,7 +198,8 @@
 
                 // Convert the byte array to a base64 string
                 var base64String = Convert.ToBase64String(bytes);
-                store.Logo = base64String;
+                store.Logo= base64String;
+                updateStoreInfo.isLogoChanged = true;
                 // Construct the data URL
                 imageUrl = $"data:{file.ContentType};base64,{base64String}";
             }
@@ -224,10 +223,19 @@
 
             if (form.IsValid)
             {
-                store.OwnerId = emailaddress;
-                store.Id = string.IsNullOrEmpty(store.Id) ? "N/A" : store.Id;
-                store.AddressLine2 = string.IsNullOrEmpty(store.AddressLine2) ? "N/A" : store.AddressLine2;
-                store.Status = "0";
+
+                updateStoreInfo.Id = int.Parse(store.Id);
+                updateStoreInfo.Logo = store.Logo;
+                updateStoreInfo.Name = store.Name;
+                updateStoreInfo.Email = store.Email;
+                updateStoreInfo.Phone = store.PhoneNumber;
+                updateStoreInfo.AddressLine1 = store.AddressLine1;
+                updateStoreInfo.AddressLine2 = store.AddressLine2;
+                updateStoreInfo.CityTown = store.CityTown;
+                updateStoreInfo.Province = store.Province;
+                updateStoreInfo.PostalCode = store.PostalCode;
+
+
                 var options = new DialogOptions
                     {
                         MaxWidth = MaxWidth.Medium
@@ -237,14 +245,15 @@
 
                 if (result == true)
                 {
-                    if (await AddStore(store))
+                    if (await AddStore(updateStoreInfo))
                     {
-                        Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
+                        Snackbar.Add("Updated!", MudBlazor.Severity.Success);
                     }
                     else
                     {
                         Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
                     }
+                    await OnGetStoreInfo();
                 }
             }
             _loading = false;
@@ -259,11 +268,11 @@
 
     }
 
-    public async Task<bool> AddStore(StoreApplications storeApplications)
+    public async Task<bool> AddStore(UpdateStoreInfo storeApplications)
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/registerstore", storeApplications);
+            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/updatestore", storeApplications);
 
             if (response.IsSuccessStatusCode)
             {
