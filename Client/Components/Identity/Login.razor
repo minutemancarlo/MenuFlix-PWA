@@ -14,7 +14,7 @@
         </MudItem>
     </MudGrid>
     <MudTextField T="string"
-                  @bind-Value="email"
+                  @bind-Value="email"                  
                   Label="Email Address"
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
@@ -90,6 +90,15 @@
                 RedirectToHome("admin-dashboard");
             }
 
+            if (user.IsInRole("Accounting"))
+            {
+                RedirectToHome("accounting-dashboard");
+            }
+
+            if (user.IsInRole("Delivery"))
+            {
+                RedirectToHome("delivery-dashboard");
+            }
 
             if (user.IsInRole("Customer"))
             {
@@ -117,4 +126,41 @@
     {
         _navigationManager.NavigateTo($"/{path}");
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Manager"))
+            {
+                RedirectToHome("manager-dashboard");
+            }
+
+            if (user.IsInRole("Administrator"))
+            {
+                RedirectToHome("admin-dashboard");
+            }
+
+            if (user.IsInRole("Accounting"))
+            {
+                RedirectToHome("accounting-dashboard");
+            }
+
+            if (user.IsInRole("Delivery"))
+            {
+                RedirectToHome("delivery-dashboard");
+            }
+
+            if (user.IsInRole("Customer"))
+            {
+                RedirectToIndex();
+            }
+
+        }
+        
+        await base.OnInitializedAsync();
+    }
+
 }

@@ -1,8 +1,8 @@
 ﻿@page "/my-cart"
 @using SharedLibrary
 @using Client.Validations
-@using FluentValidation
 @using System.Security.Claims
+
 @layout CustomerLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
@@ -17,73 +17,70 @@
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-normal mb-0 text-black">Shopping Cart</h3>
-                            <div>
-                                <p class="mb-0">
-                                    <span class="text-muted">Sort by:</span> <a href="#!" class="text-body">
-                                        price <i class="fas fa-angle-down mt-1"></i>
-                                    </a>
-                                </p>
-                            </div>
+                            
                         </div>
 
-                        <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
-                            <div class="card-body p-4">
-                                <div class="row d-flex justify-content-between align-items-center">
-                                    <div class="col-md-2 col-lg-2 col-xl-2">
-                                        <img src="icon-192.png"
-                                             class="img-fluid rounded-3" alt="Cotton T-shirt">
-                                    </div>
-                                    <div class="col-md-3 col-lg-3 col-xl-3">
-                                        <p class="lead fw-normal mb-2">Nyalemee Murger</p>
-                                        <p><span class="text-muted">Category: </span>Burgers <span class="text-muted">Discounted: </span>No</p>
-                                    </div>
-                                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-
-                                        <MudNumericField @bind-Value="pcs" Pcs Margin="Margin.Dense" Variant="Variant.Outlined" Step="1" Min="0" Max="99" />
+                       
 
 
-                                    </div>
-                                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                                        <h5 class="mb-0">₱499.00</h5>
-                                    </div>
-                                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error"></MudIconButton>
+                        @foreach(var item in cartItems)
+                        {
+                            Console.WriteLine(currentStoreId == null || currentStoreId != item.StoreId);
+                            if(currentStoreId == null || currentStoreId != item.StoreId)
+                            {
+                                currentStoreId = item.StoreId;
+                                <hr />                                
+                                <MudText Typo="Typo.h6">Store Name: @item.StoreName</MudText>
+                            }
+
+                          
+
+                            <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
+                                <div class="card-body p-4">
+                                    <div class="row d-flex justify-content-between align-items-center">
+                                        <div class="col-md-2 col-lg-2 col-xl-2">
+                                            <img src="icon-192.png"
+                                                 class="img-fluid rounded-3" alt="item">
+                                        </div>
+                                        <div class="col-md-3 col-lg-3 col-xl-3">
+                                            <p class="lead fw-normal mb-2">@item.Name</p>
+                                            <p><span class="text-muted">Category: </span>@item.Category</p>
+                                            <p><span class="text-muted">Store: </span>@item.StoreName</p>
+                                        </div>
+                                        <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+
+                                            <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined"  Step="1" Min="1" Max="99" />
+                                        </div>
+                                        <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                                            @if(item.Price!=item.DiscountedPrice){
+                                               <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
+                                            }
+                                            <h5 class="mb-0">₱@item.DiscountedPrice</h5>
+                                        </div>
+                                        <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
-                            <div class="card-body p-4">
-                                <div class="row d-flex justify-content-between align-items-center">
-                                    <div class="col-md-2 col-lg-2 col-xl-2">
-                                        <img src="icon-192.png"
-                                             class="img-fluid rounded-3" alt="Cotton T-shirt">
-                                    </div>
-                                    <div class="col-md-3 col-lg-3 col-xl-3">
-                                        <p class="lead fw-normal mb-2">Nyalemee Spaghetti Solo</p>
-                                        <p><span class="text-muted">Category: </span>Bundle <span class="text-muted">Discounted: </span>Yes</p>
-                                    </div>
-                                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-
-                                        <MudNumericField @bind-Value="pcs" Pcs Margin="Margin.Dense" Variant="Variant.Outlined" Step="1" Min="0" Max="99" />
 
 
-                                    </div>
-                                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                                        <h5 class="mb-0 text-danger"><s>₱550.00</s></h5>
-                                        <h5 class="mb-0">₱499.00</h5>
-                                    </div>
-                                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error"></MudIconButton>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        }
+
+                        
+
+
+                       
                         <MudItem xs="12">
                             <MudCard >
-                                <MudCardContent Class="d-flex align-start d-flex">
-                                    <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer/>
-                                    <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" Color="Color.Success">Proceed to Order</MudButton>
+                                <MudCardContent Class="d-flex align-start d-flex">                                    
+                                        <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
+                                        <MudStack>
+                                            <MudText Typo="Typo.subtitle2">Store Name: Nyalemee</MudText>
+                                            <MudText Typo="Typo.body1">Item Count: <strong>1</strong></MudText>
+                                            <MudText Typo="Typo.body1">Item Total: <strong>₱100</strong></MudText>                                                                                        
+                                            <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" Color="Color.Success">Proceed to Order</MudButton>
+                                        </MudStack>                                                                                                                                             
                                 </MudCardContent>
                             </MudCard>
                         </MudItem>
@@ -97,4 +94,130 @@
 
 @code {
     private int pcs { get; set; } = 0;
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private string? emailaddress;
+    private int currentStoreId;
+    private bool firstLoad = true;
+    private List<CartDisplay> cartItems = new List<CartDisplay>();
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+            await OnGetCartItems(emailaddress);
+
+        }
+        await base.OnInitializedAsync();
+        
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        firstLoad = firstRender;
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+
+
+    private async Task OnGetCartItems(string emailaddress)
+    {
+        try
+        {
+            cartItems = await httpClient.GetFromJsonAsync<List<CartDisplay>>($"Cart/getcartitems?emailaddress={emailaddress}");            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnDeleteItem(int cartId)
+    {
+        try
+        {
+            var data = new SharedLibrary.Cart
+            {
+                    IsProcessed = 0,
+                            UserId = emailaddress,
+                            Actions = 2,
+                            Pcs = 0,
+                            ItemId = 0,
+                            CartId = cartId
+            };            
+            var response = await httpClient.PostAsJsonAsync("Cart/cartactions", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Item Removed from Cart", MudBlazor.Severity.Success);
+                await OnGetCartItems(emailaddress);
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnUpdateItem(CartDisplay cartItems)
+    {
+        if (!firstLoad)
+        {
+            try
+            {
+                var data = new SharedLibrary.Cart
+                    {
+                        IsProcessed = 0,
+                        UserId = emailaddress,
+                        Actions = 1,
+                        Pcs = cartItems.Pcs,
+                        ItemId = 0,
+                        CartId = cartItems.CartId
+                    };
+                var response = await httpClient.PostAsJsonAsync("Cart/cartactions", data);
+
+                if (response.IsSuccessStatusCode)
+                {            
+                    await OnGetCartItems(emailaddress);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            }
+        }
+        
+
+            
+        
+    }
+
+   
+
+
 }

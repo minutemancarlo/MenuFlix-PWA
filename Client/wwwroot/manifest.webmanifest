@@ -1,6 +1,6 @@
 {
-  "name": "Client",
-  "short_name": "Client",
+  "name": "MenuFlix",
+  "short_name": "MenuFlix",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

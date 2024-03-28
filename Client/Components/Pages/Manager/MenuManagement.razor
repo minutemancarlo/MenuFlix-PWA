@@ -246,7 +246,7 @@
         <MudItem Class="py-2">
             <MudPaper Elevation="4" Class="pa-2">
                 <MudDataGrid Items="@foodItemsGrid" Loading="@_foodItemGridLoading"
-                             Hover
+                             Hover LoadingProgressColor="Color.Primary"
                              ColumnResizeMode="ResizeMode.Container"
                              QuickFilter="@_quickFilter"
                              HeaderClass="align-center"
@@ -299,6 +299,7 @@
                         <PropertyColumn Property="x => x.UpdatedOn" Title="Updated On" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-light" />
                     </Columns>
                     <NoRecordsContent>No available records to show.</NoRecordsContent>
+                    <LoadingContent>Loading...</LoadingContent>
                     <PagerContent>
                         <MudDataGridPager T="FoodItemDataGrid" />
                     </PagerContent>
@@ -333,7 +334,7 @@
     private string? _searchString;
     private bool _categoryLoading = false;
     private bool _itemLoading = false;
-    private bool _foodItemGridLoading = false;
+    private bool _foodItemGridLoading = true;
     private bool _foodItemDiscountLoading = false;
     private List<FoodItem> itemsList = new List<FoodItem>(); //overall item info
     private List<FoodItemDataGrid> foodItemsGrid = new List<FoodItemDataGrid>();

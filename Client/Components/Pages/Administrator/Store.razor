@@ -1,9 +1,11 @@
 ﻿@page "/store"
 @layout MainLayout
 @using System.Net.Http.Json
+@using Newtonsoft.Json
 @using SharedLibrary
 @using Client.Identity
 @using System.Security.Claims
+@using System.Net
 @inject IAccountManagement Acct
 @inject AuthenticationStateProvider AuthProvider
 @inject HttpClient httpClient
@@ -15,7 +17,7 @@
     <MudCard Elevation="4" Class="pa-3 pt-5">
         <MudCardContent>
             <MudDataGrid Items="@stores" 
-                MultiSelection="true"                 
+                MultiSelection="false"                 
                 SelectOnRowClick="false" 
                 @bind-SelectedItems="_selectedItems" 
                 @bind-SelectedItem="_currentDto" 
@@ -34,12 +36,12 @@
                                   AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                 </ToolBarContent>
                 <Columns>
-                    <SelectColumn T="StoreApplications" />                    
+                    <SelectColumn T="StoreApplications" ShowInFooter="false" ShowInHeader="false" />                    
                     <TemplateColumn Title="Store Logo" Sortable="false" CellClass="text-center" HeaderClass="blue fw-bold darken-1 shades-text text-white" Filterable="false">
                         <CellTemplate>
                             <MudTooltip>
                                 <ChildContent>
-                                    <MudImage Src="icon-192.png" Width="50" Height="50" />
+                                    <MudImage Src="@context.Item.Logo" Width="50" Height="50" />
                                 </ChildContent>
                                 <TooltipContent>
                                     <MudText Typo="Typo.button">Additional Details:</MudText>
@@ -119,8 +121,38 @@
         {
             Snackbar.Add("Please select store to approve",Severity.Error);
         }
-        var a= _selectedItems;
-        var b = a;
+        else
+        {
+            await UpdateStore(int.Parse(_currentDto.Id), 1);
+        }
+    }
+
+    private async Task UpdateStore(int id,int status){
+        var data = new UpdateStore
+        {
+            Id=id,
+            Status=status
+        };
+
+        
+        var response = await httpClient.PostAsJsonAsync($"ApplicationsManager/updatestore",data);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Store Status Updated", Severity.Success);            
+
+            await loadGrid();
+        }
+        else if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            Snackbar.Add("Failed to update store status", Severity.Warning);
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(errorMessage);
+            Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+        }
     }
 
     private async Task OnReject()
@@ -129,6 +161,11 @@
         {
             Snackbar.Add("Please select store to reject", Severity.Error);
         }
+        else
+        {
+            await UpdateStore(int.Parse(_currentDto.Id), 0);
+        }
+
     }
 
     private Func<StoreApplications, bool> _quickFilter => x =>

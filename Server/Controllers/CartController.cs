@@ -71,5 +71,30 @@ namespace Server.Controllers
                 return BadRequest($"Exception Occured: {ex.Message}");
             }
         }
+
+        [HttpGet("getcartitems")]
+        public async Task<ActionResult<IEnumerable<CartDisplay>>> GetCartItems(string emailaddress)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Action", 5);
+                parameters.Add("@CartId", 0);
+                parameters.Add("@ItemId", 0);
+                parameters.Add("@Pcs", 0);
+                parameters.Add("@UserId", emailaddress);
+                parameters.Add("@IsProcessed", 0);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    var count = await connection.QueryAsync<CartDisplay>("CartActions", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(count);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
     }
 }

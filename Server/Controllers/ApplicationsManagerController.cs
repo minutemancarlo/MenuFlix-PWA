@@ -16,10 +16,12 @@ namespace Server.Controllers
     {
         private readonly string _connectionString;
         private readonly IWebHostEnvironment _env;
-        public ApplicationsManagerController(IConfiguration configuration, IWebHostEnvironment env)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ApplicationsManagerController(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {            
             _connectionString = configuration.GetConnectionString("DefaultConnection");
             _env = env;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("registerstore")]
@@ -59,6 +61,45 @@ namespace Server.Controllers
 
                 // Return BadRequest with error message
                 return BadRequest($"An error occurred while registering the store: {ex.Message}");
+            }
+        }
+
+        [HttpPost("updatestore")]
+        public async Task<IActionResult> UpdateStore([FromBody] UpdateStore store)
+        {
+            try
+            {
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@Id", store.Id);
+                parameters.Add("@Status", store.Status);              
+                parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteScalarAsync<int>(
+                      "UpdateStoreApproval",
+                      parameters,
+                      commandType: CommandType.StoredProcedure);
+                    var statusCode = parameters.Get<int>("@StatusCode");
+                    if (statusCode == 1)
+                    {
+                        return Ok();
+                    }
+                    else if (statusCode == 0)
+                    {
+                        return Conflict("");
+                    }
+                    else
+                    {
+                        return BadRequest($"An error occurred: {statusCode}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
             }
         }
 
@@ -118,6 +159,8 @@ namespace Server.Controllers
 
         private string SaveImageToDisk(string base64String)
         {
+            var request = _httpContextAccessor.HttpContext.Request;
+            string serverAddress = $"{request.Scheme}://{request.Host.Value}";
             string filePath = ""; // Define a variable to hold the file path
 
             // Convert the base64 string back to byte array
@@ -127,13 +170,16 @@ namespace Server.Controllers
             string fileName = Guid.NewGuid().ToString() + ".jpg"; // You can change the extension based on the image type
 
             // Combine the file path with the file name
-            filePath = Path.Combine("C:\\MenuFlix", fileName); // Modify the path as needed
+            //filePath = Path.Combine("C:\\MenuFlix", fileName); // Modify the path as needed
+            filePath = Path.Combine($"{_env.WebRootPath}\\StoreLogos\\", fileName); // Modify the path as needed
 
             // Write the byte array to the file
             System.IO.File.WriteAllBytes(filePath, bytes);
-            
-            return filePath; // Return the saved file path
+            var serverFilePath = $"{serverAddress}/StoreLogos/{fileName}";
+            return serverFilePath;
         }
+
+
 
     }
 }
