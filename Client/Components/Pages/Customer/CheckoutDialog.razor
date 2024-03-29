@@ -1,5 +1,6 @@
 ﻿@using SharedLibrary
 @inject HttpClient httpClient
+
 <MudDialog>
     <DialogContent>
         @foreach (var item in orders)
@@ -50,7 +51,7 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<CartDisplay> orders { get; set; } = new List<CartDisplay>();
     private decimal Total = 0;
-
+    
     private async Task OnSubmit()
     {
         var cartIds = orders.Select(order => order.CartId);
@@ -76,6 +77,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Order Submitted!",Severity.Success);
+
             }
             else
             {
