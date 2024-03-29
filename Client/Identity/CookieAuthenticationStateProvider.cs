@@ -134,6 +134,7 @@ namespace Client.Identity
                         email,
                         password
                     });
+                
 
                 // success?
                 if (result.IsSuccessStatusCode)

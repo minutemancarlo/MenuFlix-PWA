@@ -7,6 +7,7 @@ using Server.Data;
 using SharedLibrary;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net.Mail;
 
 namespace Server.Controllers
 {
@@ -207,6 +208,26 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("getstorecount")]
+        public async Task<ActionResult<IEnumerable<int>>> GetStoreCount(string status)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Status", status);
+                
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    
+                    var count = await connection.QueryAsync<int>("GetStoreCount", parameters,commandType: CommandType.StoredProcedure);
+                    return Ok(count);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
 
         private string SaveImageToDisk(string base64String)
         {
