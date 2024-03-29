@@ -6,6 +6,7 @@
 @layout CustomerLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
+@inject IDialogService DialogService
 @attribute [Authorize(Roles = "Customer")]
 <PageTitle>My Cart</PageTitle>
 <MudItem Class="d-flex justify-content-center" xs="12">
@@ -38,26 +39,26 @@
                             <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
                                 <div class="card-body p-4">
                                     <div class="row d-flex justify-content-between align-items-center">
-                                        <div class="col-md-2 col-lg-2 col-xl-2">
+                                        <div class="col-md-1"><MudCheckBox Class="pa-0" @bind-Value="@item.isChecked"></MudCheckBox></div>
+                                        <div class="col-md-2">                                            
                                             <img src="icon-192.png"
                                                  class="img-fluid rounded-3" alt="item">
                                         </div>
-                                        <div class="col-md-3 col-lg-3 col-xl-3">
+                                        <div class="col-md-3">
                                             <p class="lead fw-normal mb-2">@item.Name</p>
                                             <p><span class="text-muted">Category: </span>@item.Category</p>
                                             <p><span class="text-muted">Store: </span>@item.StoreName</p>
                                         </div>
-                                        <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-
+                                        <div class="col-md-2 d-flex">
                                             <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined"  Step="1" Min="1" Max="99" />
                                         </div>
-                                        <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                                        <div class="col-md-2 offset-lg-1">
                                             @if(item.Price!=item.DiscountedPrice){
                                                <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
                                             }
                                             <h5 class="mb-0">₱@item.DiscountedPrice</h5>
                                         </div>
-                                        <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                                        <div class="col-md-1 text-end">
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
                                         </div>
                                     </div>
@@ -75,12 +76,9 @@
                             <MudCard >
                                 <MudCardContent Class="d-flex align-start d-flex">                                    
                                         <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
-                                        <MudStack>
-                                            <MudText Typo="Typo.subtitle2">Store Name: Nyalemee</MudText>
-                                            <MudText Typo="Typo.body1">Item Count: <strong>1</strong></MudText>
-                                            <MudText Typo="Typo.body1">Item Total: <strong>₱100</strong></MudText>                                                                                        
-                                            <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" Color="Color.Success">Proceed to Order</MudButton>
-                                        </MudStack>                                                                                                                                             
+
+                                    <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed to Order</MudButton>
+                                                                                                                                                                                  
                                 </MudCardContent>
                             </MudCard>
                         </MudItem>
@@ -99,6 +97,7 @@
     private int currentStoreId;
     private bool firstLoad = true;
     private List<CartDisplay> cartItems = new List<CartDisplay>();
+    public bool Basic_CheckBox1 { get; set; } = true;
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -117,7 +116,7 @@
 
         }
         await base.OnInitializedAsync();
-        
+
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -211,13 +210,44 @@
                 Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
             }
         }
-        
 
-            
-        
+
+
+
     }
 
-   
+    private async Task OnCheckout()
+    {
+        List<CartDisplay> checkedItems = cartItems.Where(item => item.isChecked).ToList();
+        if (checkedItems.Count == 0)
+        {
+            Snackbar.Add("Please select Items to checkout",Severity.Warning);
+            return;
+        }
+
+        if (ValidateStoreId(checkedItems))
+        {
+            Snackbar.Add("Please issue checkout on the same store.", Severity.Warning);
+            return;
+        }
+
+
+        var parameters = new DialogParameters<CheckoutDialog>();
+        parameters.Add(x => x.orders,checkedItems);
+
+        var options = new DialogOptions() { CloseButton = true, DisableBackdropClick=true, MaxWidth = MaxWidth.Medium };
+        DialogService.Show<CheckoutDialog>("Checkout", parameters, options);
+    }
+
+    bool ValidateStoreId(List<CartDisplay> cartItems)
+    {
+        // Get distinct StoreIds from the cartItems
+        var distinctStoreIds = cartItems.Select(item => item.StoreId).Distinct();
+
+        // If there's only one distinct StoreId, return false
+        // If there are multiple distinct StoreIds, return true
+        return distinctStoreIds.Count() > 1;
+    }
 
 
 }

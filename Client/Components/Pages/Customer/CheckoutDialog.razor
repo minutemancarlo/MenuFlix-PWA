@@ -1,0 +1,101 @@
+﻿@using SharedLibrary
+@inject HttpClient httpClient
+<MudDialog>
+    <DialogContent>
+        @foreach (var item in orders)
+        {
+            <MudItem Class="py-2">
+                <MudPaper Elevation="4">
+                    <MudItem Class="pa-2">
+                        <MudCard Elevation="0">
+                            <MudCardHeader>
+                                <MudText Typo="Typo.h6"><strong>Store: </strong>@item.StoreName</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudImage Src="icon-192.png" Width="50" Height="50" />
+                                    <MudStack Row="false">
+                                        <MudText Typo="Typo.h6">@item.Name</MudText>
+                                        <MudText Typo="Typo.body2" Class="item-muted">Category @item.Category</MudText>
+                                    </MudStack>
+                                    <MudSpacer />
+                                    <MudText Class="text-danger">@item.Pcs pcs x ₱@item.DiscountedPrice</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                            <MudCardActions Class="justify-end">
+                                <MudText Typo="Typo.button" Class="text-muted"><strong>Sub-Total: </strong> ₱@item.DiscountedTotal</MudText>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+            Total = Total + item.DiscountedTotal;
+            if (item == orders.Last())
+            {
+                <MudItem>
+                    <MudStack>
+                        <MudText Typo="Typo.h6"><strong>Total: </strong>₱@Total</MudText>
+                        <MudText Typo="Typo.h6"><strong>Delivery Fee: </strong>₱50</MudText>
+                    </MudStack>
+                </MudItem>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="OnSubmit">Checkout</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<CartDisplay> orders { get; set; } = new List<CartDisplay>();
+    private decimal Total = 0;
+
+    private async Task OnSubmit()
+    {
+        var cartIds = orders.Select(order => order.CartId);
+        string cartIdsCSV = string.Join(",", cartIds);
+
+        try
+        {
+            var data = new OrderInfo
+                {
+                    Id = 0,
+                    OrderId = "0",
+                    ItemId = 0,
+                    Price = 0,
+                    Pcs = 0,
+                    SubTotal = 0,
+                    UserId = cartIdsCSV,
+                    StoreId = 0,
+                    Status = 0,
+                    CreatedOn = DateTime.Today
+                };
+            var response = await httpClient.PostAsJsonAsync("OrderManagement/addorder", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Order Submitted!",Severity.Success);
+            }
+            else
+            {
+                // Failed to update role
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An Error Occured: {errorMessage}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exception
+            Console.WriteLine($"Error: {ex.Message}");
+            Snackbar.Add($"An Error Occured: {ex.Message}", Severity.Error);
+        }
+
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+
+    void Cancel() => MudDialog.Cancel();
+}

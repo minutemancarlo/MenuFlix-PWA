@@ -111,7 +111,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await OnGetCategories();        
+        await OnGetCategories();
+        imageUrl = model.Logo;
         await base.OnInitializedAsync();
     }
 

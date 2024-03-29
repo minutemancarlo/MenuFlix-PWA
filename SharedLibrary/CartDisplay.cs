@@ -18,8 +18,9 @@ namespace SharedLibrary
         public decimal DiscountedPrice { get; set; }
         public string Category { get; set; }
         public decimal DiscountAmount { get; set; }
-        public decimal DiscountedTotal { get; set; }
+        public decimal DiscountedTotal => Pcs * DiscountedPrice;
         public int StoreId { get; set; }
         public string StoreName { get; set; }
+        public bool isChecked { get; set; } = false;
     }
 }

@@ -11,9 +11,13 @@ namespace Server.Controllers
     public class FoodItemController : ControllerBase
     {
         private readonly string _connectionString;
-        public FoodItemController(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public FoodItemController(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _env = env;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("addfooditem")]
@@ -21,11 +25,13 @@ namespace Server.Controllers
         {
             try
             {
+                // Save the file to the server
+                string imagePath = SaveImageToDisk(fooditem.Logo); // Save the image and get the saved path
 
                 var parameters = new DynamicParameters();
                 parameters.Add("@ItemName", fooditem.Name);
                 parameters.Add("@ItemDescription", fooditem.Description);
-                parameters.Add("@ItemImage", fooditem.Logo);
+                parameters.Add("@ItemImage", imagePath);
                 parameters.Add("@ItemPrice", fooditem.Price);
                 parameters.Add("@ItemCategory", fooditem.CategoryName);
                 parameters.Add("@Email", fooditem.Email);
@@ -134,6 +140,28 @@ namespace Server.Controllers
             {
                 return BadRequest($"An error occurred: {ex.Message}");
             }
+        }
+
+        private string SaveImageToDisk(string base64String)
+        {
+            var request = _httpContextAccessor.HttpContext.Request;
+            string serverAddress = $"{request.Scheme}://{request.Host.Value}";
+            string filePath = ""; // Define a variable to hold the file path
+
+            // Convert the base64 string back to byte array
+            byte[] bytes = Convert.FromBase64String(base64String);
+
+            // Generate a unique filename
+            string fileName = Guid.NewGuid().ToString() + ".jpg"; // You can change the extension based on the image type
+
+            // Combine the file path with the file name
+            //filePath = Path.Combine("C:\\MenuFlix", fileName); // Modify the path as needed
+            filePath = Path.Combine($"{_env.WebRootPath}\\StoreLogos\\", fileName); // Modify the path as needed
+
+            // Write the byte array to the file
+            System.IO.File.WriteAllBytes(filePath, bytes);
+            var serverFilePath = $"{serverAddress}/StoreLogos/{fileName}";
+            return serverFilePath;
         }
 
 
