@@ -44,7 +44,7 @@ namespace Server.Controllers
                 parameters.Add("@CityTown", storeApplication.CityTown);
                 parameters.Add("@Province", storeApplication.Province);
                 parameters.Add("@PostalCode", storeApplication.PostalCode);
-                parameters.Add("@Logo", imagePath); // Save the path to the database
+                parameters.Add("@Logo", imagePath);
                 parameters.Add("@OwnerId", storeApplication.OwnerId); // Assuming OwnerId is the UserId
 
                 using (var connection = new SqlConnection(_connectionString))

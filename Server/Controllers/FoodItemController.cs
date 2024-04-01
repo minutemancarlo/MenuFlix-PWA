@@ -156,11 +156,11 @@ namespace Server.Controllers
 
             // Combine the file path with the file name
             //filePath = Path.Combine("C:\\MenuFlix", fileName); // Modify the path as needed
-            filePath = Path.Combine($"{_env.WebRootPath}\\StoreLogos\\", fileName); // Modify the path as needed
+            filePath = Path.Combine($"{_env.WebRootPath}\\Fooditems\\", fileName); // Modify the path as needed
 
             // Write the byte array to the file
             System.IO.File.WriteAllBytes(filePath, bytes);
-            var serverFilePath = $"{serverAddress}/StoreLogos/{fileName}";
+            var serverFilePath = $"{serverAddress}/Fooditems/{fileName}";
             return serverFilePath;
         }
 

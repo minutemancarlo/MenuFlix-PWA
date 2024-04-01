@@ -32,7 +32,7 @@
                                     <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
                                         <MudPaper Style="width: 192; height: 192;" Class="text-center">
                                             <MudImage Src="@imageUrl" Height="192" Width="192" />
-                                            <MudFileUpload T="IBrowserFile" Accept=".png" Class="py-1" MaximumFileCount="1" FilesChanged="UploadFiles">
+                                            <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg" Class="py-1" MaximumFileCount="1" FilesChanged="UploadFiles">
                                                 <ButtonTemplate>
                                                     <MudFab HtmlTag="label"
                                                             Size="MudBlazor.Size.Small"
@@ -262,7 +262,7 @@
                             <CellTemplate>
                                 <MudTooltip Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" Duration="1000" Text="Duration: 1000">
                                     <ChildContent>
-                                        <MudImage Src="icon-192.png" Width="50" Height="50" />
+                                        <MudImage Src="@context.Item.Logo" Width="50" Height="50" />
                                     </ChildContent>
                                     <TooltipContent>                                        
                                         <MudText Typo="Typo.body2"><strong>@context.Item.Description</strong></MudText>
@@ -387,7 +387,7 @@
 
                 // Convert the byte array to a base64 string
                 var base64String = Convert.ToBase64String(bytes);
-                // store.Logo = base64String;
+               foodItem.Logo = base64String;
                 // Construct the data URL
                 imageUrl = $"data:{file.ContentType};base64,{base64String}";
             }
@@ -492,7 +492,7 @@
 
         try
         {            
-            foodItem.Logo = imageUrl;
+            // foodItem.Logo = imageUrl;
             foodItem.Email = emailaddress;
             foodItem.ItemId = 0;
             foodItem.Discount = 0;

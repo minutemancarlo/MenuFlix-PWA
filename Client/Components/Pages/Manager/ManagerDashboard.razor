@@ -1,8 +1,76 @@
 ﻿@page "/manager-dashboard"
 @attribute [Authorize(Roles = "Manager")]
 <PageTitle>Manager Dashboard</PageTitle>
-<h3>ManagerDashboard</h3>
+
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+    <MudItem>
+        <MudStack Row>
+            
+            <MudStack Row="false" Class="pa-3">
+                <MudText Typo="Typo.h6">Store Monthly Income</MudText>
+                <MudChart ChartType="ChartType.Line" Class="mx-3 px-3" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="350" ChartOptions="options"></MudChart>
+            </MudStack>
+            
+            <MudStack Row="false" Class="pa-3">
+                <MudText Typo="Typo.h6">Store Annual Income</MudText>
+                <MudChart ChartType="ChartType.Line" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="350" ChartOptions="options"></MudChart>
+            </MudStack>
+            
+        </MudStack>
+    </MudItem>
+    <MudItem>
+        <MudStack Row>
+            <MudPaper Elevation="4">            
+            <MudStack Row="false" Class="pa-2">
+                <MudText Typo="Typo.h6">Top 3 Best Selling Food Items</MudText>
+                <MudChart ChartType="ChartType.Bar" ChartSeries="@Series2" XAxisLabels="@XAxisLabels2" Width="100%" Height="350px">
+                    
+                </MudChart>
+            </MudStack>
+            </MudPaper>
+            <MudPaper Elevation="4">            
+            <MudStack Row="false" Class="pa-2">
+                <MudText Typo="Typo.h6">Top 3 Least Selling Food Items</MudText>
+                <MudChart ChartType="ChartType.Bar" ChartSeries="@Series2" XAxisLabels="@XAxisLabels2" Width="100%" Height="350px">                    
+                </MudChart>
+            </MudStack>
+            </MudPaper>
+        </MudStack>
+    </MudItem>
+</MudItem>
 
 @code {
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Dashboard", href: "#", icon: Icons.Material.Filled.Dashboard)
+    };
+    private int ActiveStores;
+    private int InactiveStores;
+    private ChartOptions options = new ChartOptions();
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Series 1", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = "Series 2", Data = new double[] { 35, 41, 35, 51, 49, 62, 69, 91, 148 } },
+    };
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+    public List<ChartSeries> Series2 = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "United States", Data = new double[] { 40, 20, 25, 27, 46, 60, 48, 80, 15 } },
+        new ChartSeries() { Name = "Germany", Data = new double[] { 19, 24, 35, 13, 28, 15, 13, 16, 31 } },
+        new ChartSeries() { Name = "Sweden", Data = new double[] { 8, 6, 11, 13, 4, 16, 10, 16, 18 } },
+    };
+    public string[] XAxisLabels2 = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+    protected override async void OnInitialized()
+    {
+        
+        options.InterpolationOption = InterpolationOption.NaturalSpline;
+        options.YAxisFormat = "₱0";
+        await base.OnInitializedAsync();
+
+    }
 }
