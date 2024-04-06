@@ -1,4 +1,4 @@
-﻿@page "/users"
+﻿@page "/applicants"
 @layout MainLayout
 @using System.Net.Http.Json
 @using SharedLibrary
@@ -7,7 +7,7 @@
 @inject IAccountManagement Acct
 @inject AuthenticationStateProvider AuthProvider
 @inject HttpClient httpClient
-@attribute [Authorize(Roles = "Administrator")]
+@attribute [Authorize(Roles = "Manager")]
 
 <PageTitle>User Management</PageTitle>
 <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>

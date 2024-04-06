@@ -1,8 +1,17 @@
 ﻿@page "/delivery-dashboard"
 @attribute [Authorize(Roles = "Delivery")]
 <PageTitle>Delivery Dashboard</PageTitle>
-<h3>ManagerDashboard</h3>
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+
+</MudItem>
 
 @code {
-
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Dashboard", href: "#", icon: Icons.Material.Filled.Dashboard)
+    };
 }

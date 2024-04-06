@@ -1,0 +1,289 @@
+﻿@page "/menu"
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@layout CustomerLayout
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
+@attribute [Authorize(Roles = "Customer")]
+
+<PageTitle>Product Menu</PageTitle>
+<MudGrid Class="w-100 vh-100 pt-5" Justify="Justify.FlexStart">
+    <MudItem xs="2" Style="height: 100%">
+        <MudPaper Class="w-100" Elevation="0">
+            <MudList Clickable="true">
+                <MudListItem>
+                    <MudTextField Variant="Variant.Outlined" Clearable OnClearButtonClick="OnClearButtonClickHandler" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Search here..." Adornment="Adornment.Start" Margin="Margin.Dense"
+                                  @bind-Value="searchQuery"
+                                  Immediate="true"
+                                  @onkeyup="OnKeyUpHandler" />
+                </MudListItem>
+                <MudDivider />
+                <MudListItem Icon="@Icons.Material.Filled.Fastfood" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Error">
+                    Products
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.Storefront" IconColor="Color.Info" InitiallyExpanded="false" Text="Stores">
+                    <NestedList>
+                        <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
+                            All Stores
+                        </MudListItem>
+                        @foreach (var item in stores)
+                        {
+                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(item.Name))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
+                                @item.Name
+                            </MudListItem>
+                        }
+                    </NestedList>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.Toc" Text="Categories" IconColor="Color.Success" InitiallyExpanded="false">
+                    <NestedList>
+                        <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(""))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
+                            All Categories
+                        </MudListItem>
+                        @foreach (var item in categories)
+                        {
+                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(item.Name))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
+                                @item.Name
+                            </MudListItem>
+                        }
+                    </NestedList>
+                </MudListItem>
+                <MudDivider />
+                <MudListItem Text="Ratings" />
+                @if (isVisibleRating){
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(0))">
+                        <MudText Color="Color.Error">Reset Rating Filter</MudText>
+                    </MudListItem>
+                }                
+                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(5))">
+                    <MudRating SelectedValue="5" Size="Size.Small" ReadOnly />
+                </MudListItem>
+                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(4))">
+                    <MudRating SelectedValue="4" Size="Size.Small" ReadOnly />
+                </MudListItem>
+                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(3))">
+                    <MudRating SelectedValue="3" Size="Size.Small" ReadOnly />
+                </MudListItem>
+                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(2))">
+                    <MudRating SelectedValue="2" Size="Size.Small" ReadOnly />
+                </MudListItem>
+                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(1))">
+                    <MudRating SelectedValue="1" Size="Size.Small" ReadOnly />
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="10" Style="width: 100%;height: 100%;">
+        <MudOverlay Visible="isVisible" DarkBackground="true" Absolute="true">
+            <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+        </MudOverlay>
+        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+            @foreach (var item in foodItemsGridPage)
+            {
+                <MudCard Style="width: 300px; height: 250px; background: #ecf0f1">
+                    <MudCardContent>
+                        <MudItem Class="text-center">
+                            <MudImage Src="@item.Logo" Height="100" Width="100" Fluid />
+                        </MudItem>
+
+                        <MudText Typo="Typo.body2" Class="fw-bolder">@item.Name</MudText>
+                        <MudText Typo="Typo.body2">@item.Category</MudText>
+                        <MudItem Class="text-end">
+                            <MudText Typo="Typo.body2" Class="fw-bold"><s class="text-danger">@((item.DiscountAmount == 0.00M) ? "" : $"₱ {item.Price}")</s> ₱ @(item.DiscountAmount == 0.00M ? item.Price : item.DiscountedPrice)</MudText>
+                        </MudItem>
+                    </MudCardContent>
+                    <MudCardActions Class="py-0">
+                        <MudStack Row>
+                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart">Add to Cart</MudButton>
+                            <MudSpacer />
+                            <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly />
+                        </MudStack>
+                    </MudCardActions>
+                </MudCard>
+            }
+            @if (isVisibleLoad)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="PageLoad" FullWidth="true">Load More...</MudButton>
+                                                
+            }
+            @if (foodItemsGrid.Count == 0 || foodItemsGridPage.Count == 0)
+            {
+                <MudItem Class="text-center pt-5">
+                    <MudText>No Items Found.</MudText>
+                </MudItem>
+            }
+        </MudStack>
+    </MudItem>
+</MudGrid>
+
+
+
+
+@code {
+    private List<FoodItemDataGrid> foodItemsGrid = new List<FoodItemDataGrid>();
+    private List<FoodItemDataGrid> foodItemsGridPage = new List<FoodItemDataGrid>();
+    private List<Category> categories = new List<Category>();
+    private List<StoreApplications> stores = new List<StoreApplications>();
+    private string? searchQuery;
+    private int pageLoad = 0;
+    private bool isVisibleLoad = true;
+    private bool isVisible = true;
+    private bool isVisibleRating = false;
+    protected override async Task OnInitializedAsync()
+    {
+
+        await OnGetCategories();
+        await OnGetFoodItems();
+        await OnGetStores();
+        await base.OnInitializedAsync();
+        isVisible = false;
+    }
+
+    private async Task PageLoad()
+    {
+
+        pageLoad += 10;
+        foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad));
+        if (foodItemsGridPage.Count > pageLoad)
+        {
+            isVisibleLoad = false;
+        }
+        StateHasChanged();
+    }
+
+
+    private async Task OnGetFoodItems()
+    {
+
+        foodItemsGrid = await httpClient.GetFromJsonAsync<List<FoodItemDataGrid>>($"FoodItem/getfooditems?email=0");
+        foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad).Take(10));
+
+    }
+
+    private async Task OnGetCategories()
+    {
+        categories = await httpClient.GetFromJsonAsync<List<Category>>($"FoodCategory/getcategories?email=0");
+
+    }
+
+    private async Task OnGetStores()
+    {
+        var storesList = await httpClient.GetFromJsonAsync<List<StoreApplications>>($"ApplicationsManager/getstoreall?email=0");
+        stores = storesList.Where(store => store.Status == "1")
+                            .OrderBy(store => store.Name)
+                            .ToList();
+    }
+
+    private void OnKeyUpHandler(KeyboardEventArgs e)
+    {
+        pageLoad = 0;
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad).Take(10));
+            isVisibleLoad = foodItemsGrid.Count > 10 ? true : false;
+        }
+        else
+        {
+            string searchQueryLower = searchQuery.ToLower();
+
+            // Filter the foodItemsGrid based on the case-insensitive search query and pagination
+            var filteredItems = foodItemsGrid
+                .Where(item => item.Name.ToLower().Contains(searchQueryLower)) // Convert item.Name to lowercase for comparison
+                .Skip(pageLoad)
+                .Take(10)
+                .ToList();
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(filteredItems);
+            isVisibleLoad = foodItemsGridPage.Count > 10 ? true : false;
+            StateHasChanged();
+        }
+
+    }
+
+    private void OnClearButtonClickHandler()
+    {
+        // Call OnKeyUpHandler with null KeyboardEventArgs to clear the search
+        OnKeyUpHandler(null);
+    }
+
+    private void OnGetItemsPerPage(string store)
+    {
+
+        string searchQueryLower = store.ToLower();
+        pageLoad = 0;
+        if (string.IsNullOrEmpty(searchQueryLower))
+        {
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad).Take(10));
+            isVisibleLoad = foodItemsGrid.Count > 10 ? true : false;
+        }
+        else
+        {
+            var filteredItems = foodItemsGrid
+               .Where(item => item.Store.ToLower().Contains(searchQueryLower)) // Convert item.Name to lowercase for comparison
+               .Skip(pageLoad)
+               .Take(10)
+               .ToList();
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(filteredItems);
+            isVisibleLoad = foodItemsGridPage.Count > 10 ? true : false;
+            StateHasChanged();
+        }
+
+    }
+
+    private void OnGetItemsCategoryPerPage(string category)
+    {
+
+        string searchQueryLower = category.ToLower();
+        pageLoad = 0;
+        if (string.IsNullOrEmpty(searchQueryLower))
+        {
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad).Take(10));
+            isVisibleLoad = foodItemsGrid.Count > 10 ? true : false;
+        }
+        else
+        {
+            var filteredItems = foodItemsGrid
+               .Where(item => item.Category.ToLower().Contains(searchQueryLower)) // Convert item.Name to lowercase for comparison
+               .Skip(pageLoad)
+               .Take(10)
+               .ToList();
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(filteredItems);
+            isVisibleLoad = foodItemsGridPage.Count > 10 ? true : false;
+            StateHasChanged();
+        }
+
+    }
+
+    private void OnGetItemsRatingsPerPage(int rate)
+    {
+
+
+        pageLoad = 0;
+        if (rate == 0)
+        {
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(foodItemsGrid.Skip(pageLoad).Take(10));
+            isVisibleLoad = foodItemsGrid.Count > 10 ? true : false;
+            isVisibleRating = false;
+        }
+        else
+        {
+            var filteredItems = foodItemsGrid
+               .Where(item => Convert.ToInt32(Math.Round(item.Rating, 1)).Equals(rate)) // Convert item.Name to lowercase for comparison
+               .Skip(pageLoad)
+               .Take(10)
+               .ToList();
+            foodItemsGridPage.Clear();
+            foodItemsGridPage.AddRange(filteredItems);
+            isVisibleLoad = foodItemsGridPage.Count > 10 ? true : false;
+            isVisibleRating = true;
+            StateHasChanged();
+        }
+
+    }
+}

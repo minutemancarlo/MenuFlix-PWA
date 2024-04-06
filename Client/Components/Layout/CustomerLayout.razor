@@ -69,4 +69,14 @@
             InvokeAsync(() => StateHasChanged());
             }
         }
+    private int orderCount;
+    public int OrderCount
+    {
+        get { return orderCount; }
+        set
+        {
+            orderCount = value;
+            InvokeAsync(() => StateHasChanged());
+        }
+    }
 }

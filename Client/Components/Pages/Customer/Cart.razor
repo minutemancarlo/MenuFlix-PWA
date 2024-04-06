@@ -18,7 +18,7 @@
                     <div class="col-10">
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-normal mb-0 text-black">Shopping Cart</h3>
+                            <h6 class="fw-normal mb-0 text-black">Shopping Cart</h6>
                             
                         </div>
 
@@ -94,6 +94,7 @@
 @code {
     private int pcs { get; set; } = 0;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    UserAdditionalDetails model = new UserAdditionalDetails();
     private string? emailaddress;
     private int currentStoreId;
     private bool firstLoad = true;
@@ -232,7 +233,12 @@
             return;
         }
 
-
+        await GetUserAdditionalDetails();
+        if (string.IsNullOrEmpty(model.PhoneNumber))
+        {
+            Snackbar.Add("Please setup your account details.", Severity.Warning);
+            return;
+        }
         var parameters = new DialogParameters<CheckoutDialog>();
         parameters.Add(x => x.orders,checkedItems);
 
@@ -256,5 +262,24 @@
         return distinctStoreIds.Count() > 1;
     }
 
+    private async Task GetUserAdditionalDetails()
+    {
+        var response = await httpClient.GetAsync($"UserAdditionalDetails?emailaddress={emailaddress}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            UserAdditionalDetails userAdditionalDetails = await response.Content.ReadFromJsonAsync<UserAdditionalDetails>();
+            // Update form fields with retrieved details
+            model.FirstName = userAdditionalDetails.FirstName;
+            model.LastName = userAdditionalDetails.LastName;
+            model.PhoneNumber = userAdditionalDetails.PhoneNumber;
+            model.AddressLine1 = userAdditionalDetails.AddressLine1;
+            model.AddressLine2 = userAdditionalDetails.AddressLine2;
+            model.CityTown = userAdditionalDetails.CityTown;
+            model.Province = userAdditionalDetails.Province;
+            model.PostalCode = userAdditionalDetails.PostalCode;
+        }
+
+    }
 
 }

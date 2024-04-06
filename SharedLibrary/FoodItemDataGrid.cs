@@ -17,6 +17,7 @@ namespace SharedLibrary
         public string Store {  get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal DiscountedPrice { get; set; }
+        public decimal Rating { get; set; }
         public int IsDisabled { get; set; }
     }
 }

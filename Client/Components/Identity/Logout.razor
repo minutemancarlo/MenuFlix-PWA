@@ -1,7 +1,7 @@
 ﻿@page "/logout"
 @using Client.Identity
 @inject IAccountManagement Acct
-
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 <PageTitle>Logout</PageTitle>
 
 <h1>Logout</h1>
@@ -24,7 +24,7 @@
         {
             await Acct.LogoutAsync();
         }
-
+        await localStorage.RemoveItemAsync("_open");
         await base.OnInitializedAsync();
     }
 }

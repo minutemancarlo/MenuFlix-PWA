@@ -7,25 +7,30 @@
 @inject NavigationManager _navigationManager
 @inject IAccountManagement Acct
 @inject HttpClient httpClient
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
-<MudItem xs="6">
-    <MudPopup @ref="_popup" Open="@_open" Style="background-color: #c0392b " Text="Register your business now" Icon="@Icons.Material.Filled.Info" PopupPosition="MudExtensions.Enums.PopupPosition.Bottom" EnableAnimation>
-        <ChildContent>
-            <MudStack Class="mud-width-full">
-                <div class="d-flex align-center">
-                    <MudItem xs="12">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color: white;" />
-                            <MudText Typo="Typo.h6" Style="color: white;">Revolutionize your business and join us!</MudText>
-                            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ConfirmDetailsInfo">Sign Up My Business</MudButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: white;" OnClick="@(() => _open = false)" />
-                        </MudStack>
-                    </MudItem>
-                </div>
-            </MudStack>
-        </ChildContent>
-    </MudPopup>
-</MudItem>
+@if (_open)
+{
+    <MudItem xs="6">
+        <MudPopup @ref="_popup" Open="@_open" Style="background-color: #c0392b " Text="Register your business now" Icon="@Icons.Material.Filled.Info" PopupPosition="MudExtensions.Enums.PopupPosition.Bottom" EnableAnimation>
+            <ChildContent>
+                <MudStack Class="mud-width-full">
+                    <div class="d-flex align-center">
+                        <MudItem xs="12">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color: white;" />
+                                <MudText Typo="Typo.h6" Style="color: white;">Revolutionize your business and join us!</MudText>
+                                <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ConfirmDetailsInfo">Sign Up My Business</MudButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: white;" OnClick="ClosePopUp" />
+                            </MudStack>
+                        </MudItem>
+                    </div>
+                </MudStack>
+            </ChildContent>
+        </MudPopup>
+    </MudItem>
+}
+
 
 <MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
     <MudBadge Content="3" Overlap Color="Color.Warning" Bordered>
@@ -85,11 +90,11 @@
         }
     </MudCarousel>
 
-    <MudItem xs="12" Class="d-flex justify-content-center">
-        <MudItem xs="8">
+    @* <MudItem xs="12" Class="d-flex justify-content-center">
+        <MudItem xs="8">            
             <MudTextField Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Search here..." Adornment="Adornment.Start" Margin="Margin.Dense" @bind-Value="searchQuery" />
         </MudItem>
-    </MudItem>
+    </MudItem> *@
 
 <div class="container col-xxl-8 px-4 py-5">
     <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
@@ -121,6 +126,95 @@
     </div>
 </div>
 
+<!-- Footer -->
+<footer class="text-center text-lg-start bg-body-tertiary text-muted w-100" id="#info">
+        
+    <!-- Section: Links  -->
+    <section class="">
+        <div class="container text-center text-md-start mt-5">
+            <!-- Grid row -->
+            <div class="row mt-3">
+                <!-- Grid column -->
+                <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                    <!-- Content -->
+                    <h6 class="text-uppercase fw-bold mb-4">
+                        <i class="fas fa-gem me-3"></i>Company name
+                    </h6>
+                    <p>
+                        <strong>MenuFlix</strong>  A food ordering and
+                        delivery system that seamlessly combines elements of menus with the familiarity of 'flix' from streaming 
+services, implying a broad selection of options accessible at users' fingertips. The name suggests a dynamic 
+and engaging platform for exploring food choices and ordering convenience.
+                    </p>
+                </div>
+                <!-- Grid column -->
+                <!-- Grid column -->
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+                    <!-- Links -->
+                    <h6 class="text-uppercase fw-bold mb-4">
+                        Products
+                    </h6>
+                    <p>
+                        <a href="#!" class="text-reset">Burgers</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Bundles</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Platters</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Drinks</a>
+                    </p>
+                </div>
+                <!-- Grid column -->
+                <!-- Grid column -->
+                <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                    <!-- Links -->
+                    <h6 class="text-uppercase fw-bold mb-4">
+                        Useful links
+                    </h6>
+                    <p>
+                        <a href="#!" class="text-reset">Pricing</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Settings</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Orders</a>
+                    </p>
+                    <p>
+                        <a href="#!" class="text-reset">Help</a>
+                    </p>
+                </div>
+                <!-- Grid column -->
+                <!-- Grid column -->
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                    <!-- Links -->
+                    <h6 class="text-uppercase fw-bold mb-4">Contact</h6>
+                    <p><i class="fas fa-home me-3"></i> New York, NY 10012, US</p>
+                    <p>
+                        <i class="fas fa-envelope me-3"></i>
+                        info@example.com
+                    </p>
+                    <p><i class="fas fa-phone me-3"></i> + 01 234 567 88</p>
+                    <p><i class="fas fa-print me-3"></i> + 01 234 567 89</p>
+                </div>
+                <!-- Grid column -->
+            </div>
+            <!-- Grid row -->
+        </div>
+    </section>
+    <!-- Section: Links  -->
+    <!-- Copyright -->
+    <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
+        © 2024 Copyright:
+        <a class="text-reset fw-bold" href="https://mdbootstrap.com/">MenuFlix.com</a>
+    </div>
+    <!-- Copyright -->
+</footer>
+<!-- Footer -->
+
 @code
 {
     [CascadingParameter] public CustomerLayout customerLayout { get; private set; }
@@ -138,45 +232,70 @@
     private bool IsCustomer { get; set; }
     private bool isLoggedin { get; set; }
     private bool isLoadingCarousel { get; set; } = false;
-    private string emailaddress { get; set; }
-    
-    
+    private string emailaddress { get; set; } 
+
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        isLoggedin = user.Identity.IsAuthenticated;        
-        if (user.Identity != null && user.Identity.IsAuthenticated)
-        {
-            UserClaims = user.Claims.ToList();
-            foreach (var item in UserClaims)
-            {
-                if (item.Type.Contains("emailaddress"))
-                {
-                    emailaddress = item.Value;
-                }
-            }
-        }
-        if (user.IsInRole("Manager"))
-        {
-            RedirectToHome("manager-dashboard");
-        }
-
-        if (user.IsInRole("Administrator"))
-        {
-            RedirectToHome("admin-dashboard");
-        }
+       
+        await base.OnInitializedAsync();
         isLoadingCarousel = false;
         await OnGetFoodItemsRandom();
         isLoadingCarousel = true;
-        await base.OnInitializedAsync();
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
-    {        
+    {
+        if (firstRender)
+        {
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                isLoggedin = user.Identity.IsAuthenticated;
+                var isOpenNullable = await localStorage.GetItemAsync<bool?>("_open");
+
+                if (isOpenNullable.HasValue)
+                {
+                    _open = isOpenNullable.Value;
+                }
+
+
+                UserClaims = user.Claims.ToList();
+                foreach (var item in UserClaims)
+                {
+                    if (item.Type.Contains("emailaddress"))
+                    {
+                        emailaddress = item.Value;
+                    }
+                }
+            }
+            else
+            {
+                _open = false;
+            }
+
+            if (user.IsInRole("Manager"))
+            {
+                RedirectToHome("manager-dashboard");
+            }
+
+            if (user.IsInRole("Administrator"))
+            {
+                RedirectToHome("admin-dashboard");
+            }
+           
+        }
         await base.OnAfterRenderAsync(firstRender);
 
+    }
+
+    private async Task ClosePopUp()
+    {
+        _open = false;
+        await localStorage.SetItemAsync("_open", _open);
     }
 
 

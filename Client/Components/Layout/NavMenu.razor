@@ -17,14 +17,14 @@
     <MudNavMenu Style="height: 95%;overflow: hidden" Bordered>                      
         <MudDivider Class="my-2" />        
         <AuthorizeView Roles="Administrator">
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/admin-dashboard">Dashboard</MudNavLink>
-            @* <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/users">User Management</MudNavLink> *@
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/admin-dashboard">Dashboard</MudNavLink>            
             <MudNavLink Icon="@Icons.Material.Filled.Storefront" Href="/store">Store Management</MudNavLink>           
         </AuthorizeView>        
 
         <AuthorizeView Roles="Manager">
             <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/manager-dashboard">Dashboard</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.RestaurantMenu" Href="/manager-menu">Menu</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Group" Href="/applicants">Applicants Management</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.ReceiptLong" Href="/manager-orders">Orders</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.Store" Href="/manager-mystore">My Store</MudNavLink>
             @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">

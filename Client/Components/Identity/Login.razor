@@ -4,6 +4,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @layout AuthLayout
 @inject NavigationManager _navigationManager
+
 <PageTitle>MenuFlix - Login</PageTitle>
     <MudGrid Spacing="1" Justify="Justify.SpaceBetween">
         <MudItem>
@@ -19,8 +20,10 @@
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   Required="true"
+              OnKeyDown="@(OnEnterPass)"
                   OnlyValidateIfDirty="true"
                   Immediate="true"
+                    
                   Class="my-6">
     </MudTextField>
 
@@ -28,6 +31,7 @@
                       Label="Password"
                       PasswordMode="true"
                       Variant="Variant.Outlined"
+                  OnKeyDown="@(OnEnterPass)"
                       Margin="Margin.Dense"
                       Class="my-6"
                       Required="true">
@@ -104,7 +108,7 @@
             {
                 RedirectToIndex();
             }
-           
+
         }
         else
         {
@@ -129,38 +133,55 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var auth = await AuthProvider.GetAuthenticationStateAsync();
-        var user = auth.User;
-        if (user.Identity != null && user.Identity.IsAuthenticated)
-        {
-            if (user.IsInRole("Manager"))
-            {
-                RedirectToHome("manager-dashboard");
-            }
-
-            if (user.IsInRole("Administrator"))
-            {
-                RedirectToHome("admin-dashboard");
-            }
-
-            if (user.IsInRole("Accounting"))
-            {
-                RedirectToHome("accounting-dashboard");
-            }
-
-            if (user.IsInRole("Delivery"))
-            {
-                RedirectToHome("delivery-dashboard");
-            }
-
-            if (user.IsInRole("Customer"))
-            {
-                RedirectToIndex();
-            }
-
-        }
         
+
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var auth = await AuthProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                if (user.IsInRole("Manager"))
+                {
+                    RedirectToHome("manager-dashboard");
+                }
+
+                if (user.IsInRole("Administrator"))
+                {
+                    RedirectToHome("admin-dashboard");
+                }
+
+                if (user.IsInRole("Accounting"))
+                {
+                    RedirectToHome("accounting-dashboard");
+                }
+
+                if (user.IsInRole("Delivery"))
+                {
+                    RedirectToHome("delivery-dashboard");
+                }
+
+                if (user.IsInRole("Customer"))
+                {
+                    RedirectToIndex();
+                }
+
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async void OnEnterPass(KeyboardEventArgs e)
+    {        
+        if (e.Key == "Enter" || e.Key == "NumpadEnter")
+        {
+            await DoLoginAsync();
+        }
     }
 
 }

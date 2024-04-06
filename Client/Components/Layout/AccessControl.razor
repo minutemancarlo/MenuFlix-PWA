@@ -21,18 +21,17 @@
     </Authorizing>
 
     <Authorized>        
-        <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
         <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">      
                 @if (IsCustomer)
                 {
                     
                 <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
-                    <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
+                    <MudBadge Content="@customerLayout.OrderCount" Overlap Color="Color.Warning">
                         <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>
-                    </MudBadge>
-                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/about" StartIcon="@Icons.Material.Filled.Info" Color="Color.Error">About</MudButton>
-                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/contact" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton>
+                    </MudBadge>                    
+                    @* <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/contact" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Error">Contact</MudButton> *@
                     <MudSpacer />
                            <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
                         <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/my-cart" Size="Size.Small" />
@@ -91,6 +90,7 @@
             }
             if (IsCustomer)
             {
+                await OnGetOrderNumbers();
                 await OnGetCartNumbers();
             }
             
@@ -132,6 +132,19 @@
         }
     }
 
+    private async Task OnGetOrderNumbers()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"OrderManagement/GetOrderCount?emailaddress={emailaddress}");
+            customerLayout.OrderCount = response[0];
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
 
 
     // private async Task Prompt()
