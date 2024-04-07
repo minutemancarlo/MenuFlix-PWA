@@ -9,6 +9,7 @@ namespace SharedLibrary
     public partial class OrderDisplay
     {
         public List<OrderItem> OrderItems { get; set; }
+        public List<UserAdditionalDetails>? UserAdditionalDetails { get; set; }
         public List<StatusEntry> Status {get;set;}
     }
 
@@ -16,11 +17,13 @@ namespace SharedLibrary
     {
      
         public string Item { get; set; }
+        public string? UserAdditionalDetails { get; set; }
         public string Status { get; set; }
     }
 
-    public partial class OrderItem
+    public partial class OrderItem : BaseModel
     {
+        public bool isReady { get; set; }
         public string OrderId { get; set; }
         public string ItemId { get; set; }
         public string ItemName { get; set; }
@@ -31,13 +34,15 @@ namespace SharedLibrary
         public string StoreName { get; set; }
         public string StoreLogo { get; set; }
         public string Category { get; set; }
-        public decimal Total { get; set; }
+        public decimal Total { get; set; }        
+        
     }
 
     public partial class StatusEntry
     {
         public string OrderId { get; set; }
         public int Status { get; set; }
-        public DateTime UpdatedOn { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        
     }
 }

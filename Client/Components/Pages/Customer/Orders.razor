@@ -11,7 +11,7 @@
     <MudItem xs="8">
         <MudText Typo="Typo.h6" Class="text-start">My Orders</MudText>
         <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark">
-            <MudTabPanel Icon="@Icons.Material.Filled.ShoppingCart" Text="New Orders" BadgeData="@newOrders.Count()" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.ShoppingCart" Text="New Orders" BadgeData="@(newOrders.Count()>0?newOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
@@ -193,7 +193,7 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.Schedule" Text="Preparing" BadgeData="@processingOrders.Count()" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.Schedule" Text="Preparing" BadgeData="@(processingOrders.Count()>0?processingOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
@@ -375,7 +375,7 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.Moped" Text="In-Transit" BadgeData="@intransitOrders.Count()" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.Moped" Text="In-Transit" BadgeData="@(intransitOrders.Count()>0?intransitOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
@@ -557,7 +557,7 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.NoFood" Text="Cancelled" BadgeData="@cancelledOrders.Count()" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.NoFood" Text="Cancelled" BadgeData="@(cancelledOrders.Count()>0?cancelledOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
@@ -739,7 +739,7 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" Text="Completed" BadgeData="@completedOrders.Count()" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" Text="Completed" BadgeData="@(completedOrders.Count()>0?completedOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
@@ -985,7 +985,7 @@
 
             }
              newOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 1).ToList();
-             processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2).ToList();
+             processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2 || x.Status.LastOrDefault()?.Status == 5 ).ToList();
             intransitOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 3).ToList();
             cancelledOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 0).ToList();
             completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();

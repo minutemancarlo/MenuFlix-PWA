@@ -1,0 +1,118 @@
+﻿@using SharedLibrary
+@using Client.Validations
+@using System.Security.Claims
+@using System.Net.Http.Json
+@using System.Net
+@inject HttpClient httpClient
+
+<MudDialog ClassActions="w-100 d-flex justify-center flex-grow-1">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-3 mb-n1" />
+            Order #: @Title
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudPaper Elevation="4" Class="pa-3">
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudStack>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Contacts" />
+                            Recipient: <strong>@($"{UserAdditionalDetails.FirstName} {UserAdditionalDetails.LastName}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                            Date: <strong>@createdDate</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" />
+                            Time: <strong>@createdTime</strong>
+                        </MudText>
+                    </MudStack>
+                    <MudStack>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                            Address: <strong>@($"{UserAdditionalDetails.AddressLine1},{UserAdditionalDetails.AddressLine2}, {UserAdditionalDetails.CityTown}, {UserAdditionalDetails.Province} {UserAdditionalDetails.PostalCode}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Email" />
+                            Email: <strong>@UserAdditionalDetails.Email</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.PhoneAndroid" />
+                            Phone: <strong>@UserAdditionalDetails.PhoneNumber</strong>
+                        </MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+            <MudDataGrid Items="@itemsList"
+                         Elevation="4"
+                         Striped
+                         Filterable="false"
+                         HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold w-100"
+                         Class="pa-3"
+                         ColumnResizeMode="ResizeMode.None">
+                <Columns>
+                    <TemplateColumn Title="Item Image" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center">
+                        <CellTemplate>
+                            <MudImage Src="@context.Item.ItemLogo" Width="50" Height="50" />
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.ItemName" Title="Item" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
+                    <PropertyColumn Property="x => x.Pcs" Title="Pcs" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
+                    @*  <TemplateColumn Filterable="false" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white">
+                    <CellTemplate>
+                    <MudSwitch @bind-Value="@context.Item.isReady" ThumbIcon="@(context.Item.isReady==true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" ThumbIconColor="@(context.Item.isReady==true ? Color.Success : Color.Error)">@(_checked3 ? "Ready" : "Not Ready")</MudSwitch>
+                    </CellTemplate>
+                    </TemplateColumn> *@
+                </Columns>
+            </MudDataGrid>
+
+        </MudStack>
+
+    </DialogContent>
+    <DialogActions>
+
+        <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Close</MudButton>
+        <MudLoadingButton Variant="Variant.Filled"
+                          Color="Color.Success"
+                          Size="Size.Medium"
+                          FullWidth
+                          Loading="false"
+                          OnClick="Submit"
+                          ButtonType="ButtonType.Button">
+            <LoadingContent>Processing...</LoadingContent>
+            <ChildContent>Accept Order</ChildContent>
+        </MudLoadingButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public List<OrderDisplay> OrderItem { get; set; } = default!;
+    [Parameter] public UserAdditionalDetails UserAdditionalDetails { get; set; } = default!;
+    [Parameter] public string? Action { get; set; }
+    private List<OrderItem> itemsList { get; set; } = default!;
+    private string? createdDate;
+    private string? createdTime;
+    public bool _checked3 { get; set; } = false;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (var item in OrderItem)
+        {
+            itemsList = item.OrderItems.ToList();
+            createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+            createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

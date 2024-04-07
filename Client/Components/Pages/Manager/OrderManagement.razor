@@ -3,19 +3,28 @@
 @using Client.Validations
 @using FluentValidation
 @using System.Security.Claims
+@using Newtonsoft.Json
+@using Client.Components.Pages.Manager.Components
 
 @layout MainLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
+
 @attribute [Authorize(Roles = "Manager")]
+<style>
+    .my-custom-class {
+        backdrop-filter: blur(10px);
+    }
+</style>
 <PageTitle>Order Management</PageTitle>
 <MudItem xs="12">
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
     </MudItem>
     <MudItem>
+       
         <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center" Class="d-flex">
-            <MudCard Outlined="true" Class="flex-grow-1 text-white" Style="background: #e67e22;">
+            <MudCard Outlined="true" Class="flex-grow-1 text-white" Style="background: #e74c3c;">
                 <MudCardHeader>
                     <CardHeaderContent>
                         <MudText Typo="Typo.h6">New Orders</MudText>
@@ -25,26 +34,26 @@
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Class="text-center" Typo="Typo.h3">0</MudText>
+                    <MudText Class="text-center" Typo="Typo.h3">@newOrders.Count()</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Variant="Variant.Text" FullWidth="true" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
+                    <MudButton Variant="Variant.Text" FullWidth="true" OnClick="@(() => view = 1)" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
                 </MudCardActions>
             </MudCard>
             <MudCard Outlined="true" Class="flex-grow-1 text-white" Style="background: #f39c12;">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">On-Queue</MudText>
+                        <MudText Typo="Typo.h6">Preparing</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
                         <MudIcon Icon="@Icons.Material.Filled.AvTimer" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Class="text-center" Typo="Typo.h3">0</MudText>
+                    <MudText Class="text-center" Typo="Typo.h3">@processingOrders.Count()</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Variant="Variant.Text" FullWidth="true" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
+                    <MudButton Variant="Variant.Text" FullWidth="true" OnClick="@(() => view = 2)" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
                 </MudCardActions>
             </MudCard>
             <MudCard Outlined="true" Class="flex-grow-1 text-white" Style="background: #16a085;">
@@ -57,7 +66,7 @@
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Class="text-center" Typo="Typo.h3">0</MudText>
+                    <MudText Class="text-center" Typo="Typo.h3">@forDeliveryOrders.Count()</MudText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" FullWidth="true" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
@@ -73,7 +82,7 @@
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Class="text-center" Typo="Typo.h3">0</MudText>
+                    <MudText Class="text-center" Typo="Typo.h3">@intransitOrders.Count()</MudText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" FullWidth="true" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
@@ -89,7 +98,7 @@
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Class="text-center" Typo="Typo.h3">0</MudText>
+                    <MudText Class="text-center" Typo="Typo.h3">@completedOrders.Count()</MudText>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" FullWidth="true" StartIcon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Inherit">View</MudButton>
@@ -97,41 +106,90 @@
             </MudCard>
         </MudStack>
     </MudItem>
-    <MudItem Class="d-flex justify-content-center" xs="12">
-        <MudItem xs="12" Class="p-5">
-            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+    <MudStack Row Justify="Justify.SpaceBetween" Class="py-3">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Refresh" Color="Color.Success" Size="Size.Medium">Refresh</MudButton>
+        <MudSpacer />
+    </MudStack>
+    @if (view == 1)
+    {
+        <MudItem Class="d-flex justify-content-center" xs="12">
+            <MudItem xs="12" Class="p-5">
+                <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                    @foreach (var item in newOrders)
+                    {
 
-                @for (var i = 0; i < 10; i++)
-                {
-                    <a style="cursor: pointer;" onclick="@(() => OnClicked(a++))">
-                        <MudCard Style="background: #34495e; color: white;">
-                            <MudCardHeader>
-                                <CardHeaderContent>
-                                    <MudText Typo="Typo.h6">Order No: @i</MudText>
-                                </CardHeaderContent>
-                                <CardHeaderActions>
-                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" />
-                                </CardHeaderActions>
-                            </MudCardHeader>
-                            <MudCardContent>
-                                <MudText>Item Count 5</MudText>
-                                <MudText Typo="Typo.body2">Total: 1000</MudText>
-                            </MudCardContent>
-                            <MudCardActions>
-                                <MudStack Spacing="0">
-                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: Carlo Boado</MudText>
-                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: January 1, 2024</MudText>
-                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: 8:04 AM</MudText>
-                                </MudStack>
+                        string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                        var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                        <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault()))">
+                            <MudCard Style="background: #e74c3c; color: white;">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Grid3x3" Color="Color.Inherit" /> @item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                    <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                    </MudStack>
 
-                            </MudCardActions>
-                        </MudCard>
-                    </a>
-                }
-            </MudStack>
+                                </MudCardActions>
+                            </MudCard>
+                        </a>
+                    }
+                </MudStack>
 
+            </MudItem>
         </MudItem>
-    </MudItem>
+    }else if (view == 2)
+    {
+        <MudItem Class="d-flex justify-content-center" xs="12">
+            <MudItem xs="12" Class="p-5">
+                <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                    @foreach (var item in processingOrders)
+                    {
+
+                        string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                        var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                        <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault()))">
+                            <MudCard Style="background: #f39c12; color: white;">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Grid3x3" Color="Color.Inherit" /> @item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                    <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                        <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                    </MudStack>
+
+                                </MudCardActions>
+                            </MudCard>
+                        </a>
+                    }
+                </MudStack>
+
+            </MudItem>
+        </MudItem>
+    }
+
 </MudItem>
 @code {
     int a = 0;
@@ -140,10 +198,84 @@
         new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
         new BreadcrumbItem("Order Management", href: "#", icon: Icons.Material.Filled.ReceiptLong)
     };
-
-    private void OnClicked(int id)
+    private string emailaddress { get; set; }
+    private List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private List<OrderJson> orderJson = new List<OrderJson>();
+    private List<OrderDisplay> orders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> newOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> processingOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> forDeliveryOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> intransitOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> cancelledOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> completedOrders { get; set; } = new List<OrderDisplay>();
+    private int view = 1;
+    protected override async Task OnInitializedAsync()
     {
-        Snackbar.Add($"Clicked {id}", MudBlazor.Severity.Info);
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+            await OnGetOrders(emailaddress);
+
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnClicked(string Orderid,UserAdditionalDetails userdetails)
+    {
+        var parameters = new DialogParameters<ProcessItemDialog>();
+        parameters.Add(x => x.Title, Orderid);
+        parameters.Add(x => x.UserAdditionalDetails, userdetails);
+        parameters.Add(x => x.OrderItem, newOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+        
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth=true, DisableBackdropClick = true, ClassBackground = "my-custom-class" };
+        var dialog = DialogService.Show<ProcessItemDialog>("Edit Food Item", parameters, options);
+
+        // Snackbar.Add($"Clicked {id}", MudBlazor.Severity.Info);
+    }
+
+    private async Task OnGetOrders(string emailaddress)
+    {
+        try
+        {
+            var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerordersall?emailaddress={emailaddress}");
+            orderJson = ordersJson;
+            foreach (var item in ordersJson)
+            {
+                var orderItems = JsonConvert.DeserializeObject<List<OrderItem>>(item.Item);
+                var statuses = JsonConvert.DeserializeObject<List<StatusEntry>>(item.Status);
+                var users = JsonConvert.DeserializeObject<List<UserAdditionalDetails>>(item.UserAdditionalDetails);
+
+                // Create an OrderDisplay object and set its properties
+                var orderDisplay = new OrderDisplay
+                    {
+                        OrderItems = orderItems,
+                        Status = statuses,
+                        UserAdditionalDetails = users
+                    };
+
+                orders.Add(orderDisplay);
+
+            }
+            newOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 1).ToList();
+            processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2).ToList();
+            intransitOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 3).ToList();
+            cancelledOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 0).ToList();
+            forDeliveryOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 5).ToList();
+            completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
 }

@@ -46,6 +46,28 @@ namespace Server.Controllers
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@Email", emailaddress);
+                parameters.Add("@Action", 0);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var ordersDisplay = await connection.QueryAsync<OrderJson>("GetOrders", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(ordersDisplay.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
+        [HttpGet("getcustomerordersall")]
+        public async Task<ActionResult<IEnumerable<OrderJson>>> GetOrdersDisplayAll(string emailaddress)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", emailaddress);
+                parameters.Add("@Action", 1);
+
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     var ordersDisplay = await connection.QueryAsync<OrderJson>("GetOrders", parameters, commandType: CommandType.StoredProcedure);
