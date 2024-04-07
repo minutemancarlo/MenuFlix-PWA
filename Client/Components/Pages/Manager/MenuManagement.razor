@@ -274,7 +274,7 @@
                         <TemplateColumn Title="Actions" Sortable="false" CellClass="text-center" HeaderClass="align-center blue fw-bold darken-1 shades-text text-light">
                             <CellTemplate>            
                                 <MudIconButton Icon="@Icons.Material.Filled.ModeEdit" OnClick="@(() => OnEditFoodItem(context.Item,context.Item.Category))" Size="Size.Small" aria-label="edit" Color="Color.Primary"></MudIconButton>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => OnButtonStatusClicked(context.Item.ItemId.ToString()))" Size="Size.Small" aria-label="delete" Color="Color.Error"></MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.ChangeCircle" OnClick="@(() => OnButtonStatusClicked(context.Item.ItemId.ToString()))" Size="Size.Small" aria-label="delete" Color="@(context.Item.IsDisabled == 0?Color.Error:Color.Success)"></MudIconButton>
                             </CellTemplate>
                         </TemplateColumn>
                         <PropertyColumn Property="x => x.Name" Title="Item Name" HeaderClass="blue fw-bold darken-1 shades-text text-light" />
@@ -388,7 +388,7 @@
 
                 // Convert the byte array to a base64 string
                 var base64String = Convert.ToBase64String(bytes);
-               foodItem.Logo = base64String;
+                foodItem.Logo = base64String;
                 // Construct the data URL
                 imageUrl = $"data:{file.ContentType};base64,{base64String}";
             }
@@ -673,14 +673,30 @@
 
     private async void OnEditFoodItem(FoodItemDataGrid item,string searchItem)
     {
+
+        var data = new FoodItem
+        {
+            ItemId = item.ItemId,
+            Name = item.Name,
+            Description = item.Description,
+            Logo=item.Logo,
+            Price= item.Price,
+            CategoryName = item.Category
+        };
+
         var parameters = new DialogParameters<EditFoodItemDialog>();
-        parameters.Add(x => x.model,item);
+        parameters.Add(x => x.model,data);
         parameters.Add(x => x.emailaddress, emailaddress);
         parameters.Add(x => x.searchCategory, searchItem);
-            
-        
+
+
         var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, DisableBackdropClick = true };
-        DialogService.Show<EditFoodItemDialog>("Edit Food Item", parameters,options);
+        var dialog=  DialogService.Show<EditFoodItemDialog>("Edit Food Item", parameters,options);
+        var result = dialog.Result;
+        if (!result.IsCanceled)
+        {
+            await OnGetFoodItems();
+        }
     }
 
     private Func<FoodItemDataGrid, bool> _quickFilter => x =>

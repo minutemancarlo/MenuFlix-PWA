@@ -2,10 +2,16 @@
 @using Client.Validations
 @using System.Security.Claims
 @using System.Net.Http.Json
-
+@using System.Net
 @inject HttpClient httpClient
 
 <MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            Edit Food Item
+        </MudText>
+    </TitleContent>
     <DialogContent>
         <MudItem xs="12">
             <MudText Typo="Typo.body1" Class="py-3"><strong>Food Item Name: </strong>@model.Name</MudText>
@@ -40,7 +46,7 @@
                                          @bind-Value="SearchCategory"
                                          SearchFunc="@Search1"
                                          Margin="Margin.Dense"
-                                         For="@(() => model.Category)"
+                                         For="@(() => model.CategoryName)"
                                          Dense
                                          Variant="Variant.Outlined">
                             <ProgressIndicatorInPopoverTemplate>
@@ -83,36 +89,47 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit">Update</MudButton>
+        <MudLoadingButton Variant="Variant.Filled"
+                          Color="Color.Success"
+                          Size="Size.Medium"
+                          Loading="false"
+                          OnClick="OnSubmit"
+                          ButtonType="ButtonType.Button">
+            <LoadingContent>Updating...</LoadingContent>
+            <ChildContent>Update</ChildContent>
+        </MudLoadingButton>        
     </DialogActions>
 </MudDialog>
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public FoodItemDataGrid model { get; set; }
+    [Parameter] public FoodItem model { get; set; }
     FoodItemValidator foodItemValidator = new FoodItemValidator();
     MudForm? foodItemForm;
     private List<Category> categoryParent = new List<Category>();    
     private string imageUrl = "add-image.png";
+    private string initialImage = "";
     [Parameter] public string emailaddress { get; set; }
     private string[]? searchBoxCategory;    
     [Parameter] public string? searchCategory { get; set; }
+    private bool _itemLoading = false;
     public string? SearchCategory
     {
         get { return searchCategory; }
         private set
         {
             searchCategory = value;
-            model.Category = categoryParent.Where(category => category.Name == searchCategory).Select(category => category.CategoryId).FirstOrDefault().ToString();
+            model.CategoryName = categoryParent.Where(category => category.Name == searchCategory).Select(category => category.CategoryId).FirstOrDefault().ToString();
         }
     }
 
-    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    
     void Cancel() => MudDialog.Cancel();
 
     protected override async Task OnInitializedAsync()
     {
         await OnGetCategories();
         imageUrl = model.Logo;
+        initialImage = imageUrl;
         await base.OnInitializedAsync();
     }
 
@@ -128,7 +145,7 @@
 
                 // Convert the byte array to a base64 string
                 var base64String = Convert.ToBase64String(bytes);
-                // store.Logo = base64String;
+                model.Logo = base64String;
                 // Construct the data URL
                 imageUrl = $"data:{file.ContentType};base64,{base64String}";
             }
@@ -156,5 +173,62 @@
         searchBoxCategory = categoryParent.Select(category => category.Name).ToArray();
     }
 
-    
+    private async Task OnSubmit()
+    {
+        _itemLoading = true;
+
+        try
+        {
+            // foodItem.Logo = imageUrl;
+            if (initialImage == imageUrl)
+            {
+                model.Logo = "0";
+            }
+
+            model.UpdatedBy = emailaddress;
+            await foodItemForm.Validate();
+            var data = new FoodItem
+                {
+                    ItemId = model.ItemId,
+                    Name = model.Name,
+                    Description = model.Description,
+                    CategoryName = model.CategoryName,
+                    Logo = model.Logo,
+                    Price = model.Price,
+                    UpdatedBy = model.UpdatedBy,
+                    CreatedBy= "0",
+                    Email="0"
+                };
+
+            if (foodItemForm.IsValid)
+            {
+                var response = await httpClient.PostAsJsonAsync("FoodItem/updatefooditem", data);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Food Item Updated", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    Snackbar.Add("Food Item already exists", Severity.Warning);
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred: {errorMessage}", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _itemLoading = false;
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+        }
+
+        _itemLoading = false;
+    }
 }

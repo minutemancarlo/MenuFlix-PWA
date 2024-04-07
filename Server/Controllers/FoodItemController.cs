@@ -65,6 +65,57 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("updatefooditem")]
+        public async Task<IActionResult> UpdateFoodItem([FromBody] FoodItem fooditem)
+        {
+            try
+            {
+                string imagePath = "0";
+                // Save the file to the server
+                if (fooditem.Logo != "0")
+                {
+                    imagePath = SaveImageToDisk(fooditem.Logo); // Save the image and get the saved path
+                }                
+                
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@ItemId", fooditem.ItemId);
+                parameters.Add("@ItemName", fooditem.Name);
+                parameters.Add("@ItemDescription", fooditem.Description);
+                parameters.Add("@ItemImage", imagePath);
+                parameters.Add("@ItemPrice", fooditem.Price);
+                parameters.Add("@ItemCategory", fooditem.CategoryName);
+                parameters.Add("@UpdatedBy", fooditem.UpdatedBy);
+                parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                      await connection.ExecuteScalarAsync<int>(
+                        "UpdateFoodItem",
+                        parameters,
+                        commandType: CommandType.StoredProcedure);
+                    var statusCode = parameters.Get<int>("@StatusCode");
+                    if (statusCode == 1)
+                    {
+                        return Ok();
+                    }
+                    else if (statusCode == 0)
+                    {
+                        return Conflict("Item already exists.");
+                    }
+                    else
+                    {
+                        return BadRequest($"An error occurred: {statusCode}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
         [HttpGet("getfooditems")]
         public async Task<ActionResult<IEnumerable<FoodItemDataGrid>>> GetFoodItems(string email)
         {

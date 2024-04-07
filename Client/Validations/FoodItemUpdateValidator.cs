@@ -4,7 +4,7 @@ using SharedLibrary;
 
 namespace Client.Validations
 {
-    public class FoodItemValidator : AbstractValidator<FoodItem>
+    public class FoodItemUpdateValidator : AbstractValidator<FoodItem>
     {
         public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
         {
@@ -13,14 +13,12 @@ namespace Client.Validations
                 return Array.Empty<string>();
             return result.Errors.Select(e => e.ErrorMessage);
         };
-        public FoodItemValidator()
+        public FoodItemUpdateValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Food Item Name is required.");
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Food Item Description is required.");
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Food Item Name is required.");
+                .NotEmpty().WithMessage("Food Item Description is required.");            
             RuleFor(x => x.Logo)
                 .NotEmpty().WithMessage("Food Item Image is required.");
             RuleFor(x => x.CategoryName)
@@ -28,8 +26,10 @@ namespace Client.Validations
             RuleFor(x => x.Price)
                 .NotEmpty().WithMessage("Food Item price is required.")
                 .GreaterThan(0).WithMessage("Food Item price must be greater than zero.");
+            
+                
         }
 
-        
+
     }
 }

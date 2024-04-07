@@ -83,7 +83,7 @@
                 <MudCard Style="width: 300px; height: 250px; background: #ecf0f1">
                     <MudCardContent>
                         <MudItem Class="text-center">
-                            <MudImage Src="@item.Logo" Height="100" Width="100" Fluid />
+                            <MudImage Src="@item.Logo" Height="100" Width="100" />
                         </MudItem>
 
                         <MudText Typo="Typo.body2" Class="fw-bolder">@item.Name</MudText>
@@ -96,7 +96,7 @@
                         <MudStack Row>
                             <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart">Add to Cart</MudButton>
                             <MudSpacer />
-                            <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly />
+                            <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly Color="Color.Success" />
                         </MudStack>
                     </MudCardActions>
                 </MudCard>
