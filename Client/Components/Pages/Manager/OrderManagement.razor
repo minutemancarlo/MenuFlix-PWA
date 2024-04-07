@@ -3,6 +3,7 @@
 @using Client.Validations
 @using FluentValidation
 @using System.Security.Claims
+
 @layout MainLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
@@ -23,7 +24,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.LunchDining" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
-                <MudCardContent>                    
+                <MudCardContent>
                     <MudText Class="text-center" Typo="Typo.h3">0</MudText>
                 </MudCardContent>
                 <MudCardActions>
@@ -39,7 +40,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.AvTimer" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
-                <MudCardContent>                    
+                <MudCardContent>
                     <MudText Class="text-center" Typo="Typo.h3">0</MudText>
                 </MudCardContent>
                 <MudCardActions>
@@ -55,7 +56,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.DeliveryDining" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
-                <MudCardContent>                    
+                <MudCardContent>
                     <MudText Class="text-center" Typo="Typo.h3">0</MudText>
                 </MudCardContent>
                 <MudCardActions>
@@ -71,7 +72,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.ElectricMoped" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
-                <MudCardContent>                                        
+                <MudCardContent>
                     <MudText Class="text-center" Typo="Typo.h3">0</MudText>
                 </MudCardContent>
                 <MudCardActions>
@@ -87,7 +88,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.HowToReg" Color="Color.Inherit" Size="Size.Large" />
                     </CardHeaderActions>
                 </MudCardHeader>
-                <MudCardContent>                                        
+                <MudCardContent>
                     <MudText Class="text-center" Typo="Typo.h3">0</MudText>
                 </MudCardContent>
                 <MudCardActions>
@@ -95,13 +96,54 @@
                 </MudCardActions>
             </MudCard>
         </MudStack>
+    </MudItem>
+    <MudItem Class="d-flex justify-content-center" xs="12">
+        <MudItem xs="12" Class="p-5">
+            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
 
+                @for (var i = 0; i < 10; i++)
+                {
+                    <a style="cursor: pointer;" onclick="@(() => OnClicked(a++))">
+                        <MudCard Style="background: #34495e; color: white;">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Order No: @i</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Inherit" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText>Item Count 5</MudText>
+                                <MudText Typo="Typo.body2">Total: 1000</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: Carlo Boado</MudText>
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: January 1, 2024</MudText>
+                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: 8:04 AM</MudText>
+                                </MudStack>
+
+                            </MudCardActions>
+                        </MudCard>
+                    </a>
+                }
+            </MudStack>
+
+        </MudItem>
     </MudItem>
 </MudItem>
 @code {
-     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    int a = 0;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
         new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
         new BreadcrumbItem("Order Management", href: "#", icon: Icons.Material.Filled.ReceiptLong)
     };
+
+    private void OnClicked(int id)
+    {
+        Snackbar.Add($"Clicked {id}", MudBlazor.Severity.Info);
+    }
+
 }
