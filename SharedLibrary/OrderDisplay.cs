@@ -23,7 +23,7 @@ namespace SharedLibrary
 
     public partial class OrderItem : BaseModel
     {
-        public bool isReady { get; set; }
+        public bool IsReady { get; set; }
         public string OrderId { get; set; }
         public string ItemId { get; set; }
         public string ItemName { get; set; }

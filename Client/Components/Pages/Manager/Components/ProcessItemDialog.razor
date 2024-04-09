@@ -61,11 +61,14 @@
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.ItemName" Title="Item" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
                     <PropertyColumn Property="x => x.Pcs" Title="Pcs" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
-                    @*  <TemplateColumn Filterable="false" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white">
-                    <CellTemplate>
-                    <MudSwitch @bind-Value="@context.Item.isReady" ThumbIcon="@(context.Item.isReady==true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" ThumbIconColor="@(context.Item.isReady==true ? Color.Success : Color.Error)">@(_checked3 ? "Ready" : "Not Ready")</MudSwitch>
-                    </CellTemplate>
-                    </TemplateColumn> *@
+                    @if (Action == 2)
+                    {
+                        <TemplateColumn Filterable="false" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white">
+                            <CellTemplate>
+                                <MudSwitch @bind-Value="@context.Item.IsReady" ThumbIcon="@(context.Item.IsReady==true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" ThumbIconColor="@(context.Item.IsReady==true ? Color.Success : Color.Error)">@(context.Item.IsReady ? "Ready" : "Not Ready")</MudSwitch>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    }
                 </Columns>
             </MudDataGrid>
 
@@ -74,17 +77,38 @@
     </DialogContent>
     <DialogActions>
 
-        <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Close</MudButton>
-        <MudLoadingButton Variant="Variant.Filled"
-                          Color="Color.Success"
-                          Size="Size.Medium"
-                          FullWidth
-                          Loading="false"
-                          OnClick="Submit"
-                          ButtonType="ButtonType.Button">
-            <LoadingContent>Processing...</LoadingContent>
-            <ChildContent>Accept Order</ChildContent>
-        </MudLoadingButton>
+        <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="OnCancel">Close</MudButton>
+        @if (Action == 1)
+        {
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Success"
+                              Size="Size.Medium"
+                              FullWidth
+                              Loading="false"
+                              OnClick="OnSubmitAccept"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Processing...</LoadingContent>
+                <ChildContent>Accept Order</ChildContent>
+            </MudLoadingButton>
+        }
+        else if (Action == 2)
+        {
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Success"
+                              Size="Size.Medium"
+                              FullWidth
+                              Loading="false"
+                              OnClick="OnSubmitForDelivery"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Processing...</LoadingContent>
+                <ChildContent>Ready for Delivery</ChildContent>
+            </MudLoadingButton>
+        }
+        else if (Action == 0 || Action == 3 || Action == 4 || Action == 5)
+        {
+
+        }
+
     </DialogActions>
 </MudDialog>
 
@@ -93,14 +117,26 @@
     [Parameter] public string? Title { get; set; }
     [Parameter] public List<OrderDisplay> OrderItem { get; set; } = default!;
     [Parameter] public UserAdditionalDetails UserAdditionalDetails { get; set; } = default!;
-    [Parameter] public string? Action { get; set; }
+    [Parameter] public int? Action { get; set; }
+    [Parameter] public Action? Refresh { get; set; }
     private List<OrderItem> itemsList { get; set; } = default!;
     private string? createdDate;
     private string? createdTime;
-    public bool _checked3 { get; set; } = false;
 
-    void Submit() => MudDialog.Close(DialogResult.Ok(true));
-    void Cancel() => MudDialog.Cancel();
+
+
+
+    private async Task OnCancel()
+    {
+        if(Action == 2)
+        {
+            await OnSubmitItemReady();
+            Snackbar.Add("Saved as Draft", Severity.Info);
+        }
+
+        await Task.CompletedTask;
+        MudDialog.Cancel();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,5 +150,123 @@
         await base.OnInitializedAsync();
     }
 
+    private async Task OnChangeReady(string itemId)
+    {
+        await Task.CompletedTask;
+    }
 
+    private async Task OnSubmitForDelivery()
+    {
+        await OnSubmitItemReady();
+        if (OrderItem.FindAll(x => x.OrderItems.Any(item => item.IsReady == false)).Count > 0)
+        {
+            Snackbar.Add("Not all Items are Ready", Severity.Error);
+        }
+        else
+        {
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"OrderManagement/itemfordelivery", Title);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // await OnGetCartItems(emailaddress);
+                    Snackbar.Add($"Order Status Updated For Order :{Title}", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                    Refresh?.Invoke();
+                }
+                else
+                {
+
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+            }
+        }
+
+    }
+
+    private async Task<bool> OnSubmitItemReady()
+    {
+        try
+        {
+            List<OrderItemStatus> itemStatus = new List<OrderItemStatus>();
+            foreach(var item in itemsList)
+            {
+                var data = new OrderItemStatus
+                    {
+                        OrderId = item.OrderId,
+                        ItemId = item.ItemId,
+                        IsReady = item.IsReady
+                    };
+                itemStatus.Add(data);
+            }
+
+            var response = await httpClient.PostAsJsonAsync("OrderManagement/itemready", itemStatus);
+
+            if (response.IsSuccessStatusCode)
+            {
+                
+                return true;
+
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+                return false;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            return false;
+        }
+    }
+
+    private async Task OnSubmitAccept()
+    {
+        try
+        {            
+            var response = await httpClient.PostAsJsonAsync($"OrderManagement/itemaccept",Title);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // await OnGetCartItems(emailaddress);
+                Snackbar.Add($"Order Status Updated For Order :{Title}", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                Refresh?.Invoke();
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+            
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            
+        }                
+    }
+
+    
 }

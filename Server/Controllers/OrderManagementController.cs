@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using SharedLibrary;
 using System.Data.SqlClient;
+using System.Net.Mail;
 
 namespace Server.Controllers
 {
@@ -99,6 +100,103 @@ namespace Server.Controllers
             catch (Exception ex)
             {
                 return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
+        [HttpPost("itemready")]
+        public async Task<IActionResult> UpdateItemReady([FromBody] List<OrderItemStatus> items)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@Action", 1);
+                var itemListTable = new DataTable();
+                itemListTable.Columns.Add("OrderId", typeof(string));
+                itemListTable.Columns.Add("ItemId", typeof(int));
+                itemListTable.Columns.Add("IsReady", typeof(bool));
+               
+                foreach (var item in items)
+                {
+                    itemListTable.Rows.Add(
+                        item.OrderId,
+                         item.ItemId,
+                        item.IsReady
+                        );
+                }
+                
+                parameters.Add("@OrderItemStatus", itemListTable.AsTableValuedParameter("OrderItemsStatusType"));
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        "UpdateOrderItemStatus",
+                        parameters,
+                        commandType: CommandType.StoredProcedure);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("itemaccept")]
+        public async Task<IActionResult> UpdateItemAccept([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", orderId);
+               
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        //TODO: Add GETDATE on OrderHistory
+                        "Update Orders set Status=2 where OrderId=@OrderId;Update OrderHistory set Status=2,UpdatedOn=GETDATE() where OrderId=@OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("itemfordelivery")]
+        public async Task<IActionResult> UpdateItemForDelivery([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", orderId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        //TODO: Add GETDATE on OrderHistory
+                        "Update Orders set Status=5 where OrderId=@OrderId;Update OrderHistory set Status=5,UpdatedOn=GETDATE() where OrderId=@OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
             }
         }
 
