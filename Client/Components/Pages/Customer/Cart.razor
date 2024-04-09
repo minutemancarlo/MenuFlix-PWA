@@ -75,10 +75,16 @@
                        
                         <MudItem xs="12">
                             <MudCard >
-                                <MudCardContent Class="d-flex align-start d-flex">                                    
+                                <MudCardContent Class="d-flex align-start d-flex">
+                                    @if (cartItems.Count > 0)
+                                    {
                                         <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
-
-                                    <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed to Order</MudButton>
+                                        <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed to Order</MudButton>
+                                    }else
+                                    {
+                                        <MudText Typo="Typo.h6">No Items on Cart</MudText>
+                                    }
+                                    
                                                                                                                                                                                   
                                 </MudCardContent>
                             </MudCard>

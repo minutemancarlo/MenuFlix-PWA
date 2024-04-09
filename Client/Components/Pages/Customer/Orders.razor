@@ -17,6 +17,7 @@
                         <MudStack>
                             @foreach (var item in newOrders)
                             {
+                                
                                 <MudExpansionPanels MultiExpansion="true">
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
@@ -43,20 +44,17 @@
                                                         <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
                                                     </ItemContent>
                                                     <ItemOpposite>
-                                                        <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                        <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).FirstOrDefault()</MudText>
                                                     </ItemOpposite>
                                                 </MudTimelineItem>
                                                 @if (item.Status
-                                               .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))                                               
                                                 {
                                                     color2 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color2 = Color.Default;
+                                                    color2 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -69,10 +67,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color2">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -80,16 +75,13 @@
                                                     </ItemOpposite>
                                                 </MudTimelineItem>
                                                 @if (item.Status
-                                               .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     color3 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color3 = Color.Default;
+                                                    color3 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -102,10 +94,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color3">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -114,10 +103,7 @@
                                                 </MudTimelineItem>
 
                                                 @if (item.Status
-                                               .Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                         <ItemDot>
@@ -132,16 +118,13 @@
                                                     </MudTimelineItem>
                                                 }
                                                 @if (item.Status
-                                               .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     color4 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color4 = Color.Default;
+                                                    color4 = Color.Dark;
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
@@ -153,10 +136,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color4">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -224,21 +204,18 @@
                                                     <ItemContent>
                                                         <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
                                                     </ItemContent>
-                                                    <ItemOpposite>
-                                                        <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                    <ItemOpposite>                                                        
+                                                        <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).FirstOrDefault()</MudText>
                                                     </ItemOpposite>
                                                 </MudTimelineItem>
                                                 @if (item.Status
-                                               .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     color2 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color2 = Color.Default;
+                                                    color2 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -251,10 +228,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color2">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -262,16 +236,13 @@
                                                     </ItemOpposite>
                                                 </MudTimelineItem>
                                                 @if (item.Status
-                                               .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     color3 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color3 = Color.Default;
+                                                    color3 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -284,10 +255,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color3">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -296,10 +264,7 @@
                                                 </MudTimelineItem>
 
                                                 @if (item.Status
-                                               .Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                         <ItemDot>
@@ -314,16 +279,13 @@
                                                     </MudTimelineItem>
                                                 }
                                                 @if (item.Status
-                                               .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                               .Select(s => s.UpdatedOn)
-                                               .DefaultIfEmpty()
-                                               .FirstOrDefault() != DateTime.MinValue)
+                                               .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                 {
                                                     color4 = Color.Success;
                                                 }
                                                 else
                                                 {
-                                                    color4 = Color.Default;
+                                                    color4 = Color.Dark;
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
@@ -335,10 +297,7 @@
                                                     <ItemOpposite>
                                                         <MudText Color="@color4">
                                                             @if (item.Status
-                                                           .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
-                                                           .Select(s => s.UpdatedOn)
-                                                           .DefaultIfEmpty()
-                                                           .FirstOrDefault() != DateTime.MinValue)
+                                                           .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
                                                             {
                                                                 @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
                                                             }
@@ -420,7 +379,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color2 = Color.Default;
+                                                    color2 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -453,7 +412,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color3 = Color.Default;
+                                                    color3 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -505,7 +464,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color4 = Color.Default;
+                                                    color4 = Color.Dark;
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
@@ -602,7 +561,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color2 = Color.Default;
+                                                    color2 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -635,7 +594,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color3 = Color.Default;
+                                                    color3 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -687,7 +646,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color4 = Color.Default;
+                                                    color4 = Color.Dark;
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
@@ -784,7 +743,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color2 = Color.Default;
+                                                    color2 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -817,7 +776,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color3 = Color.Default;
+                                                    color3 = Color.Dark;
 
                                                 }
                                                 <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
@@ -869,7 +828,7 @@
                                                 }
                                                 else
                                                 {
-                                                    color4 = Color.Default;
+                                                    color4 = Color.Dark;
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>

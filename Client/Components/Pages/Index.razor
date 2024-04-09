@@ -105,7 +105,7 @@
             <h1 class="display-5 fw-bold lh-1 mb-3">Unlock Flavorful Adventures: Explore Our Delectable Food Line Now Available at Your Favorite Stores!</h1>
             <p class="lead"></p>
             <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">Discover Stores</MudButton>                
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Info" Href="/menu">Discover Stores</MudButton>
             </div>
         </div>
     </div>
@@ -117,7 +117,7 @@
             <h1 class="display-5 fw-bold lh-1 mb-3">Savor Delight, Anywhere, Anytime: Taste Our Culinary Creations with Convenient Food Delivery!</h1>
             <p class="lead"></p>
             <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">Order Now</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Href="/menu" Color="Color.Info">Order Now</MudButton>
             </div>
         </div>
         <div class="col-10 col-sm-8 col-lg-6">
@@ -231,8 +231,9 @@ and engaging platform for exploring food choices and ordering convenience.
     bool _open = true;
     private bool IsCustomer { get; set; }
     private bool isLoggedin { get; set; }
+    private string emailaddress { get; set; }
     private bool isLoadingCarousel { get; set; } = false;
-    private string emailaddress { get; set; } 
+    
 
 
     protected override async Task OnInitializedAsync()

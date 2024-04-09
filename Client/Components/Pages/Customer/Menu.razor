@@ -5,6 +5,7 @@
 @layout CustomerLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
+@inject NavigationManager _navigationManager
 @attribute [Authorize(Roles = "Customer")]
 
 <PageTitle>Product Menu</PageTitle>
@@ -94,7 +95,7 @@
                     </MudCardContent>
                     <MudCardActions Class="py-0">
                         <MudStack Row>
-                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart">Add to Cart</MudButton>
+                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart" OnClick="@(async () =>await OnAddToCart(item.ItemId))">Add to Cart</MudButton>
                             <MudSpacer />
                             <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly Color="Color.Success" />
                         </MudStack>
@@ -120,6 +121,7 @@
 
 
 @code {
+    [CascadingParameter] public CustomerLayout customerLayout { get; private set; }
     private List<FoodItemDataGrid> foodItemsGrid = new List<FoodItemDataGrid>();
     private List<FoodItemDataGrid> foodItemsGridPage = new List<FoodItemDataGrid>();
     private List<Category> categories = new List<Category>();
@@ -129,6 +131,10 @@
     private bool isVisibleLoad = true;
     private bool isVisible = true;
     private bool isVisibleRating = false;
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();   
+    private bool IsCustomer { get; set; }
+    private bool isLoggedin { get; set; }
+    private string emailaddress { get; set; }
     protected override async Task OnInitializedAsync()
     {
 
@@ -137,6 +143,32 @@
         await OnGetStores();
         await base.OnInitializedAsync();
         isVisible = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await authProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+
+            if (user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                isLoggedin = user.Identity.IsAuthenticated;
+
+                UserClaims = user.Claims.ToList();
+                foreach (var item in UserClaims)
+                {
+                    if (item.Type.Contains("emailaddress"))
+                    {
+                        emailaddress = item.Value;
+                    }
+                }
+            }                      
+        }
+        await base.OnAfterRenderAsync(firstRender);
+
     }
 
     private async Task PageLoad()
@@ -150,7 +182,6 @@
         }
         StateHasChanged();
     }
-
 
     private async Task OnGetFoodItems()
     {
@@ -286,4 +317,56 @@
         }
 
     }
+
+    private async Task OnAddToCart(int itemId)
+    {
+
+        try
+        {
+            var data = new SharedLibrary.Cart
+                {
+                    IsProcessed = 0,
+                    UserId = emailaddress,
+                    Actions = 0,
+                    Pcs = 1,
+                    ItemId = itemId,
+                    CartId = 0
+                };
+            var response = await httpClient.PostAsJsonAsync("Cart/cartactions", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Item Added to Cart", Severity.Success);
+                await OnGetCartNumbers();
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnGetCartNumbers()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
+            customerLayout.Count = response[0];
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
 }
