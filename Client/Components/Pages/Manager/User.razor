@@ -9,38 +9,50 @@
 @inject HttpClient httpClient
 @attribute [Authorize(Roles = "Manager")]
 
-<PageTitle>User Management</PageTitle>
+<PageTitle>Applications Management</PageTitle>
 <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
 <MudGrid class="d-flex justify-center align-center">
-    <MudStack>        
+    <MudStack>
         <MudCard Elevation="4" Class="pa-3 pt-5">
             <MudCardContent>
-                <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" Hover ColumnResizeMode="ResizeMode.Column" Filterable HeaderClass=" text-uppercase font-weight-bold">
+                <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" 
+                @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" 
+                Hover ColumnResizeMode="ResizeMode.Column"                 
+                Filterable HeaderClass=" text-uppercase font-weight-bold">
                     <ToolBarContent>
-                        <MudText Typo="Typo.h6">Users List</MudText>
+
+
+                        <MudText Typo="Typo.h6">Applicants List</MudText>
+
+
                         <MudSpacer />
                         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                                       AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
                     <Columns>
-                        <PropertyColumn Property="x => x.Name" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
+                        <PropertyColumn Property="x => x.FullName" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
                         <PropertyColumn Property="x => x.Email" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
                         <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                        <PropertyColumn Property="x => x.Role" Title="Current Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false" />
-                        <TemplateColumn Title="Change Role" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">
+                        <TemplateColumn Title="Address" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">
                             <CellTemplate>
-                                <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Tag="@context.Item" ValueChanged="@HandleRoleChange"
-                                                Dense Color="Color.Primary" CheckMark FixedContent>
-                                    <MudToggleItem Value="@("Administrator")" Text="Administrator" />
-                                    <MudToggleItem Value="@("Accounting")" Text="Accounting" />
-                                </MudToggleGroup>
-
+                                <MudText Class="py-1 fw-bold" Typo="Typo.body2">@($"{context.Item.AddressLine1}{(context.Item.AddressLine2 != "N/A" ? string.Concat(" ,", context.Item.AddressLine2) : "")}")</MudText>
+                                <MudText Class="py-1" Typo="Typo.body2"> @($"{context.Item.CityTown}, {context.Item.Province} {context.Item.PostalCode}")</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Position Applied" CellClass="text-center" HeaderClass="blue text-center darken-1 shades-text text-white" Filterable="false" Sortable="false">
+                            <CellTemplate>
+                                <MudText Class="py-1 fw-bold text-center" Typo="Typo.body2">@(context.Item.Position == 1 ? "Store Cashier" : "Delivery Rider")</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Action" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">
+                            <CellTemplate>
+                                <MudSwitch @bind-Value="@context.Item.Status" Label="@(context.Item.Status == 0 ? "New" : "Approved")" Color="Color.Success" />
                             </CellTemplate>
                         </TemplateColumn>
                     </Columns>
                     <NoRecordsContent>No available records to show.</NoRecordsContent>
                     <PagerContent>
-                        <MudDataGridPager T="UserDataGrid" />
+                        <MudDataGridPager T="EmployeeApplications" />
                     </PagerContent>
                 </MudDataGrid>
             </MudCardContent>
@@ -52,17 +64,17 @@
 
 
 
-        
+
 
 @code {
-    private MudDataGrid<UserDataGrid> _users = default!;
-    private List<UserDataGrid> users = new List<UserDataGrid>();
+    private MudDataGrid<EmployeeApplications> _users = default!;
+    private List<EmployeeApplications> users = new List<EmployeeApplications>();   
     private bool _loading = false;
     private string _searchString;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private bool IsCurrentUser = false;
-    private UserDataGrid _currentDto = new UserDataGrid();
-    private HashSet<UserDataGrid> _selectedItems = new();
+    private EmployeeApplications _currentDto = new EmployeeApplications();
+    private HashSet<EmployeeApplications> _selectedItems = new();
     private string emailaddress;
     private MudToggleGroup<string> toggleGroupRef;
     protected override async Task OnInitializedAsync()
@@ -94,79 +106,71 @@
     private async Task loadGrid()
     {
         _loading = true;
-        var allUsers = await httpClient.GetFromJsonAsync<List<UserDataGrid>>("UserManagement/getallusers");
-        users = allUsers.Where(u => u.Email != emailaddress).ToList();
+        users = await httpClient.GetFromJsonAsync<List<EmployeeApplications>>($"ApplicationsManager/getapplicantsall?emailaddress={emailaddress}");
         _loading = false;
     }
 
-    private async Task HandleRoleChange(string newValue)
+    private void OnChangeStatus()
     {
-        if (_currentDto.UserId == null)
-        {
-            return;
-        }
-        else
-        {
-            await ChangeRole(newValue);
-        }
-
+        var a = _currentDto;
     }
 
 
 
-    private async Task ChangeRole(string role)
-    {        
-        var res = await DialogService.ShowConfirmationDialogAsync("Confirmation", $"Change User Role from {_currentDto.Role} to {role}?", "Yes", "No");
-        if (res)
-        {            
-            _currentDto.Role = role;
-            if (await UpdateUserRole(_currentDto))
-            {
-                Snackbar.Add("User Role Changed", Severity.Success);
-                await loadGrid();
-            }
-            else
-            {
-                Snackbar.Add("Failed to change ", Severity.Error);
-            }
 
-            
-        }        
-    }
+    // private async Task ChangeRole(string role)
+    // {
+    //     var res = await DialogService.ShowConfirmationDialogAsync("Confirmation", $"Change User Role from {_currentDto.Role} to {role}?", "Yes", "No");
+    //     if (res)
+    //     {
+    //         _currentDto.Role = role;
+    //         if (await UpdateUserRole(_currentDto))
+    //         {
+    //             Snackbar.Add("User Role Changed", Severity.Success);
+    //             await loadGrid();
+    //         }
+    //         else
+    //         {
+    //             Snackbar.Add("Failed to change ", Severity.Error);
+    //         }
 
-    public async Task<bool> UpdateUserRole(UserDataGrid userDataGrid)
-    {
-        try
-        {
-            var response = await httpClient.PostAsJsonAsync("RoleManager/updateuserrole", userDataGrid);
 
-            if (response.IsSuccessStatusCode)
-            {
-                // Role updated successfully
-                return true;
-            }
-            else
-            {
-                // Failed to update role
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exception
-            Console.WriteLine($"Error: {ex.Message}");
-            return false;
-        }
-    }
-    
+    //     }
+    // }
 
-    
-    private Func<UserDataGrid, bool> _quickFilter => x =>
+    // public async Task<bool> UpdateUserRole(UserDataGrid userDataGrid)
+    // {
+    //     try
+    //     {
+    //         var response = await httpClient.PostAsJsonAsync("RoleManager/updateuserrole", userDataGrid);
+
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //             // Role updated successfully
+    //             return true;
+    //         }
+    //         else
+    //         {
+    //             // Failed to update role
+    //             return false;
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         // Handle exception
+    //         Console.WriteLine($"Error: {ex.Message}");
+    //         return false;
+    //     }
+    // }
+
+
+
+    private Func<EmployeeApplications, bool> _quickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
 
-        if (x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         if (x.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
@@ -174,14 +178,14 @@
 
         if (x.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-            
+
 
         return false;
     };
 
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
-        new BreadcrumbItem("Administrator", href: "#", icon: Icons.Material.Filled.AccountCircle),
-        new BreadcrumbItem("User Management", href: "#", icon: Icons.Material.Filled.Groups)
+        new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Applicants Management", href: "#", icon: Icons.Material.Filled.Groups)
     };
 }                    

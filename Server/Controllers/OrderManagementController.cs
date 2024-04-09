@@ -200,5 +200,33 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("itemforcancel")]
+        public async Task<IActionResult> UpdateItemForCancel([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", orderId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        //TODO: Add GETDATE on OrderHistory
+                        "Update Orders set Status=0 where OrderId=@OrderId;Update OrderHistory set Status=0,UpdatedOn=GETDATE() where OrderId=@OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
     }
 }

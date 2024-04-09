@@ -106,6 +106,15 @@
                                       Variant="Variant.Outlined"
                                       Label="Postal Code" />
                     </MudStack>
+                        <MudTextField @bind-Value="store.Description"
+                                      For="@(() => store.Description)"
+                                      Margin="Margin.Dense"
+                                      OnlyValidateIfDirty="true"
+                                      Class="pa-1"
+                                      Lines="3"
+                                      FullWidth="true"
+                                      Variant="Variant.Outlined"
+                                      Label="Store Description" />
                 </MudForm>
                 <MudCardActions>
                     <MudLoadingButton Variant="Variant.Filled"
@@ -174,6 +183,7 @@
             store.PostalCode = info.PostalCode;
             store.OwnerId = info.OwnerId;
             store.Id = info.Id;
+            store.Description = info.Description;
             _read = true;
         }
         else

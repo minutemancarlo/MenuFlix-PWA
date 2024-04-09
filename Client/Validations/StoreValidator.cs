@@ -41,6 +41,8 @@ namespace Client.Validations
             RuleFor(x => x.PostalCode)
                 .NotEmpty().WithMessage("Postal Code is required.")
                 .Matches(@"^\d{4}$").WithMessage("Postal Code must be 4 digits.");
+            RuleFor(x => x.Description)
+                .NotEmpty().WithMessage("Store Description is required.");
         }
     }
 }

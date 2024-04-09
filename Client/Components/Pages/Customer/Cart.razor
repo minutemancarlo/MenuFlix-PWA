@@ -98,6 +98,7 @@
 </MudItem>
 
 @code {
+    [CascadingParameter] public CustomerLayout customerLayout { get; private set; }
     private int pcs { get; set; } = 0;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     UserAdditionalDetails model = new UserAdditionalDetails();
@@ -140,6 +141,21 @@
         try
         {
             cartItems = await httpClient.GetFromJsonAsync<List<CartDisplay>>($"Cart/getcartitems?emailaddress={emailaddress}");            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnGetCartNumbers()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
+            customerLayout.Count = response[0];
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -203,6 +219,7 @@
                 if (response.IsSuccessStatusCode)
                 {            
                     await OnGetCartItems(emailaddress);
+                    await OnGetCartNumbers();
                 }
                 else
                 {

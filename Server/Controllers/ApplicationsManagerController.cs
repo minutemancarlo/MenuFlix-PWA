@@ -45,12 +45,43 @@ namespace Server.Controllers
                 parameters.Add("@Province", storeApplication.Province);
                 parameters.Add("@PostalCode", storeApplication.PostalCode);
                 parameters.Add("@Logo", imagePath);
+                parameters.Add("@Description", storeApplication.Description);
                 parameters.Add("@OwnerId", storeApplication.OwnerId); // Assuming OwnerId is the UserId
 
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     // Execute the stored procedure
                     await connection.ExecuteAsync("InsertStoreApplication", parameters, commandType: CommandType.StoredProcedure);
+
+                    return Ok("Store registered successfully!");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (you can replace Console.WriteLine with your preferred logging mechanism)
+                Console.WriteLine($"An error occurred while registering the store: {ex.Message}");
+
+                // Return BadRequest with error message
+                return BadRequest($"An error occurred while registering the store: {ex.Message}");
+            }
+        }
+
+        [HttpPost("applyposition")]
+        public async Task<IActionResult> ApplyPosition([FromBody] EmployeeApply apply)
+        {
+            try
+            {
+                
+                // Create parameters for the stored procedure
+                var parameters = new DynamicParameters();
+                parameters.Add("@StoreId", apply.StoreId);
+                parameters.Add("@Position", 1);
+                parameters.Add("@Email", apply.Email);
+               
+
+                using (var connection = new SqlConnection(_connectionString))
+                {                    
+                    await connection.ExecuteAsync("InsertEmployeeApplication", parameters, commandType: CommandType.StoredProcedure);
 
                     return Ok("Store registered successfully!");
                 }
@@ -85,7 +116,8 @@ namespace Server.Controllers
                 parameters.Add("@CityTown", store.CityTown);
                 parameters.Add("@Province", store.Province);
                 parameters.Add("@PostalCode", store.PostalCode);
-                parameters.Add("@Logo", imagePath);                                                
+                parameters.Add("@Logo", imagePath);
+                parameters.Add("@Description", store.Description);
                 parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 using (var connection = new SqlConnection(_connectionString))
                 {
@@ -199,6 +231,26 @@ namespace Server.Controllers
                 {
                     // Execute the stored procedure
                     var userDataGrid = await connection.QueryAsync<StoreApplications>("GetStoreApplication", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(userDataGrid.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
+        [HttpGet("getapplicantsall")]
+        public async Task<ActionResult<IEnumerable<EmployeeApplications>>> GetApplicantsAll(string emailaddress)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", emailaddress);                
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    var userDataGrid = await connection.QueryAsync<EmployeeApplications>("GetEmployeeApplications", parameters, commandType: CommandType.StoredProcedure);
                     return Ok(userDataGrid.ToList());
                 }
             }

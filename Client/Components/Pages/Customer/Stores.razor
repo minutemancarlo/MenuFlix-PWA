@@ -1,0 +1,114 @@
+﻿@page "/stores"
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@layout CustomerLayout
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
+@inject NavigationManager _navigationManager
+@attribute [Authorize(Roles = "Customer")]
+
+<PageTitle>Stores</PageTitle>
+<MudGrid Class="w-100 vh-100 pt-5" Justify="Justify.Center">
+    <MudItem xs="8" Style="height: 100%">
+        <MudPaper Class="w-100" Elevation="0">
+            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Stretch">
+                @foreach (var item in stores.Where(s => s.Status == "1").ToList())
+                {
+                    <MudCard Style="width: 400px;">
+                        <MudItem Class="text-center">
+                            <MudImage Src="@item.Logo" Height="200" Width="200" ObjectFit="ObjectFit.Contain" />
+                        </MudItem>
+                        <MudCardContent>
+                            <MudText Typo="Typo.h5">@item.Name</MudText>
+                            <MudStack Row Justify="Justify.SpaceEvenly">
+                                <MudText Class="py-1" Typo="Typo.body1"><strong><MudIcon Icon="@Icons.Material.Filled.Mail" /> @item.Email</strong></MudText>
+                                <MudText Class="py-1" Typo="Typo.body1"> <strong><MudIcon Icon="@Icons.Material.Filled.Phone" /> @item.PhoneNumber</strong></MudText>
+                            </MudStack>
+                            <MudText Class="py-1 fw-bold" Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.Store" /> @($"{item.AddressLine1}{(item.AddressLine2 != "N/A" ? string.Concat(" ,", item.AddressLine2) : "")}, {item.CityTown}, {item.Province} {item.PostalCode}")</MudText>
+                            <MudDivider />
+                            <MudText Typo="Typo.body2" Class="py-3">@item.Description</MudText>
+                            <MudSpacer />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButtonGroup Color="Color.Primary" Class="w-100" Variant="Variant.Filled">
+                                <MudButton FullWidth OnClick="@(async () => await OnApply(1,item.Id))">Apply as Cashier</MudButton>
+                                <MudButton FullWidth OnClick="@(async () => await OnApply(2,item.Id))">Apply as Driver</MudButton>
+                            </MudButtonGroup>
+                        </MudCardActions>
+                    </MudCard>
+                }
+
+            </MudStack>
+
+
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+@code {
+    private List<StoreApplications> stores = new List<StoreApplications>();
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    string emailaddress = String.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+        }
+        await loadStores();
+        await base.OnInitializedAsync();
+    }
+
+
+    private async Task loadStores()
+    {
+
+        stores = await httpClient.GetFromJsonAsync<List<StoreApplications>>("ApplicationsManager/getstoreall");
+    }
+
+    private async Task OnApply(int position, string storeId)
+    {
+        try
+        {
+            var data = new EmployeeApply
+                {
+                    StoreId = int.Parse(storeId),
+                    Email = emailaddress,
+                    Position = position
+                };
+            var response = await httpClient.PostAsJsonAsync($"ApplicationsManager/applyposition", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // await OnGetCartItems(emailaddress);
+                Snackbar.Add($"Application Submitted", Severity.Success);
+
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+        }
+    }
+
+}

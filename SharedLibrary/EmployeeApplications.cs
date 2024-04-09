@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace SharedLibrary
 {
-    public class UpdateStoreInfo
+    public class EmployeeApplications
     {
-        public int Id { get; set; }
-        public string Logo { get; set; }
-        public string Name { get; set; }
+        public int ApplicationId { get; set; }
+        public int Position { get; set; }
+        public string FullName { get; set; }
         public string Email { get; set; }
-        public string Phone {  get; set; }
         public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
+        public string AddressLine2 { get; set;}
         public string CityTown { get; set; }
         public string Province { get; set; }
         public string PostalCode { get; set; }
-        public string Description { get; set; }
-        public bool isLogoChanged { get; set; }
+        public string PhoneNumber { get; set; }
+        public string UserId { get; set; }
+        public int Status { get; set; }
     }
 }
