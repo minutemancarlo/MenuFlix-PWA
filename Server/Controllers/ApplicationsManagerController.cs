@@ -75,7 +75,7 @@ namespace Server.Controllers
                 // Create parameters for the stored procedure
                 var parameters = new DynamicParameters();
                 parameters.Add("@StoreId", apply.StoreId);
-                parameters.Add("@Position", 1);
+                parameters.Add("@Position", apply.Position);
                 parameters.Add("@Email", apply.Email);
                
 
@@ -93,6 +93,49 @@ namespace Server.Controllers
 
                 // Return BadRequest with error message
                 return BadRequest($"An error occurred while registering the store: {ex.Message}");
+            }
+        }
+
+        [HttpPost("updateemployeestatus")]
+        public async Task<IActionResult> UpdateEmployeeStatus([FromBody] List<EmployeeStatusType> items)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                
+                var itemListTable = new DataTable();
+                itemListTable.Columns.Add("ApplicationId", typeof(int));
+                itemListTable.Columns.Add("Status", typeof(int));
+                itemListTable.Columns.Add("UserId", typeof(string));
+                itemListTable.Columns.Add("Position", typeof(int));
+                
+                foreach (var item in items)
+                {
+                    itemListTable.Rows.Add(
+                        item.ApplicationId,
+                        item.Status,
+                        item.UserId,
+                        item.Position
+                    );
+                }
+
+                parameters.Add("@Applicants", itemListTable.AsTableValuedParameter("ApplicationStatusType"));
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        "UpdateEmployeeApplication",
+                        parameters,
+                        commandType: CommandType.StoredProcedure);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
             }
         }
 

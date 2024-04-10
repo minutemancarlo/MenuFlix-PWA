@@ -233,15 +233,16 @@ and engaging platform for exploring food choices and ordering convenience.
     private bool isLoggedin { get; set; }
     private string emailaddress { get; set; }
     private bool isLoadingCarousel { get; set; } = false;
-    
+
 
 
     protected override async Task OnInitializedAsync()
     {
-       
+
         await base.OnInitializedAsync();
         isLoadingCarousel = false;
         await OnGetFoodItemsRandom();
+       
         isLoadingCarousel = true;
     }
 
@@ -272,6 +273,8 @@ and engaging platform for exploring food choices and ordering convenience.
                         emailaddress = item.Value;
                     }
                 }
+                await OnGetCartNumbers();
+                await OnGetOrderNumbers();
             }
             else
             {
@@ -287,10 +290,10 @@ and engaging platform for exploring food choices and ordering convenience.
             {
                 RedirectToHome("admin-dashboard");
             }
-           
+
         }
         await base.OnAfterRenderAsync(firstRender);
-
+       
     }
 
     private async Task ClosePopUp()
@@ -315,13 +318,21 @@ and engaging platform for exploring food choices and ordering convenience.
 
     private async Task OnGetFoodItemsRandom()
     {
-        isLoadingCarousel = true;
-        carouselDisplay = await httpClient.GetFromJsonAsync<List<CarouselDisplay>>($"FoodItem/getfooditemsrandom");
-        groups = carouselDisplay
-     .Select((item, index) => new { Item = item, Index = index })
-     .GroupBy(x => x.Index / 3)
-     .Select(g => g.Select(x => x.Item).ToList())
-     .ToList();
+        try
+        {
+            isLoadingCarousel = true;
+            carouselDisplay = await httpClient.GetFromJsonAsync<List<CarouselDisplay>>($"FoodItem/getfooditemsrandom");
+            groups = carouselDisplay
+         .Select((item, index) => new { Item = item, Index = index })
+         .GroupBy(x => x.Index / 3)
+         .Select(g => g.Select(x => x.Item).ToList())
+         .ToList();
+        }catch(Exception ex)
+        {
+
+        }
+
+
     }
 
     private async Task OnAddToCart(string itemId)
@@ -345,13 +356,13 @@ and engaging platform for exploring food choices and ordering convenience.
                 Snackbar.Add("Item Added to Cart", Severity.Success);
                 await OnGetCartNumbers();
             }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(errorMessage);
-                    Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
-                }
-            
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+            }
+
         }
         catch (Exception ex)
         {
@@ -364,11 +375,41 @@ and engaging platform for exploring food choices and ordering convenience.
     {
         try
         {
-            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");            
-            customerLayout.Count = response[0];
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
+            if (response.Count() <= 0)
+            {
+                customerLayout.Count = 0;
+            }
+            else
+            {
+                customerLayout.Count = response[0];
+            }
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnGetOrderNumbers()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"OrderManagement/GetOrderCount?emailaddress={emailaddress}");
+            if (response.Count() <= 0)
+            {
+                customerLayout.OrderCount = 0;
+            }
+            else
+            {
+                customerLayout.OrderCount = response[0];
+            }
+
+        }
+        catch (Exception ex)
+        {
+
             Console.WriteLine(ex.Message);
             Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
         }

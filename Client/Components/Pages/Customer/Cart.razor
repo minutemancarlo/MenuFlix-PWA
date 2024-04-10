@@ -122,7 +122,8 @@
                 }
             }
             await OnGetCartItems(emailaddress);
-
+            await OnGetOrderNumbers();
+            await OnGetCartNumbers();
         }
         await base.OnInitializedAsync();
 
@@ -154,11 +155,40 @@
         try
         {
             var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
-            customerLayout.Count = response[0];
-            StateHasChanged();
+            if (response.Count() <= 0)
+            {
+                customerLayout.Count = 0;
+            }
+            else
+            {
+                customerLayout.Count = response[0];
+            }
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnGetOrderNumbers()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"OrderManagement/GetOrderCount?emailaddress={emailaddress}");
+            if (response.Count() <= 0)
+            {
+                customerLayout.OrderCount = 0;
+            }
+            else
+            {
+                customerLayout.OrderCount = response[0];
+            }
+
+        }
+        catch (Exception ex)
+        {
+
             Console.WriteLine(ex.Message);
             Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
         }
@@ -300,5 +330,5 @@
         }
 
     }
-
+   
 }

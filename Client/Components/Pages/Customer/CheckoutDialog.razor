@@ -36,7 +36,7 @@
                     </MudItem>
                 </MudPaper>
             </MudItem>
-            Total = Total + item.DiscountedTotal;
+            
             if (item == orders.Last())
             {
                 <MudItem>
@@ -57,7 +57,13 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<CartDisplay> orders { get; set; } = new List<CartDisplay>();
     private decimal Total = 0;
-    
+
+    protected override async Task OnInitializedAsync()
+    {
+        Total=orders.Sum(item => item.DiscountedTotal);
+        await base.OnInitializedAsync();
+    }
+
     private async Task OnSubmit()
     {
         var cartIds = orders.Select(order => order.CartId);

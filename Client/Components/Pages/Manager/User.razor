@@ -15,17 +15,28 @@
     <MudStack>
         <MudCard Elevation="4" Class="pa-3 pt-5">
             <MudCardContent>
-                <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems" 
-                @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter" 
-                Hover ColumnResizeMode="ResizeMode.Column"                 
-                Filterable HeaderClass=" text-uppercase font-weight-bold">
-                    <ToolBarContent>
-
-
-                        <MudText Typo="Typo.h6">Applicants List</MudText>
-
-
+                <MudDataGrid Items="@users" MultiSelection="false" Virtualize @bind-SelectedItems="_selectedItems"
+                             @bind-SelectedItem="_currentDto" Elevation="0" Loading="_loading" QuickFilter="@_quickFilter"
+                             Hover ColumnResizeMode="ResizeMode.Column"
+                             Filterable HeaderClass=" text-uppercase font-weight-bold">
+                    <ToolBarContent>                        
+                        <MudLoadingButton Variant="Variant.Filled"
+                                          StartIcon="@Icons.Material.Filled.Save"
+                                          Color="Color.Success"
+                                          Size="Size.Medium"
+                                          OnClick="@(async () => await OnChangeStatus())"
+                                          Loading="@(_submit)"
+                                          ButtonType="ButtonType.Button"
+                                          >
+                            <LoadingContent>Saving...</LoadingContent>
+                            <ChildContent>Save Changes</ChildContent>
+                        </MudLoadingButton>
                         <MudSpacer />
+
+                        
+                        @* <MudText Typo="Typo.h6">Applicants List</MudText> *@
+
+
                         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                                       AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
@@ -68,7 +79,7 @@
 
 @code {
     private MudDataGrid<EmployeeApplications> _users = default!;
-    private List<EmployeeApplications> users = new List<EmployeeApplications>();   
+    private List<EmployeeApplications> users = new List<EmployeeApplications>();
     private bool _loading = false;
     private string _searchString;
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
@@ -77,6 +88,7 @@
     private HashSet<EmployeeApplications> _selectedItems = new();
     private string emailaddress;
     private MudToggleGroup<string> toggleGroupRef;
+    private bool _submit = false;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
@@ -110,9 +122,47 @@
         _loading = false;
     }
 
-    private void OnChangeStatus()
+    private async Task OnChangeStatus()
     {
-        var a = _currentDto;
+        try
+        {
+            _submit = true;
+            List<EmployeeStatusType> updates = new List<EmployeeStatusType>();
+            foreach (var item in users)
+            {
+                var data = new EmployeeStatusType
+                    {
+                        ApplicationId = item.ApplicationId,
+                        UserId = item.UserId,
+                        Position = item.Position,
+                        Status = item.Status
+                    };
+                updates.Add(data);
+            }
+
+            var response = await httpClient.PostAsJsonAsync("ApplicationsManager/updateemployeestatus", updates);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Changes Saved.", Severity.Success);
+                await loadGrid();
+                _submit = false;
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+                _submit = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _submit = false;
+            Snackbar.Add($"Exception Occured: {ex.Message}", Severity.Error);
+            Console.WriteLine($"Error: {ex.Message}");
+            
+        }
     }
 
 
