@@ -76,7 +76,7 @@
                         <MudAvatar Color="Color.Primary">@emailaddress?.Substring(0, 2).ToUpper()</MudAvatar>
                     </ActivatorContent>
                     <ChildContent>
-                        @(IsCustomer){
+                        @if(IsCustomer){
                         <MudMenuItem IconSize="Size.Medium" Href="/" Icon="@Icons.Material.Filled.Home">Home</MudMenuItem>
                         <MudMenuItem IconSize="Size.Medium" Href="/menu" Icon="@Icons.Material.Filled.RestaurantMenu">Menu</MudMenuItem>
                         <MudMenuItem IconSize="Size.Medium" Href="/my-orders" Icon="@Icons.Material.Filled.CreditCard">Orders <MudChip Size="Size.Small" Color="Color.Info">@customerLayout.OrderCount</MudChip></MudMenuItem>
