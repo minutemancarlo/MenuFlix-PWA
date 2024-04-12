@@ -21,7 +21,7 @@ namespace Client.Validations
             RuleFor(user => user.AddressLine1).NotEmpty().WithMessage("Address line 1 is required.");
             RuleFor(user => user.CityTown).NotEmpty().WithMessage("City/Town is required.");
             RuleFor(user => user.Province).NotEmpty().WithMessage("Province is required.");
-            RuleFor(user => user.PostalCode).NotEmpty().WithMessage("Postal code is required.");
+            RuleFor(user => user.PostalCode).NotEmpty().WithMessage("Zip code is required.");
         }
     }
 }

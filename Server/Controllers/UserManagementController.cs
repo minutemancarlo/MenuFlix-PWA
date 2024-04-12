@@ -47,7 +47,7 @@ namespace Server.Controllers
                                 .FirstOrDefaultAsync();
                     userDataGrid.Name = $"{userDetail.FirstName} {userDetail.LastName}";
                     userDataGrid.Email = userDetail.Email;
-                    userDataGrid.PhoneNumber= userDetail.PhoneNumber;
+                    userDataGrid.PhoneNumber = userDetail.PhoneNumber;
 #pragma warning restore CS8601 // Possible null reference assignment.
 
 #pragma warning disable CS8601 // Possible null reference assignment.
@@ -69,7 +69,7 @@ namespace Server.Controllers
 #pragma warning restore CS8601 // Possible null reference assignment.
                     users.Add(userDataGrid);
                 }
-            }           
+            }
             return users;
         }
 
@@ -78,15 +78,46 @@ namespace Server.Controllers
         {
             var parameters = new DynamicParameters();
             parameters.Add("@Email", email);
-            
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 // Execute the stored procedure
-               var userDataGrid =  await connection.QueryAsync<UserDataGrid>("GetUserDetails", parameters, commandType: CommandType.StoredProcedure);
+                var userDataGrid = await connection.QueryAsync<UserDataGrid>("GetUserDetails", parameters, commandType: CommandType.StoredProcedure);
 
                 return (UserDataGrid)userDataGrid;
             }
         }
+
+        [HttpGet("getuserid")]
+        public async Task<ActionResult<string>> GetUserId(string email)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", email);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var userid = await connection.QueryFirstOrDefaultAsync<string>(
+                        "SELECT Id AS UserId FROM AspNetUsers WHERE Email = @Email",
+                        parameters);
+
+                    if (userid != null)
+                    {
+                        return Ok(userid);
+                    }
+                    else
+                    {
+                        return NotFound(); // Assuming you want to return 404 if the user is not found
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occurred: {ex.Message}");
+            }
+        }
+
 
     }
 }

@@ -1,0 +1,367 @@
+﻿@using SharedLibrary
+@using Client.Validations
+@using System.Security.Claims
+@using System.Net.Http.Json
+@using System.Net
+@inject HttpClient httpClient
+
+<MudDialog ClassActions="w-100 d-flex justify-center flex-grow-1">
+    <TitleContent>
+        <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+            <MudText Typo="Typo.subtitle2" Class="fw-bold">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-3 mb-n1" />
+                Order #: @Title
+            </MudText>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-3 mb-n1" />
+                Order #: @Title
+            </MudText>
+        </MudHidden>
+
+    </TitleContent>
+    <DialogContent>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+            <MudStack Spacing="3">
+                <MudPaper Elevation="4" Class="pa-3">
+                    <MudStack Row Justify="Justify.SpaceBetween">
+                        <MudStack>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Contacts" />
+                                Recipient: <strong>@($"{UserAdditionalDetails.FirstName} {UserAdditionalDetails.LastName}")</strong>
+                            </MudText>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                                Date: <strong>@createdDate</strong>
+                            </MudText>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" />
+                                Time: <strong>@createdTime</strong>
+                            </MudText>
+                        </MudStack>
+                        <MudStack>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                Address: <strong>@($"{UserAdditionalDetails.AddressLine1},{UserAdditionalDetails.AddressLine2}, {UserAdditionalDetails.CityTown}, {UserAdditionalDetails.Province} {UserAdditionalDetails.PostalCode}")</strong>
+                            </MudText>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Email" />
+                                Email: <strong>@UserAdditionalDetails.Email</strong>
+                            </MudText>
+                            <MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.PhoneAndroid" />
+                                Phone: <strong>@UserAdditionalDetails.PhoneNumber</strong>
+                            </MudText>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+                <MudPaper Elevation="4" Class="pa-3">
+                    <MudStack Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween">
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CreditCard" />
+                            Total: <strong>@($"{itemsList.Sum(s => s.Price)}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Fastfood" />
+                            Total Items: <strong>@(itemsList.Sum(s => int.Parse(s.Pcs)))</strong>
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+                <MudDataGrid Items="@itemsList"
+                             Elevation="4"
+                             Striped
+                             Filterable="false"
+                             HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold w-100"
+                             Class="pa-3"
+                             ColumnResizeMode="ResizeMode.None">
+                    <Columns>
+                        <TemplateColumn Title="Item Image" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center">
+                            <CellTemplate>
+                                <MudImage Src="@context.Item.ItemLogo" Width="50" Height="50" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.ItemName" Title="Item" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
+                        <PropertyColumn Property="x => x.Pcs" Title="Pcs" Filterable="false" HeaderClass="blue text-center fw-bold darken-1 shades-text justify-content-center text-white" CellClass="text-center" />
+                        @if (Action == 2)
+                        {
+                            <TemplateColumn Filterable="false" Sortable="false" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white">
+                                <CellTemplate>
+                                    <MudSwitch @bind-Value="@context.Item.IsReady" ThumbIcon="@(context.Item.IsReady==true ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" ThumbIconColor="@(context.Item.IsReady==true ? Color.Success : Color.Error)">@(context.Item.IsReady ? "Ready" : "Not Ready")</MudSwitch>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        }
+                    </Columns>
+                </MudDataGrid>
+
+            </MudStack>
+
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+            <MudStack Spacing="3">
+                <MudPaper Elevation="4" Class="pa-3">
+                    <MudStack Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween">
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Contacts" />
+                            Recipient: <strong>@($"{UserAdditionalDetails.FirstName} {UserAdditionalDetails.LastName}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                            Date: <strong>@createdDate</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" />
+                            Time: <strong>@createdTime</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                            Address: <strong>@($"{UserAdditionalDetails.AddressLine1},{UserAdditionalDetails.AddressLine2}, {UserAdditionalDetails.CityTown}, {UserAdditionalDetails.Province} {UserAdditionalDetails.PostalCode}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Email" />
+                            Email: <strong>@UserAdditionalDetails.Email</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.PhoneAndroid" />
+                            Phone: <strong>@UserAdditionalDetails.PhoneNumber</strong>
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+                <MudDivider />
+                <MudPaper Elevation="4" Class="pa-3">
+                    <MudStack Wrap="Wrap.Wrap" Justify="Justify.SpaceBetween">
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.CreditCard" />
+                            Total: <strong>@($"{itemsList.Sum(s => s.Price)}")</strong>
+                        </MudText>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Fastfood" />
+                            Total Items: <strong>@(itemsList.Sum(s => int.Parse(s.Pcs)))</strong>
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+                <MudPaper Elevation="4" Class="pa-3">
+                    <MudStack Wrap="Wrap.Wrap" Justify="Justify.Center">
+                        @foreach (var item in itemsList)
+                        {
+                            <MudPaper Elevation="3" Class="pa-1">
+                                <MudItem Class="text-center">
+                                    <MudImage Src="@item.ItemLogo" Width="80" Height="80" />
+                                </MudItem>
+
+                                <MudText Typo="Typo.h6">
+                                    @($"{item.Pcs} {(int.Parse(item.Pcs) == 1 ? "Order" : "Orders")} x {item.ItemName}")
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="text-muted">@item.Category</MudText>
+                            </MudPaper>
+                        }
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        </MudHidden>
+    </DialogContent>
+    <DialogActions>
+        <MudStack Row AlignItems="AlignItems.Stretch">
+
+        <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="OnCancel">Close</MudButton>
+        @if (Action == 5)
+        {
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Success"
+                              Size="Size.Medium"
+                              FullWidth
+                              Loading="false"
+                              OnClick="@(async () => await OnSubmitItemUpdate(Title,3))"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Processing...</LoadingContent>
+                <ChildContent>Accept Order</ChildContent>
+            </MudLoadingButton>
+        }
+        else if (Action == 3)
+        {
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Warning"
+                              Size="Size.Medium"
+                              FullWidth
+                              Loading="false"
+                              OnClick="@(async () => await OnSubmitItemUpdate(Title,0))"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Processing...</LoadingContent>
+                <ChildContent>Cancel Order</ChildContent>
+            </MudLoadingButton>
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Success"
+                              Size="Size.Medium"
+                              FullWidth
+                              Loading="false"
+                              OnClick="@(async () => await OnSubmitItemUpdate(Title,4))"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Processing...</LoadingContent>
+                <ChildContent>Order Completed</ChildContent>
+            </MudLoadingButton>
+        }
+        </MudStack>
+
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public List<OrderDisplay> OrderItem { get; set; } = default!;
+    [Parameter] public UserAdditionalDetails UserAdditionalDetails { get; set; } = default!;
+    [Parameter] public int? Action { get; set; }
+    [Parameter] public Action? Refresh { get; set; }
+    [Parameter] public string EmailAddress { get; set; }
+    private List<OrderItem> itemsList { get; set; } = default!;
+    private string? createdDate;
+    private string? createdTime;
+
+
+
+    private async Task OnCancel()
+    {
+        // if (Action == 2)
+        // {
+        //     await OnSubmitItemReady();
+        //     Snackbar.Add("Saved as Draft", Severity.Info);
+        // }
+
+        await Task.CompletedTask;
+        MudDialog.Cancel();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (var item in OrderItem)
+        {
+            itemsList = item.OrderItems.ToList();
+            createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+            createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+        }
+
+       
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnChangeReady(string itemId)
+    {
+        await Task.CompletedTask;
+    }
+
+    private async Task OnSubmitForDelivery()
+    {
+        
+        if (OrderItem.FindAll(x => x.OrderItems.Any(item => item.IsReady == false)).Count > 0)
+        {
+            Snackbar.Add("Not all Items are Ready", Severity.Error);
+        }
+        else
+        {
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"OrderManagement/itemfordelivery", Title);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // await OnGetCartItems(emailaddress);
+                    Snackbar.Add($"Order Status Updated For Order :{Title}", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                    Refresh?.Invoke();
+                }
+                else
+                {
+
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+            }
+        }
+
+    }
+
+    private async Task OnSubmitItemUpdate(string OrderId, int status)
+    {
+        try
+        {
+
+            var data = new DeliveryStatusUpdate
+                {
+                    OrderId = OrderId,
+                    EmailAddress = EmailAddress,
+                    Status = status
+                };
+
+
+
+            var response = await httpClient.PostAsJsonAsync("OrderManagement/itemforriderupdate", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+
+                Snackbar.Add($"Order Status Updated", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                Refresh?.Invoke();
+
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+        }
+    }
+
+    private async Task OnSubmitAccept()
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync($"OrderManagement/itemaccept", Title);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // await OnGetCartItems(emailaddress);
+                Snackbar.Add($"Order Status Updated For Order :{Title}", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                Refresh?.Invoke();
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+        }
+    }
+
+
+}

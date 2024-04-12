@@ -10,111 +10,190 @@
 
 <PageTitle>Product Menu</PageTitle>
 <MudGrid Class="w-100 vh-100 pt-5" Justify="Justify.FlexStart">
-    <MudItem xs="2" Style="height: 100%">
-        <MudPaper Class="w-100" Elevation="0">
-            <MudList Clickable="true">
-                <MudListItem>
-                    <MudTextField Variant="Variant.Outlined" Clearable OnClearButtonClick="OnClearButtonClickHandler" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Search here..." Adornment="Adornment.Start" Margin="Margin.Dense"
-                                  @bind-Value="searchQuery"
-                                  Immediate="true"
-                                  @onkeyup="OnKeyUpHandler" />
-                </MudListItem>
-                <MudDivider />
-                <MudListItem Icon="@Icons.Material.Filled.Fastfood" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Error">
-                    Products
-                </MudListItem>
-                <MudListItem Icon="@Icons.Material.Filled.Storefront" IconColor="Color.Info" InitiallyExpanded="false" Text="Stores">
-                    <NestedList>
-                        <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
-                            All Stores
-                        </MudListItem>
-                        @foreach (var item in stores)
-                        {
-                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(item.Name))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
-                                @item.Name
-                            </MudListItem>
-                        }
-                    </NestedList>
-                </MudListItem>
-                <MudListItem Icon="@Icons.Material.Filled.Toc" Text="Categories" IconColor="Color.Success" InitiallyExpanded="false">
-                    <NestedList>
-                        <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(""))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
-                            All Categories
-                        </MudListItem>
-                        @foreach (var item in categories)
-                        {
-                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(item.Name))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
-                                @item.Name
-                            </MudListItem>
-                        }
-                    </NestedList>
-                </MudListItem>
-                <MudDivider />
-                <MudListItem Text="Ratings" />
-                @if (isVisibleRating){
-                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(0))">
-                        <MudText Color="Color.Error">Reset Rating Filter</MudText>
-                    </MudListItem>
-                }                
-                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(5))">
-                    <MudRating SelectedValue="5" Size="Size.Small" ReadOnly />
-                </MudListItem>
-                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(4))">
-                    <MudRating SelectedValue="4" Size="Size.Small" ReadOnly />
-                </MudListItem>
-                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(3))">
-                    <MudRating SelectedValue="3" Size="Size.Small" ReadOnly />
-                </MudListItem>
-                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(2))">
-                    <MudRating SelectedValue="2" Size="Size.Small" ReadOnly />
-                </MudListItem>
-                <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(1))">
-                    <MudRating SelectedValue="1" Size="Size.Small" ReadOnly />
-                </MudListItem>
-            </MudList>
-        </MudPaper>
-    </MudItem>
-    <MudItem xs="10" Style="width: 100%;height: 100%;">
-        <MudOverlay Visible="isVisible" DarkBackground="true" Absolute="true">
-            <MudProgressCircular Color="Color.Info" Indeterminate="true" />
-        </MudOverlay>
-        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
-            @foreach (var item in foodItemsGridPage)
-            {
-                <MudCard Style="width: 300px; height: 250px;" Elevation="25">
-                    <MudCardContent>
-                        <MudItem Class="text-center">
-                            <MudImage Src="@item.Logo" Height="100" Width="100" />
-                        </MudItem>
+    <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+        <MudSwipeArea OnSwipeEnd="@(() => OnSwipe(SwipeDirection.LeftToRight))">
+            <MudPaper Class="vh-100" Style="overflow:hidden; position:relative;">
+                <MudDrawerContainer Class="mud-height-full">
+                    <MudDrawer @bind-Open="@open" Fixed="false" Elevation="1" ClipMode="DrawerClipMode.Never" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
+                        <MudNavMenu>
+                            <MudNavLink Icon="@Icons.Material.Filled.Search" OnClick="ToggleDrawer">
+                                <MudTextField Variant="Variant.Outlined" Clearable OnClearButtonClick="OnClearButtonClickHandler" Placeholder="Search here..." Margin="Margin.Dense"
+                                              @bind-Value="searchQuery"
+                                              Immediate="true"
+                                              @onkeyup="OnKeyUpHandler" />
+                            </MudNavLink>
+                            <MudNavLink Icon="@Icons.Material.Filled.Fastfood" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Error">Products</MudNavLink>
+                            <MudNavGroup Title="Stores" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront" Expanded="false">
+                                <MudNavLink Icon="@Icons.Material.Filled.Storefront" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Info">All Stores</MudNavLink>
+                                @foreach (var item in stores)
+                                {
+                                    <MudNavLink Icon="@Icons.Material.Filled.Storefront" OnClick="@(() => OnGetItemsPerPage(item.Name))" IconColor="Color.Info">@item.Name</MudNavLink>
+                                }
+                            </MudNavGroup>
+                            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryBooks">Library</MudNavLink>
+                            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">Community</MudNavLink>
+                        </MudNavMenu>
+                    </MudDrawer>
+                    <div class="d-flex justify-center align-center mud-height-full">
+                        <MudItem xs="10" Style="width: 100%;height: 100%;">
+                            <MudOverlay Visible="isVisible" DarkBackground="true" Absolute="true">
+                                <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+                            </MudOverlay>
+                            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                                @foreach (var item in foodItemsGridPage)
+                                {
+                                    <MudCard Style="width: 300px; height: 250px;" Elevation="25">
+                                        <MudCardContent>
+                                            <MudItem Class="text-center">
+                                                <MudImage Src="@item.Logo" Height="100" Width="100" />
+                                            </MudItem>
 
-                        <MudText Typo="Typo.body2" Class="fw-bolder">@item.Name</MudText>
-                        <MudText Typo="Typo.body2">@item.Category</MudText>
-                        <MudItem Class="text-end">
-                            <MudText Typo="Typo.body2" Class="fw-bold"><s class="text-danger">@((item.DiscountAmount == 0.00M) ? "" : $"₱ {item.Price}")</s> ₱ @(item.DiscountAmount == 0.00M ? item.Price : item.DiscountedPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="fw-bolder">@item.Name</MudText>
+                                            <MudText Typo="Typo.body2">@item.Category</MudText>
+                                            <MudItem Class="text-end">
+                                                <MudText Typo="Typo.body2" Class="fw-bold"><s class="text-danger">@((item.DiscountAmount == 0.00M) ? "" : $"₱ {item.Price}")</s> ₱ @(item.DiscountAmount == 0.00M ? item.Price : item.DiscountedPrice)</MudText>
+                                            </MudItem>
+                                        </MudCardContent>
+                                        <MudCardActions Class="py-0">
+                                            <MudStack Row>
+                                                <MudButton Variant="Variant.Filled" FullWidth Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart" OnClick="@(async () =>await OnAddToCart(item.ItemId))"></MudButton>
+                                                <MudSpacer />
+                                                <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly Color="Color.Success" />
+                                            </MudStack>
+                                        </MudCardActions>
+                                    </MudCard>
+                                }
+                                @if (isVisibleLoad)
+                                {
+                                    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="PageLoad" FullWidth="true">Load More...</MudButton>
+
+                                }
+                                @if (foodItemsGrid.Count == 0 || foodItemsGridPage.Count == 0)
+                                {
+                                    <MudItem Class="text-center pt-5">
+                                        <MudText>No Items Found.</MudText>
+                                    </MudItem>
+                                }
+                            </MudStack>
                         </MudItem>
-                    </MudCardContent>
-                    <MudCardActions Class="py-0">
-                        <MudStack Row>
-                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart" OnClick="@(async () =>await OnAddToCart(item.ItemId))">Add to Cart</MudButton>
-                            <MudSpacer />
-                            <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly Color="Color.Success" />
-                        </MudStack>
-                    </MudCardActions>
-                </MudCard>
-            }
-            @if (isVisibleLoad)
-            {
-                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="PageLoad" FullWidth="true">Load More...</MudButton>
-                                                
-            }
-            @if (foodItemsGrid.Count == 0 || foodItemsGridPage.Count == 0)
-            {
-                <MudItem Class="text-center pt-5">
-                    <MudText>No Items Found.</MudText>
-                </MudItem>
-            }
-        </MudStack>
-    </MudItem>
+                    </div>
+                </MudDrawerContainer>
+            </MudPaper>
+        </MudSwipeArea>
+    </MudHidden>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+        <MudItem xs="2" Style="height: 100%">
+            <MudPaper Class="w-100" Elevation="0">
+                <MudList Clickable="true">
+                    <MudListItem>
+                        <MudTextField Variant="Variant.Outlined" Clearable OnClearButtonClick="OnClearButtonClickHandler" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Search here..." Adornment="Adornment.Start" Margin="Margin.Dense"
+                                      @bind-Value="searchQuery"
+                                      Immediate="true"
+                                      @onkeyup="OnKeyUpHandler" />
+                    </MudListItem>
+                    <MudDivider />
+                    <MudListItem Icon="@Icons.Material.Filled.Fastfood" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Error">
+                        Products
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Storefront" IconColor="Color.Info" InitiallyExpanded="false" Text="Stores">
+                        <NestedList>
+                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(""))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
+                                All Stores
+                            </MudListItem>
+                            @foreach (var item in stores)
+                            {
+                                <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsPerPage(item.Name))" IconColor="Color.Info" Icon="@Icons.Material.Filled.Storefront">
+                                    @item.Name
+                                </MudListItem>
+                            }
+                        </NestedList>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Toc" Text="Categories" IconColor="Color.Success" InitiallyExpanded="false">
+                        <NestedList>
+                            <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(""))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
+                                All Categories
+                            </MudListItem>
+                            @foreach (var item in categories)
+                            {
+                                <MudListItem IconSize="Size.Small" OnClick="@(() => OnGetItemsCategoryPerPage(item.Name))" IconColor="Color.Error" Icon="@Icons.Material.Filled.LunchDining">
+                                    @item.Name
+                                </MudListItem>
+                            }
+                        </NestedList>
+                    </MudListItem>
+                    <MudDivider />
+                    <MudListItem Text="Ratings" />
+                    @if (isVisibleRating)
+                    {
+                        <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(0))">
+                            <MudText Color="Color.Error">Reset Rating Filter</MudText>
+                        </MudListItem>
+                    }
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(5))">
+                        <MudRating SelectedValue="5" Size="Size.Small" ReadOnly />
+                    </MudListItem>
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(4))">
+                        <MudRating SelectedValue="4" Size="Size.Small" ReadOnly />
+                    </MudListItem>
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(3))">
+                        <MudRating SelectedValue="3" Size="Size.Small" ReadOnly />
+                    </MudListItem>
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(2))">
+                        <MudRating SelectedValue="2" Size="Size.Small" ReadOnly />
+                    </MudListItem>
+                    <MudListItem Dense="true" OnClick="@(() => OnGetItemsRatingsPerPage(1))">
+                        <MudRating SelectedValue="1" Size="Size.Small" ReadOnly />
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="10" Style="width: 100%;height: 100%;">
+            <MudOverlay Visible="isVisible" DarkBackground="true" Absolute="true">
+                <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+            </MudOverlay>
+            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                @foreach (var item in foodItemsGridPage)
+                {
+                    <MudCard Style="width: 300px; height: 250px;" Elevation="25">
+                        <MudCardContent>
+                            <MudItem Class="text-center">
+                                <MudImage Src="@item.Logo" Height="100" Width="100" />
+                            </MudItem>
+
+                            <MudText Typo="Typo.body2" Class="fw-bolder">@item.Name</MudText>
+                            <MudText Typo="Typo.body2">@item.Category</MudText>
+                            <MudItem Class="text-end">
+                                <MudText Typo="Typo.body2" Class="fw-bold"><s class="text-danger">@((item.DiscountAmount == 0.00M) ? "" : $"₱ {item.Price}")</s> ₱ @(item.DiscountAmount == 0.00M ? item.Price : item.DiscountedPrice)</MudText>
+                            </MudItem>
+                        </MudCardContent>
+                        <MudCardActions Class="py-0">
+                            <MudStack Row>
+                                @if (isLoggedin)
+                                {
+                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.AddShoppingCart" OnClick="@(async () =>await OnAddToCart(item.ItemId))">Add to Cart</MudButton>
+                                }
+                                <MudSpacer />
+                                <MudRating SelectedValue="@Convert.ToInt32(Math.Round(item.Rating, 1))" ReadOnly Color="Color.Success" />
+                            </MudStack>
+                        </MudCardActions>
+                    </MudCard>
+                }
+                @if (isVisibleLoad)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="PageLoad" FullWidth="true">Load More...</MudButton>
+
+                }
+                @if (foodItemsGrid.Count == 0 || foodItemsGridPage.Count == 0)
+                {
+                    <MudItem Class="text-center pt-5">
+                        <MudText>No Items Found.</MudText>
+                    </MudItem>
+                }
+            </MudStack>
+        </MudItem>
+    </MudHidden>
+
+
 </MudGrid>
 
 
@@ -131,7 +210,7 @@
     private bool isVisibleLoad = true;
     private bool isVisible = true;
     private bool isVisibleRating = false;
-    public List<Claim> UserClaims { get; set; } = new List<Claim>();   
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private bool IsCustomer { get; set; }
     private bool isLoggedin { get; set; }
     private string emailaddress { get; set; }
@@ -143,6 +222,23 @@
         await OnGetStores();
         await base.OnInitializedAsync();
         isVisible = false;
+    }
+
+    bool open = false;
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+
+    public void OnSwipe(SwipeDirection direction)
+    {
+        if (direction == SwipeDirection.TopToBottom)
+        {
+            ToggleDrawer();
+            StateHasChanged();
+        }
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -165,7 +261,7 @@
                         emailaddress = item.Value;
                     }
                 }
-            }                      
+            }
         }
         await base.OnAfterRenderAsync(firstRender);
 

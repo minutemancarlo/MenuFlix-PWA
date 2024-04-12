@@ -228,5 +228,35 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("itemforriderupdate")]
+        public async Task<IActionResult> UpdateItemForTransit([FromBody] DeliveryStatusUpdate status)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", status.OrderId);
+                parameters.Add("@Email", status.EmailAddress);
+                parameters.Add("@Status", status.Status);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        "Update Orders set Status=@Status where OrderId=@OrderId;" +
+                        "Update OrderHistory set Status=@Status,UpdatedOn=GETDATE()," +
+                        "UpdatedBy=(Select Top 1 Id from AspNetUsers Where Email=@Email) where OrderId=@OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

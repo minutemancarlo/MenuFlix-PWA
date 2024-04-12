@@ -1,17 +1,73 @@
 ﻿@page "/delivery-dashboard"
 @attribute [Authorize(Roles = "Delivery")]
 <PageTitle>Delivery Dashboard</PageTitle>
+<style>
+    .mud-chart-bar {
+        stroke-width: 20px;
+    }
+
+</style>
+<style>
+    .mud-charts-bar-series,
+    .mud-charts-xaxis {
+        transform: translateX(10px) scaleX(0.88);
+    }
+</style>
 <MudItem xs="12">
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
     </MudItem>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+        <MudItem xs="8">
+            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                <div>
+                    <MudChart ChartType="ChartType.Bar" ChartOptions="@Options" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px"></MudChart>
+                </div>
+                @* <MudText Typo="Typo.h6">Catered and Cancelled Orders</MudText> *@
+            </MudStack>
+        </MudItem>
+    </MudHidden>
+
+    <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+        <MudItem xs="12">
+            <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch">
+                <div class="w-100">
+                    <MudChart ChartType="ChartType.Bar" ChartOptions="@Options" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px"></MudChart>
+                </div>
+                @* <MudText Typo="Typo.h6">Catered and Cancelled Orders</MudText> *@
+
+            </MudStack>
+        </MudItem>
+    </MudHidden>
 
 </MudItem>
 
 @code {
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
-        new BreadcrumbItem("Store Manager", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Delivery", href: "#", icon: Icons.Material.Filled.AccountCircle),
         new BreadcrumbItem("Dashboard", href: "#", icon: Icons.Material.Filled.Dashboard)
     };
+
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    public ChartOptions Options = new ChartOptions();
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+        {
+        new ChartSeries() { Name = "Catered", Data = new double[] { 1, 20, 4, 0, 0, 0, 0, 0, 0 } },
+        new ChartSeries() { Name = "Cancelled", Data = new double[] { 10, 3, 25, 0, 0, 0, 0, 0, 0 } },
+        };
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+
+    protected override Task OnInitializedAsync()
+    {
+        
+        // Options.YAxisTicks = 0;
+        Options.ChartPalette = new[] { "#27ae60", "#e74c3c" };
+        
+                
+        
+        return base.OnInitializedAsync();
+    }
+
 }

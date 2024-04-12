@@ -11,90 +11,145 @@
 @attribute [Authorize(Roles = "Customer")]
 <PageTitle>My Cart</PageTitle>
 <MudItem Class="d-flex justify-content-center" xs="12">
-    <MudItem xs="8">
-        <section class="h-100">
-            <div class="container h-100 py-5">
-                <div class="row d-flex justify-content-center align-items-center h-100">
-                    <div class="col-10">
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h6 class="fw-normal mb-0 text-black">Shopping Cart</h6>
-                            
-                        </div>
-
-                       
-
-
-                        @foreach(var item in cartItems)
-                        {
-                            Console.WriteLine(currentStoreId == null || currentStoreId != item.StoreId);
-                            if(currentStoreId == null || currentStoreId != item.StoreId)
+    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+        <MudItem xs="8">
+            <section class="h-100">
+                <div class="container h-100 py-5">
+                    <div class="row d-flex justify-content-center align-items-center h-100">
+                        <div class="col-10">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="fw-normal mb-0 text-black">Shopping Cart</h6>
+                            </div>
+                            @foreach (var item in cartItems)
                             {
-                                currentStoreId = item.StoreId;
-                                <hr />                                
-                                <MudText Typo="Typo.h6">Store Name: @item.StoreName</MudText>
-                            }
+                                Console.WriteLine(currentStoreId == null || currentStoreId != item.StoreId);
+                                if (currentStoreId == null || currentStoreId != item.StoreId)
+                                {
+                                    currentStoreId = item.StoreId;
+                                    <hr />
+                                    <MudText Typo="Typo.h6">Store Name: @item.StoreName</MudText>
+                                }
 
-                          
 
-                            <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
-                                <div class="card-body p-4">
-                                    <div class="row d-flex justify-content-between align-items-center">
-                                        <div class="col-md-1"><MudCheckBox Class="pa-0" @bind-Value="@item.isChecked"></MudCheckBox></div>
-                                        <div class="col-md-2">                                            
-                                            <img src="@item.Logo"
-                                                 class="img-fluid rounded-3" alt="item">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <p class="lead fw-normal mb-2">@item.Name</p>
-                                            <p><span class="text-muted">Category: </span>@item.Category</p>
-                                            <p><span class="text-muted">Store: </span>@item.StoreName</p>
-                                        </div>
-                                        <div class="col-md-2 d-flex">
-                                            <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined"  Step="1" Min="1" Max="99" />
-                                        </div>
-                                        <div class="col-md-2 offset-lg-1">
-                                            @if(item.Price!=item.DiscountedPrice){
-                                               <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
-                                            }
-                                            <h5 class="mb-0">₱@item.DiscountedPrice</h5>
-                                        </div>
-                                        <div class="col-md-1 text-end">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
+
+                                <div class="card rounded-3 mb-4" style="background-color: rgba(245,245,245,1)">
+                                    <div class="card-body p-4">
+                                        <div class="row d-flex justify-content-between align-items-center">
+                                            <div class="col-md-1"><MudCheckBox Class="pa-0" @bind-Value="@item.isChecked"></MudCheckBox></div>
+                                            <div class="col-md-2">
+                                                <img src="@item.Logo"
+                                                     class="img-fluid rounded-3" alt="item">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p class="lead fw-normal mb-2">@item.Name</p>
+                                                <p><span class="text-muted">Category: </span>@item.Category</p>
+                                                <p><span class="text-muted">Store: </span>@item.StoreName</p>
+                                            </div>
+                                            <div class="col-md-2 d-flex">
+                                                <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined" Step="1" Min="1" Max="99" />
+                                            </div>
+                                            <div class="col-md-2 offset-lg-1">
+                                                @if (item.Price != item.DiscountedPrice)
+                                                {
+                                                    <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
+                                                }
+                                                <h5 class="mb-0">₱@item.DiscountedPrice</h5>
+                                            </div>
+                                            <div class="col-md-1 text-end">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
 
-                        }
+                            }
 
-                        
+                            <MudItem xs="12">
+                                <MudCard>
+                                    <MudCardContent Class="d-flex align-start d-flex">
+                                        @if (cartItems.Count > 0)
+                                        {
+                                            <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
+                                            <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed to Order</MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.h6">No Items on Cart</MudText>
+                                        }
 
 
-                       
-                        <MudItem xs="12">
-                            <MudCard >
-                                <MudCardContent Class="d-flex align-start d-flex">
-                                    @if (cartItems.Count > 0)
-                                    {
-                                        <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
-                                        <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed to Order</MudButton>
-                                    }else
-                                    {
-                                        <MudText Typo="Typo.h6">No Items on Cart</MudText>
-                                    }
-                                    
-                                                                                                                                                                                  
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </MudItem>
+        </MudItem>
+    </MudHidden>
+   <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+        <MudItem xs="12">
+            <MudItem Class="py-5">
+                <MudText Typo="Typo.h6" Class="fw-normal mb-0 text-black">Shopping Cart</MudText>
+            </MudItem>
+            <MudItem>
+                @foreach (var item in cartItems)
+                {
+                    Console.WriteLine(currentStoreId == null || currentStoreId != item.StoreId);
+                    if (currentStoreId == null || currentStoreId != item.StoreId)
+                    {
+                        currentStoreId = item.StoreId;
+                        <hr />
+                        <MudText Typo="Typo.h6">Store Name: @item.StoreName</MudText>
+                    }
+                    <MudPaper Elevation="4" Style="background-color: rgba(245,245,245,1)" Class="card rounded-3 mb-4">
+                        <MudStack Justify="Justify.SpaceAround" AlignItems="AlignItems.Center">
+                            <MudImage Src="@item.Logo" Fluid Height="200" Width="200" />
+                        </MudStack>
+                        <MudStack Row Justify="Justify.SpaceBetween">
+                            <MudCheckBox Class="pa-0" @bind-Value="@item.isChecked"></MudCheckBox>
+                            <MudStack>
+                                <p class="lead fw-normal mb-2">@item.Name</p>
+                                <p><span class="text-muted">Category: </span>@item.Category</p>
+                                <p><span class="text-muted">Store: </span>@item.StoreName</p>
+                            </MudStack>
+                            <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined" Step="1" Min="1" Max="99" />
+                            <MudStack>
+                                @if (item.Price != item.DiscountedPrice)
+                                {
+                                    <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
+                                }
+                                <h5 class="mb-0">₱@item.DiscountedPrice</h5>
+                            </MudStack>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
+                        </MudStack>
+                        
+                        
+                    </MudPaper>                   
+                }
+            </MudItem>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardContent Class="d-flex align-start d-flex">
+                        <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
+                            @if (cartItems.Count > 0)
+                            {
+                                <MudText Typo="Typo.body2">We Accept Gcash or COD (Cash on Delivery) Payments</MudText> <MudSpacer />
+                                <MudButton Class="" Variant="Variant.Filled" Size="Size.Small" OnClick="OnCheckout" Color="Color.Success">Proceed</MudButton>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h6">No Items on Cart</MudText>
+                            }
+                        </MudStack>                        
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+        </MudItem>
+   </MudHidden>
 </MudItem>
 
 @code {

@@ -14,6 +14,7 @@
             <MudChip Class="fixed-bottom" Size="Size.Small" Icon="@Icons.Material.Filled.CloudOff" Color="Color.Error"></MudChip>
         </MudStack>
     } *@
+    
     <MudNavMenu Style="height: 95%;overflow: hidden" Bordered>                      
         <MudDivider Class="my-2" />        
         <AuthorizeView Roles="Administrator">
@@ -34,7 +35,7 @@
         </AuthorizeView>       
         <AuthorizeView Roles="Accounting">
             <MudNavLink Href="/">Point of Sale</MudNavLink>
-            <MudNavLink Href="/fetchdata">Orders</MudNavLink>
+            <MudNavLink Href="/">Orders</MudNavLink>
             <MudNavLink Href="/billing">Cash Management</MudNavLink>            
             @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
             <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
@@ -43,9 +44,9 @@
         </AuthorizeView>
        
         <AuthorizeView Roles="Delivery">
-            <MudNavLink Href="/">Dashboard</MudNavLink>
-            <MudNavLink Href="/fetchdata">Order Details</MudNavLink>
-            <MudNavLink Href="/billing">Chat</MudNavLink>            
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/delivery-dashboard">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.ReceiptLong" Href="/delivery-orders">Orders</MudNavLink>
+            @* <MudNavLink Icon="@Icons.Material.Filled.Chat" Href="/billing">Chat</MudNavLink> *@
             @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
             <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
             <MudNavLink Href="/counter">Security</MudNavLink>
@@ -72,12 +73,12 @@
         {
             IsOnline = isOnline;
         }
-        if(IsOnline)
-        {
-            Snackbar.Add("You are back online", Severity.Success);
-        }else{
-            Snackbar.Add("You are offline", Severity.Error);
-        }
+        // if(IsOnline)
+        // {
+        //     Snackbar.Add("You are back online", Severity.Success);
+        // }else{
+        //     Snackbar.Add("You are offline", Severity.Error);
+        // }
 
         StateHasChanged();
     }

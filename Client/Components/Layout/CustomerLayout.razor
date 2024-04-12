@@ -4,50 +4,54 @@
 <MudSnackbarProvider />
 
 <CascadingValue Value="this">
-<AuthorizeView Roles="Customer">
-    <NotAuthorized>
-        <MudLayout>
-            <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
-                <MudGrid Class="pa-3 ">
-                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                        <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
-                        <MudText Typo="Typo.h6" Class="d-inline-block px-2" Color="Color.Error">MenuFlix</MudText>
-                    </MudStack>
-                </MudGrid>
-                <MudSpacer />
-                <AccessControl />
-            </MudAppBar>
-            <MudMainContent>
-                <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-                    <MudGrid Class="pt-4">
-                        @Body
+    <AuthorizeView Roles="Customer">
+        <NotAuthorized>
+            <MudLayout>
+                <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
+                    <MudGrid Class="pa-3 ">
+                        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <a href="/">
+                                <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                            </a>
+                            <a href="/">
+                                <MudText Typo="Typo.h6" Class="d-inline-block px-2" Color="Color.Error">MenuFlix</MudText>
+                            </a>
+                        </MudStack>
                     </MudGrid>
-                </MudContainer>
-            </MudMainContent>
-        </MudLayout>
-    </NotAuthorized>
-    <Authorized>
-        <MudLayout>
-            <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
-                <MudGrid Class="pa-3 ">
-                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                        <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
-                        <MudText Typo="Typo.h6" Class="d-inline-block px-2" Color="Color.Error">MenuFlix</MudText>
-                    </MudStack>
-                </MudGrid>
-                <MudSpacer />
-                <AccessControl />
-            </MudAppBar>            
-            <MudMainContent>
-                <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-                    <MudGrid Class="pt-4">
-                        @Body
+                    <MudSpacer />
+                    <AccessControl />
+                </MudAppBar>
+                <MudMainContent>
+                    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+                        <MudGrid Class="pt-4">
+                            @Body
+                        </MudGrid>
+                    </MudContainer>
+                </MudMainContent>
+            </MudLayout>
+        </NotAuthorized>
+        <Authorized>
+            <MudLayout>
+                <MudAppBar Elevation="1" Style="@($"background-color: {Colors.BlueGrey.Lighten5}")">
+                    <MudGrid Class="pa-3 ">
+                        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <MudImage Src="icon-192.png" Alt="App icon" Elevation="3" Width="40" Height="40" Class="rounded-circle d-inline-block" />
+                            <MudText Typo="Typo.h6" Class="d-inline-block px-2" Color="Color.Error">MenuFlix</MudText>
+                        </MudStack>
                     </MudGrid>
-                </MudContainer>
-            </MudMainContent>
-        </MudLayout>
-    </Authorized>
-</AuthorizeView>
+                    <MudSpacer />
+                    <AccessControl />
+                </MudAppBar>
+                <MudMainContent>
+                    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+                        <MudGrid Class="pt-4">
+                            @Body
+                        </MudGrid>
+                    </MudContainer>
+                </MudMainContent>
+            </MudLayout>
+        </Authorized>
+    </AuthorizeView>
 </CascadingValue>
 
 
@@ -59,16 +63,16 @@
         _drawerOpen = !_drawerOpen;
     }
 
-     private int count;
-        public int Count
+    private int count;
+    public int Count
+    {
+        get { return count; }
+        set
         {
-            get { return count; }
-            set
-            {                
-            count = value;                                    
+            count = value;
             InvokeAsync(() => StateHasChanged());
-            }
         }
+    }
     private int orderCount;
     public int OrderCount
     {

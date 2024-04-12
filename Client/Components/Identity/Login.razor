@@ -20,6 +20,7 @@
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   Required="true"
+                  RequiredError="Email Address is Required"
               OnKeyDown="@(OnEnterPass)"
                   OnlyValidateIfDirty="true"
                   Immediate="true"
@@ -34,6 +35,7 @@
                   OnKeyDown="@(OnEnterPass)"
                       Margin="Margin.Dense"
                       Class="my-6"
+                      RequiredError="Password is Required"
                       Required="true">
     </MudPasswordField>
     <MudLoadingButton Variant="Variant.Filled"
@@ -47,7 +49,7 @@
         <ChildContent>Sign In</ChildContent>
     </MudLoadingButton>
 
-<MudText Class="text-center py-3">Or</MudText>
+@* <MudText Class="text-center py-3">Or</MudText>
 
 <MudLoadingButton Variant="Variant.Filled"
                   StartIcon="@Icons.Custom.Brands.Google"
@@ -58,12 +60,15 @@
                   FullWidth="true">
     <LoadingContent>Redirecting...</LoadingContent>
     <ChildContent>Sign In using Google</ChildContent>
-</MudLoadingButton>
+</MudLoadingButton> *@
 
-<MudItem Class="pt-5">
+<MudItem Class="py-5">
     <MudFab Color="Color.Primary" Size="Size.Small" OnClick="RedirectToIndex" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
 </MudItem>
-
+<div class="text-center p-2">
+    © 2024 Copyright:
+    <a class="text-reset fw-bold" href="/">MenuFlix.com</a>
+</div>
 
 @code {
     private bool success, errors;

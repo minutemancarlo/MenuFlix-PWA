@@ -5,12 +5,13 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager _navigationManager
 @inject HttpClient httpClient
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <AuthorizeView>
     <NotAuthorized>
-        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">            
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
             <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("login"))" Size="Size.Small">Login</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>                     
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="@(() => AuthAction("register"))" Size="Size.Small">SignUp</MudButton>
         </MudStack>
     </NotAuthorized>
     <Authorizing>
@@ -20,35 +21,72 @@
         </MudStack>
     </Authorizing>
 
-    <Authorized>        
+    <Authorized>
         <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
-        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">      
+            <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
                 @if (IsCustomer)
                 {
-                    
-                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
+
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
                     <MudBadge Content="@customerLayout.OrderCount" Overlap Color="Color.Warning">
-                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>
-                    </MudBadge>                    
+                        <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>
+                    </MudBadge>
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/stores" StartIcon="@Icons.Material.Filled.Storefront" Color="Color.Error">Stores</MudButton>
                     <MudSpacer />
-                           <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
+                    <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
                         <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/my-cart" Size="Size.Small" />
-                    </MudBadge>                            
+                    </MudBadge>
                 }
 
-            <MudMenu Class="my-3" Dense AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.CenterLeft">
-                <ActivatorContent>
-                    @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
-                        <MudAvatar Color="Color.Primary">@emailaddress.Substring(0, 2).ToUpper()</MudAvatar>
-                </ActivatorContent>
-                <ChildContent>
-                    <MudMenuItem IconSize="Size.Medium" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>
-                    <MudMenuItem IconSize="Size.Medium" OnClick="BeginLogout" Icon="@Icons.Material.Filled.Logout">Log Out</MudMenuItem>
-                </ChildContent>
-            </MudMenu>
-        </MudStack>
+                <MudMenu Class="my-3" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
+                    <ActivatorContent>
+                        @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
+                        <MudAvatar Color="Color.Primary">@emailaddress?.Substring(0, 2).ToUpper()</MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem IconSize="Size.Small" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>
+                        <MudMenuItem IconSize="Size.Small" OnClick="BeginLogout" Icon="@Icons.Material.Filled.Logout">Log Out</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudStack>
+        </MudHidden>
+       
+        <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+            <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.Center">
+                @if (IsCustomer)
+                {
+
+                    @* <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
+                <MudBadge Content="@customerLayout.OrderCount" Overlap Color="Color.Warning">
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>
+                </MudBadge>
+                <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/stores" StartIcon="@Icons.Material.Filled.Storefront" Color="Color.Error">Stores</MudButton> *@
+                    <MudSpacer />
+                    <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning" Class="pr-1">
+                        <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/my-cart" Size="Size.Small" />
+                    </MudBadge>
+               
+
+                }
+                <MudMenu Class="my-3"  AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
+                    <ActivatorContent>
+                        @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
+                        <MudAvatar Color="Color.Primary">@emailaddress?.Substring(0, 2).ToUpper()</MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @(IsCustomer){
+                        <MudMenuItem IconSize="Size.Medium" Href="/" Icon="@Icons.Material.Filled.Home">Home</MudMenuItem>
+                        <MudMenuItem IconSize="Size.Medium" Href="/menu" Icon="@Icons.Material.Filled.RestaurantMenu">Menu</MudMenuItem>
+                        <MudMenuItem IconSize="Size.Medium" Href="/my-orders" Icon="@Icons.Material.Filled.CreditCard">Orders <MudChip Size="Size.Small" Color="Color.Info">@customerLayout.OrderCount</MudChip></MudMenuItem>
+                        <MudMenuItem IconSize="Size.Medium" Href="/stores" Icon="@Icons.Material.Filled.Storefront">Stores</MudMenuItem>
+                        }                        
+                        <MudMenuItem IconSize="Size.Medium" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>
+                        <MudMenuItem IconSize="Size.Medium" OnTouch="BeginLogout" Icon="@Icons.Material.Filled.Logout">Log Out</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudStack>
         </MudHidden>
     </Authorized>
 </AuthorizeView>
@@ -60,7 +98,7 @@
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     private bool IsCustomer { get; set; }
     private bool isLoggedIn { get; set; }
-    private string emailaddress { get; set; }    
+    private string? emailaddress { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,11 +140,22 @@
         await base.OnInitializedAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 
     private async Task BeginLogout()
     {
         if (await Acct.CheckAuthenticatedAsync())
         {
+            
+            await localStorage.SetItemAsync("_open", true);
             await Acct.LogoutAsync();
             _navigationManager.NavigateTo("/");
         }
@@ -121,8 +170,8 @@
     private async Task OnGetCartNumbers()
     {
         try
-        {           
-            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");                        
+        {
+            var response = await httpClient.GetFromJsonAsync<List<int>>($"Cart/getcartcount?emailaddress={emailaddress}");
             if (response.Count() <= 0)
             {
                 customerLayout.Count = 0;
@@ -133,7 +182,7 @@
             }
         }
         catch (Exception ex)
-        {            
+        {
             Console.WriteLine(ex.Message);
             Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
         }
@@ -156,7 +205,7 @@
         }
         catch (Exception ex)
         {
-            
+
             Console.WriteLine(ex.Message);
             Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
         }

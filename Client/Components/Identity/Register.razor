@@ -22,6 +22,7 @@
               Variant="Variant.Outlined"
               Margin="Margin.Dense"
               Required="true"
+              RequiredError="Email Address is Required"
               OnlyValidateIfDirty="true"
               Immediate="true"
               Class="my-6">
@@ -32,7 +33,8 @@
                   PasswordMode="true"
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
-                  Class="my-6"                 
+                  Class="my-6" 
+                  RequiredError="Password is Required"
                   Required="true">
 </MudPasswordField>
 
@@ -42,6 +44,7 @@
                   Variant="Variant.Outlined"
                   Margin="Margin.Dense"
                   Class="my-6"
+                  RequiredError="Please Confirm Password"
                   Required="true">
 </MudPasswordField>
 
@@ -56,10 +59,14 @@
     <ChildContent>Register</ChildContent>
 </MudLoadingButton>
 
-<MudItem Class="pt-5">
+<MudItem Class="py-5">
     <MudFab Color="Color.Primary" Size="Size.Small" OnClick="RedirectToLogin" StartIcon="@Icons.Material.Filled.KeyboardBackspace" />
 </MudItem>
 
+<div class="text-center p-2">
+    © 2024 Copyright:
+    <a class="text-reset fw-bold" href="/">MenuFlix.com</a>
+</div>
 
 @code {
     private bool success, errors;

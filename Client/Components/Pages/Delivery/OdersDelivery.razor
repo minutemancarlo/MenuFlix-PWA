@@ -1,0 +1,539 @@
+﻿@page "/delivery-orders"
+@using Client.Identity
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@using Client.Components.Pages.Delivery.Components
+@layout MainLayout
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager _navigationManager
+@inject HttpClient httpClient
+
+@attribute [Authorize(Roles = "Delivery")]
+<style>
+    .my-custom-class {
+        backdrop-filter: blur(10px);
+    }
+</style>
+<PageTitle>Delivery Dashboard</PageTitle>
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+    <MudHidden @ref="Desktop" Breakpoint="Breakpoint.MdAndUp" Invert="true">
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudItem xs="12" Class="justify-content-center">
+                <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark" ActivePanelIndexChanged="OnIndexChanged">
+                    <MudTabPanel Icon="@Icons.Material.Filled.Fastfood" Text="For Pickup" BadgeData="@forDeliveryOrders.Count()" BadgeColor="Color.Error">
+                        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                            @if (forDeliveryOrders.Count() == 0)
+                            {
+                                <MudText Typo="Typo.h6">No Items to show.</MudText>
+                            }
+                            @foreach (var item in forDeliveryOrders)
+                            {
+                                string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),5))">
+
+                                    <MudCard>
+                                        <MudCardHeader>
+                                            <CardHeaderContent>
+                                                <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                            </CardHeaderContent>
+                                            <CardHeaderActions>
+                                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent Class="text-center">
+                                            <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                            <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                            </MudStack>
+                                        </MudCardActions>
+                                    </MudCard>
+                                </a>
+                            }
+                        </MudStack>
+                        <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                        </MudOverlay>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.ElectricMoped" Text="In-Transit" BadgeData="@intransitOrders.Count()" BadgeColor="Color.Success">
+                        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                            @if (intransitOrders.Count() == 0)
+                            {
+                                <MudText Typo="Typo.h6">No Items to show.</MudText>
+                            }
+                            @foreach (var item in intransitOrders)
+                            {
+                                string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),3))">
+
+                                    <MudCard>
+                                        <MudCardHeader>
+                                            <CardHeaderContent>
+                                                <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                            </CardHeaderContent>
+                                            <CardHeaderActions>
+                                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent Class="text-center">
+                                            <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                            <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                            </MudStack>
+                                        </MudCardActions>
+                                    </MudCard>
+                                </a>
+                            }
+                        </MudStack>
+                        <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                        </MudOverlay>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.NoFood" Text="Cancelled" BadgeData="@cancelledOrders.Count()">
+                        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                            @if (cancelledOrders.Count() == 0)
+                            {
+                                <MudText Typo="Typo.h6">No Items to show.</MudText>
+                            }
+                            @foreach (var item in cancelledOrders)
+                            {
+                                string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),0))">
+
+                                    <MudCard>
+                                        <MudCardHeader>
+                                            <CardHeaderContent>
+                                                <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                            </CardHeaderContent>
+                                            <CardHeaderActions>
+                                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent Class="text-center">
+                                            <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                            <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                            </MudStack>
+                                        </MudCardActions>
+                                    </MudCard>
+                                </a>
+                            }
+                        </MudStack>
+                        <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                        </MudOverlay>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.HowToReg" Text="Completed" BadgeData="@completedOrders.Count()" BadgeColor="Color.Error">
+                        <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                            @if (completedOrders.Count() == 0)
+                            {
+                                <MudText Typo="Typo.h6">No Items to show.</MudText>
+                            }
+                            @foreach (var item in completedOrders)
+                            {
+                                string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),4))">
+
+                                    <MudCard>
+                                        <MudCardHeader>
+                                            <CardHeaderContent>
+                                                <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                            </CardHeaderContent>
+                                            <CardHeaderActions>
+                                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent Class="text-center">
+                                            <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                            <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                            </MudStack>
+                                        </MudCardActions>
+                                    </MudCard>
+                                </a>
+                            }
+                        </MudStack>
+                        <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                        </MudOverlay>
+                    </MudTabPanel>                    
+                </MudTabs>
+            </MudItem>
+        </MudStack>
+    </MudHidden>
+    <MudSwipeArea OnSwipeEnd="@(async () => OnSwipe(SwipeDirection.TopToBottom))">
+        <MudHidden @ref="Mobile" Breakpoint="Breakpoint.MdAndDown" Invert="true">
+            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                <MudItem xs="12" Class="justify-content-center">
+                    <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark" MinimumTabWidth="80px" ActivePanelIndexChanged="OnIndexChanged">
+                        <MudTabPanel Icon="@Icons.Material.Filled.Fastfood" BadgeData="@forDeliveryOrders.Count()" BadgeColor="Color.Error">
+                            <MudText Typo="Typo.body1" Class="fw-bold pt-2">For Pickup</MudText>
+                            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                                @if (forDeliveryOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in forDeliveryOrders)
+                                {
+                                    string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                    var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                    <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),5))">
+
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent Class="text-center">
+                                                <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                                <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                                </MudStack>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </a>
+                                }
+                            </MudStack>
+                            <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                                <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                            </MudOverlay>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="@Icons.Material.Filled.ElectricMoped"  BadgeData="@intransitOrders.Count()" BadgeColor="Color.Success">
+                            <MudText Typo="Typo.body1" Class="fw-bold pt-2">In-Transit</MudText>
+                            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                                @if (intransitOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in intransitOrders)
+                                {
+                                    string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                    var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                    <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),3))">
+
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent Class="text-center">
+                                                <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                                <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                                </MudStack>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </a>
+                                }
+                            </MudStack>
+                            <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                                <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                            </MudOverlay>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="@Icons.Material.Filled.NoFood" BadgeData="@cancelledOrders.Count()">
+                            <MudText Typo="Typo.body1" Class="fw-bold pt-2">Cancelled</MudText>
+                            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                                @if (cancelledOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in cancelledOrders)
+                                {
+                                    string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                    var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                    <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),0))">
+
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent Class="text-center">
+                                                <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                                <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                                </MudStack>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </a>
+                                }
+                            </MudStack>
+                            <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                                <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                            </MudOverlay>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="@Icons.Material.Filled.HowToReg" BadgeData="@completedOrders.Count()" BadgeColor="Color.Success">
+                            <MudText Typo="Typo.body1" Class="fw-bold pt-2">Completed</MudText>
+                            <MudStack Wrap="Wrap.Wrap" Row Justify="Justify.SpaceEvenly" Spacing="4" AlignItems="AlignItems.Start">
+                                @if (completedOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in completedOrders)
+                                {
+                                    string createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
+                                    var createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+                                    <a style="cursor: pointer;" onclick="@(() => OnClicked(item.OrderItems.FirstOrDefault()?.OrderId,item.UserAdditionalDetails.FirstOrDefault(),4))">
+
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6">@item.OrderItems.FirstOrDefault()?.OrderId</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Default" />
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent Class="text-center">
+                                                <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
+                                                <MudText Typo="Typo.h6">Total: @(item.OrderItems.FirstOrDefault()?.Total + 50)</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Recipient: @($"{item.UserAdditionalDetails.FirstOrDefault()?.FirstName} {item.UserAdditionalDetails.FirstOrDefault()?.LastName}")</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Date: @createdDate</MudText>
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">Time: @createdTime</MudText>
+                                                </MudStack>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </a>
+                                }
+                            </MudStack>
+                            <MudOverlay Visible="isVisibleOverlay" DarkBackground="true" Absolute="true" Class="vh-100">
+                                <MudProgressCircular Color="Color.Success" Indeterminate="true" />
+                            </MudOverlay>
+                        </MudTabPanel>
+                    </MudTabs>
+
+                </MudItem>
+            </MudStack>
+        </MudHidden>
+    </MudSwipeArea>
+
+
+</MudItem>
+@code {
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Delivery", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Orders", href: "#", icon: Icons.Material.Filled.ReceiptLong)
+    };
+    MudHidden? Mobile;
+    MudHidden? Desktop;
+    private string? SubTitle;
+    private bool isVisibleOverlay = false;
+    private bool IsCustomer { get; set; }
+    private bool isLoggedin { get; set; }
+    private string? UserId;
+
+    private string emailaddress { get; set; }
+    public List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private List<OrderJson> orderJson = new List<OrderJson>();
+    private List<OrderDisplay> orders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> newOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> processingOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> forDeliveryOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> intransitOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> cancelledOrders { get; set; } = new List<OrderDisplay>();
+    private List<OrderDisplay> completedOrders { get; set; } = new List<OrderDisplay>();
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            isLoggedin = user.Identity.IsAuthenticated;
+
+
+
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                    try
+                    {
+                        UserId = await httpClient.GetStringAsync($"UserManagement/getuserid?email={emailaddress}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        Snackbar.Add($"An exception occurred: {ex.Message}", Severity.Error);
+                    }
+                }
+            }
+
+        }
+        await OnGetOrders(emailaddress);
+        await base.OnInitializedAsync();
+
+    }
+
+    public async Task OnSwipe(SwipeDirection direction)
+    {
+        if (direction == SwipeDirection.TopToBottom)
+        {
+            await OnGetOrders(emailaddress);
+            Snackbar.Add("Data Refreshed", Severity.Info);
+            StateHasChanged();
+        }
+
+    }
+
+    private async Task OnIndexChanged()
+    {
+        await OnGetOrders(emailaddress);
+    }
+
+    private async Task OnClicked(string Orderid, UserAdditionalDetails userdetails, int status)
+    {
+        var parameters = new DialogParameters<ProcessDeliveryDialog>();
+        parameters.Add(x => x.Title, Orderid);
+        parameters.Add(x => x.Action, status);
+        parameters.Add(x => x.EmailAddress, emailaddress);
+        parameters.Add(x => x.Refresh, async () => await OnGetOrders(emailaddress));
+        parameters.Add(x => x.UserAdditionalDetails, userdetails);
+        switch (status)
+        {
+            case 0:
+                parameters.Add(x => x.OrderItem, cancelledOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+            case 1:
+                parameters.Add(x => x.OrderItem, newOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+            case 2:
+                parameters.Add(x => x.OrderItem, processingOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+            case 3:
+                parameters.Add(x => x.OrderItem, intransitOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+            case 4:
+                parameters.Add(x => x.OrderItem, completedOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+            case 5:
+                parameters.Add(x => x.OrderItem, forDeliveryOrders.Where(x => x.OrderItems.FirstOrDefault()?.OrderId == Orderid).ToList());
+                break;
+        }
+
+
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, ClassBackground = "my-custom-class" };
+        var dialog = DialogService.Show<ProcessDeliveryDialog>("Edit Food Item", parameters, options);
+        var state = await dialog.Result;
+
+        if (!state.Canceled)
+            await OnGetOrders(emailaddress);
+        // Snackbar.Add($"Clicked {id}", MudBlazor.Severity.Info);
+        StateHasChanged();
+    }
+
+    private async Task OnGetOrders(string emailaddress)
+    {
+
+        try
+        {
+            isVisibleOverlay = true;
+            orderJson = new List<OrderJson>();
+            orders = new List<OrderDisplay>();
+            newOrders = new List<OrderDisplay>();
+            processingOrders = new List<OrderDisplay>();
+            forDeliveryOrders = new List<OrderDisplay>();
+            intransitOrders = new List<OrderDisplay>();
+            cancelledOrders = new List<OrderDisplay>();
+            completedOrders = new List<OrderDisplay>();
+            var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerordersall?emailaddress={emailaddress}");
+            orderJson = ordersJson;
+            foreach (var item in ordersJson)
+            {
+                var orderItems = JsonConvert.DeserializeObject<List<OrderItem>>(item.Item);
+                var statuses = JsonConvert.DeserializeObject<List<StatusEntry>>(item.Status);
+                var users = JsonConvert.DeserializeObject<List<UserAdditionalDetails>>(item.UserAdditionalDetails);
+
+                // Create an OrderDisplay object and set its properties
+                var orderDisplay = new OrderDisplay
+                    {
+                        OrderItems = orderItems,
+                        Status = statuses,
+                        UserAdditionalDetails = users
+                    };
+
+                orders.Add(orderDisplay);
+
+            }
+            newOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 1).ToList();
+            processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2).ToList();
+            intransitOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 3).ToList();
+            intransitOrders = intransitOrders.Where(s => s.Status.LastOrDefault()?.UpdatedBy == UserId).ToList();
+            cancelledOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 0).ToList();
+            cancelledOrders = cancelledOrders.Where(s => s.Status.LastOrDefault()?.UpdatedBy == UserId).ToList();
+            forDeliveryOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 5).ToList();
+            completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
+            completedOrders = completedOrders.Where(s => s.Status.LastOrDefault()?.UpdatedBy == UserId).ToList();
+            isVisibleOverlay = false;
+        }
+        catch (Exception ex)
+        {
+            isVisibleOverlay = false;
+            Snackbar.Add($"An Exception Occured: {ex.Message}");
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+}

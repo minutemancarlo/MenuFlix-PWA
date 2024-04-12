@@ -38,11 +38,17 @@ namespace SharedLibrary
         
     }
 
+    public partial class DeliveryInfo : UserAdditionalDetails
+    {
+        public string OrderId { get; set; }        
+    }
+
     public partial class StatusEntry
     {
         public string OrderId { get; set; }
         public int Status { get; set; }
         public DateTime? UpdatedOn { get; set; }
+        public string UpdatedBy { get; set; }
         
     }
 }

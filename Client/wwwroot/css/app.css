@@ -101,3 +101,22 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+/* CSS for desktop screens */
+@media (min-width: 768px) {
+    .custom-carousel
+
+{
+    height: 450px;
+}
+
+}
+
+/* CSS for smaller screens like mobile */
+@media (max-width: 767px) {
+    .custom-carousel {
+        height: 440px; /* Adjust height for mobile screens */
+    }
+}
+
