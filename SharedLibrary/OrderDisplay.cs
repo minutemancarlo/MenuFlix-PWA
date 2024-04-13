@@ -41,7 +41,8 @@ namespace SharedLibrary
         public string StoreName { get; set; }
         public string StoreLogo { get; set; }
         public string Category { get; set; }
-        public decimal Total { get; set; }        
+        public decimal Total { get; set; }
+        public int Rating { get; set; } 
         
     }
 

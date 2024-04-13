@@ -862,9 +862,14 @@
                                                                 <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
                                                             </MudStack>
                                                             <MudSpacer />
-                                                            <MudStack AlignItems="AlignItems.Center">
+                                                            <MudStack AlignItems="AlignItems.Center" Spacing="0">
                                                                 <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
                                                                 <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                                <MudRating SelectedValue="@fooditem.Rating"
+                                                                           ReadOnly="@(fooditem.Rating == 0 ? false : true)"
+                                                                           SelectedValueChanged="@((int newValue) => SaveRatings(fooditem, newValue,emailaddress))" />
+
+
                                                             </MudStack>
                                                         </MudStack>
                                                     </MudPaper>
@@ -1740,8 +1745,13 @@
                                                             <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
                                                         </MudStack>
                                                     </MudStack>
+                                                        <MudRating SelectedValue="@fooditem.Rating"
+                                                                   ReadOnly="@(fooditem.Rating == 0 ? false : true)"
+                                                                   SelectedValueChanged="@((int newValue) => SaveRatings(fooditem, newValue,emailaddress))" />
+
                                                 </MudPaper>
                                             }
+                                                
                                         </ChildContent>
                                     </MudExpansionPanel>
                                 </MudExpansionPanels>
@@ -1792,11 +1802,51 @@
 
     }
 
+    private async Task SaveRatings(OrderItem foodItem, int val, string email)
+    {
+        try
+        {
+            foodItem.Rating = val; 
+            var userid = await httpClient.GetStringAsync($"UserManagement/getuserid?email={email}");
+
+            var data = new UpdateRatings
+            {
+                ItemId = foodItem.ItemId,
+                OrderId = foodItem.OrderId,
+                Rate = val,
+                UserId = userid
+            };
+            var response = await httpClient.PostAsJsonAsync($"FoodItem/updateRatings", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // await OnGetCartItems(emailaddress);
+                Snackbar.Add($"Ratings Submitted", Severity.Success);
+                
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+        }
+    }
+
     private async Task OnGetOrders(string emailaddress)
     {
         try
         {
-            var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerorders?emailaddress={emailaddress}");
+            var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerorderswithcompleted?emailaddress={emailaddress}");
 
             foreach (var item in ordersJson)
             {

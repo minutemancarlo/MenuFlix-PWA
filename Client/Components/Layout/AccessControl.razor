@@ -28,10 +28,8 @@
                 {
 
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/" StartIcon="@Icons.Material.Filled.Home" Color="Color.Error">Home</MudButton>
-                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>
-                    <MudBadge Content="@customerLayout.OrderCount" Overlap Color="Color.Warning">
-                        <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>
-                    </MudBadge>
+                    <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/menu" StartIcon="@Icons.Material.Filled.RestaurantMenu" Color="Color.Error">Menu</MudButton>                    
+                        <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/my-orders" StartIcon="@Icons.Material.Filled.CreditCard" Color="Color.Error">Orders</MudButton>                    
                     <MudButton Variant="Variant.Outlined" IconSize="Size.Medium" Href="/stores" StartIcon="@Icons.Material.Filled.Storefront" Color="Color.Error">Stores</MudButton>
                     <MudSpacer />
                     <MudBadge Content="@customerLayout.Count" Overlap Color="Color.Warning">
@@ -84,7 +82,7 @@
                         @if(IsCustomer){
                         <MudMenuItem IconSize="Size.Medium" Href="/" Icon="@Icons.Material.Filled.Home">Home</MudMenuItem>
                         <MudMenuItem IconSize="Size.Medium" Href="/menu" Icon="@Icons.Material.Filled.RestaurantMenu">Menu</MudMenuItem>
-                        <MudMenuItem IconSize="Size.Medium" Href="/my-orders" Icon="@Icons.Material.Filled.CreditCard">Orders <MudChip Size="Size.Small" Color="Color.Info">@customerLayout.OrderCount</MudChip></MudMenuItem>
+                        <MudMenuItem IconSize="Size.Medium" Href="/my-orders" Icon="@Icons.Material.Filled.CreditCard">Orders</MudMenuItem>
                         <MudMenuItem IconSize="Size.Medium" Href="/stores" Icon="@Icons.Material.Filled.Storefront">Stores</MudMenuItem>
                         }                        
                         <MudMenuItem IconSize="Size.Medium" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>

@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Client.Components.Pages.Customer;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary;
 using System.Data;
@@ -64,6 +65,38 @@ namespace Server.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpPost("updateratings")]
+        public async Task<IActionResult> UpdateRatings([FromBody] UpdateRatings item)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", item.OrderId);
+                parameters.Add("@UserId", item.UserId);
+                parameters.Add("@Rate", item.Rate);
+                parameters.Add("@ItemId", item.ItemId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        //TODO: Add GETDATE on OrderHistory
+                        "Insert into Ratings (ItemId,Rate,UserId,OrderId) values (@ItemId,@Rate,@UserId,@OrderId);",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
 
         [HttpPost("updatefooditem")]
         public async Task<IActionResult> UpdateFoodItem([FromBody] FoodItem fooditem)
