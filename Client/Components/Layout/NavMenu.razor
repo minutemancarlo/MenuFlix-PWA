@@ -34,9 +34,9 @@
             </MudNavGroup> *@
         </AuthorizeView>       
         <AuthorizeView Roles="Accounting">
-            <MudNavLink Href="/">Point of Sale</MudNavLink>
-            <MudNavLink Href="/">Orders</MudNavLink>
-            <MudNavLink Href="/billing">Cash Management</MudNavLink>            
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/accounting-dashboard">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AdfScanner" Href="/accounting-pos">Point of Sale</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AccountBalanceWallet" Href="/accounting-cash-management">Cash Management</MudNavLink>
             @* <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
             <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">Users</MudNavLink>
             <MudNavLink Href="/counter">Security</MudNavLink>

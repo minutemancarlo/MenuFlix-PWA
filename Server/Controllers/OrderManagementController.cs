@@ -258,5 +258,8 @@ namespace Server.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+
+
+        
     }
 }

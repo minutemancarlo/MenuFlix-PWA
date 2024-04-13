@@ -1,0 +1,168 @@
+﻿@page "/accounting-pos"
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@layout MainLayout
+
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
+
+@attribute [Authorize(Roles = "Accounting")]
+<PageTitle>Store POS</PageTitle>
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+        <MudItem xs="12" Class="justify-content-center">
+            <MudDataGrid Items="cashierDisplay" Class="w-100" T="CashierDisplay" MultiSelection="false"
+                         Elevation="0" Loading="_loading" Bordered
+                         Striped ColumnResizeMode="ResizeMode.Column" Groupable="true"
+                         GroupExpanded="false" SortMode="SortMode.None"
+                         EditMode="DataGridEditMode.Cell"
+                         EditTrigger="DataGridEditTrigger.Manual"
+                         CommittedItemChanges="@CommittedItemChanges"
+                         Filterable HeaderClass=" text-uppercase font-weight-bold">
+                <Columns>
+
+                    <PropertyColumn Property="x => x.OrderItems.OrderId" Grouping IsEditable="false" Hidden="true">
+                        <GroupTemplate>
+                            <span style="font-weight:bold">Order Id: @context.Grouping.Key</span>                            
+                            @* <span style="font-weight:bold"> Total: ₱ @context.Grouping.FirstOrDefault().OrderItems.Total</span> *@                            
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Medium" Color="Color.Info" Class="float-end">Remit</MudButton>                            
+                        </GroupTemplate>
+                        <CellTemplate>
+                            <span></span>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.OrderItems.OrderId" Title="Order Id" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.ItemName" Title="Item Name" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.Pcs" Title="Pcs" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.Price" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.SubTotal" Title="Sub Total" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.Total" CellClass="fw-bold text-danger" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false">
+                        <CellTemplate>
+                            <MudText>₱ @context.Item.OrderItems.Total</MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.OrderItems.CreatedOn" Title="Order Created" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.Status.UpdatedOn" Title="Order Completed" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                </Columns>
+                <NoRecordsContent>No available records to show.</NoRecordsContent>
+                <PagerContent>
+                    <MudDataGridPager T="CashierDisplay" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudItem>
+    </MudStack>
+</MudItem>
+
+@code {
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Accounting", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Point of Sale", href: "#", icon: Icons.Material.Filled.AdfScanner)
+    };
+    private string emailaddress { get; set; }
+    private List<Claim> UserClaims { get; set; } = new List<Claim>();
+    private List<OrderJson> orderJson = new List<OrderJson>();
+    private List<OrderDisplay> orders { get; set; } = new List<OrderDisplay>();
+    private List<CashierDisplay> cashierDisplay { get; set; } = new List<CashierDisplay>();
+    private List<OrderDisplay> completedOrders { get; set; } = new List<OrderDisplay>();
+    private OrderDisplay _currentDto = new OrderDisplay();
+    private HashSet<OrderDisplay> _selectedItems = new();
+    private bool _loading = false;
+    private string _searchString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+            await OnGetOrders(emailaddress);
+
+        }
+        await base.OnInitializedAsync();
+    }
+    void CommittedItemChanges(CashierDisplay item)
+    {
+        // Snackbar.Add($"Event = CommittedItemChanges", Severity.Info);
+    }
+
+    private async Task OnGetOrders(string emailaddress)
+    {
+
+        try
+        {
+            orderJson = new List<OrderJson>();
+            orders = new List<OrderDisplay>();
+            // newOrders = new List<OrderDisplay>();
+            // processingOrders = new List<OrderDisplay>();
+            // forDeliveryOrders = new List<OrderDisplay>();
+            // intransitOrders = new List<OrderDisplay>();
+            // cancelledOrders = new List<OrderDisplay>();
+            completedOrders = new List<OrderDisplay>();
+            var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerordersall?emailaddress={emailaddress}");
+            orderJson = ordersJson;
+            foreach (var item in ordersJson)
+            {
+                var orderItems = JsonConvert.DeserializeObject<List<OrderItem>>(item.Item);
+                var statuses = JsonConvert.DeserializeObject<List<StatusEntry>>(item.Status);
+                var users = JsonConvert.DeserializeObject<List<UserAdditionalDetails>>(item.UserAdditionalDetails);
+
+                // Create an OrderDisplay object and set its properties
+                var orderDisplay = new OrderDisplay
+                    {
+                        OrderItems = orderItems,
+                        Status = statuses,
+                        UserAdditionalDetails = users
+                    };
+
+                orders.Add(orderDisplay);
+
+            }
+            // newOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 1).ToList();
+            // processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2).ToList();
+            // intransitOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 3).ToList();
+            // cancelledOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 0).ToList();
+            // forDeliveryOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 5).ToList();
+            completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
+            foreach (var item in completedOrders)
+            {
+                var data = new CashierDisplay
+                    {
+                        OrderItems = item.OrderItems.FirstOrDefault(),
+                        Status = item.Status.FirstOrDefault(),
+                        UserAdditionalDetails = item.UserAdditionalDetails.FirstOrDefault(),
+                    };
+                cashierDisplay.Add(data);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private Func<OrderDisplay, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        // if (x.OrderItems.FirstOrDefault()?.ItemName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+
+
+
+        return false;
+    };
+}

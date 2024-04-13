@@ -334,6 +334,12 @@ and engaging platform for exploring food choices and ordering convenience.
                 RedirectToHome("delivery-dashboard");
             }
 
+            if (user.IsInRole("Accounting"))
+            {
+                RedirectToHome("accounting-dashboard");
+            }
+
+
         }
         await base.OnAfterRenderAsync(firstRender);
        

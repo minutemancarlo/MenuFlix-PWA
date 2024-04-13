@@ -9,14 +9,894 @@
 
 @attribute [Authorize(Roles = "Customer")]
 <PageTitle>My Orders</PageTitle>
-<MudItem Class="d-flex justify-content-center" xs="12">
-    <MudItem xs="8">
+
+
+<MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+    <MudItem Class="d-flex justify-content-center" xs="12">
+        <MudItem xs="8">
+            <MudText Typo="Typo.h6" Class="text-start">My Orders</MudText>
+            <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark">
+                <MudTabPanel Icon="@Icons.Material.Filled.ShoppingCart" Text="New Orders" BadgeData="@(newOrders.Count()>0?newOrders.Count():null)" BadgeColor="Color.Error">
+                    <MudItem Class="d-flex justify-content-center" xs="12">
+                        <MudItem xs="12">
+                            <MudStack>
+                                @if (newOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in newOrders)
+                                {
+
+                                    <MudExpansionPanels MultiExpansion="true">
+                                        <MudExpansionPanel Text="Panel One">
+                                            <TitleContent>
+                                                <div class="d-flex">
+                                                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                    </MudStack>
+                                                    <MudSpacer />
+                                                    <MudStack Spacing="0">
+                                                        <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
+
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                    <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).FirstOrDefault()</MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color2 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color2 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Schedule" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color2" Class="text-center">Processing</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color2">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color3 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color3 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Moped" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color3" Class="text-center">In-Transit</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color3">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                            <ItemDot>
+                                                                <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.NoFood" />
+                                                            </ItemDot>
+                                                            <ItemContent>
+                                                                <MudText Color="Color.Error" Class="text-center">Cancelled</MudText>
+                                                            </ItemContent>
+                                                            <ItemOpposite>
+                                                                <MudText Color="Color.Error">@item.Status.Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                            </ItemOpposite>
+                                                        </MudTimelineItem>
+                                                    }
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color4 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color4 = Color.Dark;
+                                                    }
+                                                    <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color4" Class="text-center">Completed</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color4">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                </MudTimeline>
+                                                @foreach (var fooditem in item.OrderItems)
+                                                {
+                                                    <MudPaper Elevation="4" Class="py-5">
+                                                        <MudStack Row Class="pa-3" AlignItems="AlignItems.Center">
+                                                            <MudImage Src="@fooditem.ItemLogo" Width="80" Height="80" />
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Spacing="1">
+                                                                <MudText Typo="Typo.body1"><strong>@fooditem.ItemName</strong></MudText>
+                                                                <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
+                                                            </MudStack>
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Center">
+                                                                <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
+                                                                <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                            </MudStack>
+                                                        </MudStack>
+                                                    </MudPaper>
+                                                }
+                                                <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@(async () => OnCancelOrder(item.OrderItems.FirstOrDefault()?.OrderId))">Cancel Order</MudButton>
+                                            </ChildContent>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                }
+
+
+                            </MudStack>
+                        </MudItem>
+                    </MudItem>
+                </MudTabPanel>
+                <MudTabPanel Icon="@Icons.Material.Filled.Schedule" Text="Preparing" BadgeData="@(processingOrders.Count()>0?processingOrders.Count():null)" BadgeColor="Color.Error">
+                    <MudItem Class="d-flex justify-content-center" xs="12">
+                        <MudItem xs="12">
+                            <MudStack>
+                                @if (processingOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in processingOrders)
+                                {
+                                    <MudExpansionPanels MultiExpansion="true">
+                                        <MudExpansionPanel Text="Panel One">
+                                            <TitleContent>
+                                                <div class="d-flex">
+                                                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                    </MudStack>
+                                                    <MudSpacer />
+                                                    <MudStack Spacing="0">
+                                                        <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
+
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                    <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).FirstOrDefault()</MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color2 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color2 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Schedule" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color2" Class="text-center">Processing</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color2">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color3 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color3 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Moped" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color3" Class="text-center">In-Transit</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color3">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                            <ItemDot>
+                                                                <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.NoFood" />
+                                                            </ItemDot>
+                                                            <ItemContent>
+                                                                <MudText Color="Color.Error" Class="text-center">Cancelled</MudText>
+                                                            </ItemContent>
+                                                            <ItemOpposite>
+                                                                <MudText Color="Color.Error">@item.Status.Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                            </ItemOpposite>
+                                                        </MudTimelineItem>
+                                                    }
+                                                    @if (item.Status
+                                                   .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                    {
+                                                        color4 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color4 = Color.Dark;
+                                                    }
+                                                    <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color4" Class="text-center">Completed</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color4">
+                                                                @if (item.Status
+                                                               .Any(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId))
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                </MudTimeline>
+                                                @foreach (var fooditem in item.OrderItems)
+                                                {
+                                                    <MudPaper Elevation="4" Class="py-5">
+                                                        <MudStack Row Class="pa-3" AlignItems="AlignItems.Center">
+                                                            <MudImage Src="@fooditem.ItemLogo" Width="80" Height="80" />
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Spacing="1">
+                                                                <MudText Typo="Typo.body1"><strong>@fooditem.ItemName</strong></MudText>
+                                                                <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
+                                                            </MudStack>
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Center">
+                                                                <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
+                                                                <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                            </MudStack>
+                                                        </MudStack>
+                                                    </MudPaper>
+                                                }
+                                            </ChildContent>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                }
+
+
+                            </MudStack>
+                        </MudItem>
+                    </MudItem>
+                </MudTabPanel>
+                <MudTabPanel Icon="@Icons.Material.Filled.Moped" Text="In-Transit" BadgeData="@(intransitOrders.Count()>0?intransitOrders.Count():null)" BadgeColor="Color.Error">
+                    <MudItem Class="d-flex justify-content-center" xs="12">
+                        <MudItem xs="12">
+                            <MudStack>
+                                @if (intransitOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in intransitOrders)
+                                {
+                                    <MudExpansionPanels MultiExpansion="true">
+                                        <MudExpansionPanel Text="Panel One">
+                                            <TitleContent>
+                                                <div class="d-flex">
+                                                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                    </MudStack>
+                                                    <MudSpacer />
+                                                    <MudStack Spacing="0">
+                                                        <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
+
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                    <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color2 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color2 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Schedule" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color2" Class="text-center">Processing</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color2">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color3 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color3 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Moped" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color3" Class="text-center">In-Transit</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color3">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                            <ItemDot>
+                                                                <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.NoFood" />
+                                                            </ItemDot>
+                                                            <ItemContent>
+                                                                <MudText Color="Color.Error" Class="text-center">Cancelled</MudText>
+                                                            </ItemContent>
+                                                            <ItemOpposite>
+                                                                <MudText Color="Color.Error">@item.Status.Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                            </ItemOpposite>
+                                                        </MudTimelineItem>
+                                                    }
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color4 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color4 = Color.Dark;
+                                                    }
+                                                    <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color4" Class="text-center">Completed</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color4">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                </MudTimeline>
+                                                @foreach (var fooditem in item.OrderItems)
+                                                {
+                                                    <MudPaper Elevation="4" Class="py-5">
+                                                        <MudStack Row Class="pa-3" AlignItems="AlignItems.Center">
+                                                            <MudImage Src="@fooditem.ItemLogo" Width="80" Height="80" />
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Spacing="1">
+                                                                <MudText Typo="Typo.body1"><strong>@fooditem.ItemName</strong></MudText>
+                                                                <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
+                                                            </MudStack>
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Center">
+                                                                <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
+                                                                <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                            </MudStack>
+                                                        </MudStack>
+                                                    </MudPaper>
+                                                }
+                                            </ChildContent>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                }
+
+
+                            </MudStack>
+                        </MudItem>
+                    </MudItem>
+                </MudTabPanel>
+                <MudTabPanel Icon="@Icons.Material.Filled.NoFood" Text="Cancelled" BadgeData="@(cancelledOrders.Count()>0?cancelledOrders.Count():null)" BadgeColor="Color.Error">
+                    <MudItem Class="d-flex justify-content-center" xs="12">
+                        <MudItem xs="12">
+                            <MudStack>
+                                @if (cancelledOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in cancelledOrders)
+                                {
+                                    <MudExpansionPanels MultiExpansion="true">
+                                        <MudExpansionPanel Text="Panel One">
+                                            <TitleContent>
+                                                <div class="d-flex">
+                                                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                    </MudStack>
+                                                    <MudSpacer />
+                                                    <MudStack Spacing="0">
+                                                        <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
+
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                    <MudTimelineItem Color="Color.Dark" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Class="text-center" Color="Color.Dark">Order Created</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Dark">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+
+
+
+                                                    <MudTimelineItem Color="Color.Dark" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Schedule" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="Color.Dark" Class="text-center">Processing</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Dark">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+
+
+
+                                                    <MudTimelineItem Color="Color.Dark" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Moped" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="Color.Dark" Class="text-center">In-Transit</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Dark">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                            <ItemDot>
+                                                                <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.NoFood" />
+                                                            </ItemDot>
+                                                            <ItemContent>
+                                                                <MudText Color="Color.Error" Class="text-center">Cancelled</MudText>
+                                                            </ItemContent>
+                                                            <ItemOpposite>
+                                                                <MudText Color="Color.Error">@item.Status.Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                            </ItemOpposite>
+                                                        </MudTimelineItem>
+                                                    }
+
+
+
+                                                    <MudTimelineItem Color="Color.Dark" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="Color.Dark" Class="text-center">Completed</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Dark">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                </MudTimeline>
+                                                @foreach (var fooditem in item.OrderItems)
+                                                {
+                                                    <MudPaper Elevation="4" Class="py-5">
+                                                        <MudStack Row Class="pa-3" AlignItems="AlignItems.Center">
+                                                            <MudImage Src="@fooditem.ItemLogo" Width="80" Height="80" />
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Spacing="1">
+                                                                <MudText Typo="Typo.body1"><strong>@fooditem.ItemName</strong></MudText>
+                                                                <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
+                                                            </MudStack>
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Center">
+                                                                <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
+                                                                <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                            </MudStack>
+                                                        </MudStack>
+                                                    </MudPaper>
+                                                }
+                                            </ChildContent>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                }
+
+
+                            </MudStack>
+                        </MudItem>
+                    </MudItem>
+                </MudTabPanel>
+                <MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" Text="Completed" BadgeData="@(completedOrders.Count()>0?completedOrders.Count():null)" BadgeColor="Color.Error">
+                    <MudItem Class="d-flex justify-content-center" xs="12">
+                        <MudItem xs="12">
+                            <MudStack>
+                                @if (completedOrders.Count() == 0)
+                                {
+                                    <MudText Typo="Typo.h6">No Items to show.</MudText>
+                                }
+                                @foreach (var item in completedOrders)
+                                {
+                                    <MudExpansionPanels MultiExpansion="true">
+                                        <MudExpansionPanel Text="Panel One">
+                                            <TitleContent>
+                                                <div class="d-flex">
+                                                    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                    </MudStack>
+                                                    <MudSpacer />
+                                                    <MudStack Spacing="0">
+                                                        <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
+
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                    <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Class="text-center" Color="Color.Success">Order Created</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="Color.Success">@item.Status.Where(s => s.Status == 1 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color2 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color2 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color2" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Schedule" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color2" Class="text-center">Processing</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color2">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 2 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color3 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color3 = Color.Dark;
+
+                                                    }
+                                                    <MudTimelineItem Color="@color3" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Moped" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color3" Class="text-center">In-Transit</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color3">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 3 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        <MudTimelineItem Color="Color.Error" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                            <ItemDot>
+                                                                <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.NoFood" />
+                                                            </ItemDot>
+                                                            <ItemContent>
+                                                                <MudText Color="Color.Error" Class="text-center">Cancelled</MudText>
+                                                            </ItemContent>
+                                                            <ItemOpposite>
+                                                                <MudText Color="Color.Error">@item.Status.Where(s => s.Status == 0 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()</MudText>
+                                                            </ItemOpposite>
+                                                        </MudTimelineItem>
+                                                    }
+                                                    @if (item.Status
+                                                   .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                   .Select(s => s.UpdatedOn)
+                                                   .DefaultIfEmpty()
+                                                   .FirstOrDefault() != DateTime.MinValue)
+                                                    {
+                                                        color4 = Color.Success;
+                                                    }
+                                                    else
+                                                    {
+                                                        color4 = Color.Dark;
+                                                    }
+                                                    <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
+                                                        <ItemDot>
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                        </ItemDot>
+                                                        <ItemContent>
+                                                            <MudText Color="@color4" Class="text-center">Completed</MudText>
+                                                        </ItemContent>
+                                                        <ItemOpposite>
+                                                            <MudText Color="@color4">
+                                                                @if (item.Status
+                                                               .Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId)
+                                                               .Select(s => s.UpdatedOn)
+                                                               .DefaultIfEmpty()
+                                                               .FirstOrDefault() != DateTime.MinValue)
+                                                                {
+                                                                    @item.Status.Where(s => s.Status == 4 && s.OrderId == item.OrderItems.FirstOrDefault()?.OrderId).Select(s => s.UpdatedOn).DefaultIfEmpty().FirstOrDefault()
+                                                                }
+                                                            </MudText>
+                                                        </ItemOpposite>
+                                                    </MudTimelineItem>
+
+                                                </MudTimeline>
+                                                @foreach (var fooditem in item.OrderItems)
+                                                {
+                                                    <MudPaper Elevation="4" Class="py-5">
+                                                        <MudStack Row Class="pa-3" AlignItems="AlignItems.Center">
+                                                            <MudImage Src="@fooditem.ItemLogo" Width="80" Height="80" />
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Start" Justify="Justify.FlexStart" Spacing="1">
+                                                                <MudText Typo="Typo.body1"><strong>@fooditem.ItemName</strong></MudText>
+                                                                <MudText Typo="Typo.body1"><strong>Category:</strong> @fooditem.Category</MudText>
+                                                            </MudStack>
+                                                            <MudSpacer />
+                                                            <MudStack AlignItems="AlignItems.Center">
+                                                                <MudText Typo="Typo.body1"><strong>Pcs:</strong> @fooditem.Pcs</MudText>
+                                                                <MudText Typo="Typo.body1"><strong>₱@fooditem.Price</strong></MudText>
+                                                            </MudStack>
+                                                        </MudStack>
+                                                    </MudPaper>
+                                                }
+                                            </ChildContent>
+                                        </MudExpansionPanel>
+                                    </MudExpansionPanels>
+                                }
+
+
+                            </MudStack>
+                        </MudItem>
+                    </MudItem>
+                </MudTabPanel>
+            </MudTabs>
+        </MudItem>
+
+    </MudItem>
+</MudHidden>
+
+<MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+    <MudItem Class="d-flex justify-content-center" xs="12">
+    <MudItem xs="12">
         <MudText Typo="Typo.h6" Class="text-start">My Orders</MudText>
-        <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark">
-            <MudTabPanel Icon="@Icons.Material.Filled.ShoppingCart" Text="New Orders" BadgeData="@(newOrders.Count()>0?newOrders.Count():null)" BadgeColor="Color.Error">
+            <MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" MinimumTabWidth="80px" Color="Color.Dark">
+            <MudTabPanel Icon="@Icons.Material.Filled.ShoppingCart" BadgeData="@(newOrders.Count()>0?newOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
+                            <MudText Typo="Typo.h6" Class="fw-bold py-2">
+                                New Orders
+                            </MudText>
                             @if(newOrders.Count() == 0)
                             {
                                 <MudText Typo="Typo.h6">No Items to show.</MudText>
@@ -28,20 +908,17 @@
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
                                             <div class="d-flex">
-                                                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
-                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
-                                                </MudStack>
-                                                <MudSpacer />
-                                                <MudStack Spacing="0">
-                                                    <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
-                                                    <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="0">
+                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Medium" Color="Color.Error" class="mr-3"></MudIcon>
+                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>                                                
+                                                    <MudText Typo="Typo.body1">Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                    <MudText Typo="Typo.body1">Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
                                                 </MudStack>
 
                                             </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
                                                 <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
                                                         <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
@@ -134,7 +1011,7 @@
                                                 }
                                                 <MudTimelineItem Color="@color4" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
-                                                        <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
+                                                            <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.CheckCircle" />
                                                     </ItemDot>
                                                     <ItemContent>
                                                         <MudText Color="@color4" Class="text-center">Completed</MudText>
@@ -149,7 +1026,6 @@
                                                         </MudText>
                                                     </ItemOpposite>
                                                 </MudTimelineItem>
-
                                             </MudTimeline>
                                             @foreach (var fooditem in item.OrderItems)
                                             {
@@ -180,10 +1056,13 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.Schedule" Text="Preparing" BadgeData="@(processingOrders.Count()>0?processingOrders.Count():null)" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.Schedule" BadgeData="@(processingOrders.Count()>0?processingOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
+                            <MudText Typo="Typo.h6" Class="fw-bold">
+                                Preparing
+                            </MudText>
                             @if(processingOrders.Count() == 0)
                             {
                                 <MudText Typo="Typo.h6">No Items to show.</MudText>
@@ -193,21 +1072,18 @@
                                 <MudExpansionPanels MultiExpansion="true">
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
-                                            <div class="d-flex">
-                                                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
-                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
-                                                </MudStack>
-                                                <MudSpacer />
-                                                <MudStack Spacing="0">
-                                                    <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
-                                                    <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
-                                                </MudStack>
+                                                <div class="d-flex">
+                                                    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="0">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Medium" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
 
-                                            </div>
+                                                </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
                                                 <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
                                                         <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
@@ -345,10 +1221,13 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.Moped" Text="In-Transit" BadgeData="@(intransitOrders.Count()>0?intransitOrders.Count():null)" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.Moped" BadgeData="@(intransitOrders.Count()>0?intransitOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
+                            <MudText Typo="Typo.h6" Class="fw-bold">
+                                In-Transit
+                            </MudText>
                             @if (intransitOrders.Count() == 0)
                             {
                                 <MudText Typo="Typo.h6">No Items to show.</MudText>
@@ -358,21 +1237,18 @@
                                 <MudExpansionPanels MultiExpansion="true">
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
-                                            <div class="d-flex">
-                                                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
-                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
-                                                </MudStack>
-                                                <MudSpacer />
-                                                <MudStack Spacing="0">
-                                                    <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
-                                                    <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                             <div class="d-flex">
+                                                <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="0">
+                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Medium" Color="Color.Error" class="mr-3"></MudIcon>
+                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>                                                
+                                                    <MudText Typo="Typo.body1">Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                    <MudText Typo="Typo.body1">Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
                                                 </MudStack>
 
                                             </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
                                                 <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
                                                         <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
@@ -531,10 +1407,13 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.NoFood" Text="Cancelled" BadgeData="@(cancelledOrders.Count()>0?cancelledOrders.Count():null)" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.NoFood"  BadgeData="@(cancelledOrders.Count()>0?cancelledOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
+                            <MudText Typo="Typo.h6" Class="fw-bold">
+                                Cancelled
+                            </MudText>
                             @if (cancelledOrders.Count() == 0)
                             {
                                 <MudText Typo="Typo.h6">No Items to show.</MudText>
@@ -544,21 +1423,18 @@
                                 <MudExpansionPanels MultiExpansion="true">
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
-                                            <div class="d-flex">
-                                                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
-                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
-                                                </MudStack>
-                                                <MudSpacer />
-                                                <MudStack Spacing="0">
-                                                    <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
-                                                    <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
-                                                </MudStack>
+                                                <div class="d-flex">
+                                                    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="0">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Medium" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
 
-                                            </div>
+                                                </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
                                                 <MudTimelineItem Color="Color.Dark" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
                                                         <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
@@ -690,10 +1566,13 @@
                     </MudItem>
                 </MudItem>
             </MudTabPanel>
-            <MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" Text="Completed" BadgeData="@(completedOrders.Count()>0?completedOrders.Count():null)" BadgeColor="Color.Error">
+            <MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" BadgeData="@(completedOrders.Count()>0?completedOrders.Count():null)" BadgeColor="Color.Error">
                 <MudItem Class="d-flex justify-content-center" xs="12">
                     <MudItem xs="12">
                         <MudStack>
+                            <MudText Typo="Typo.h6" Class="fw-bold">
+                                Completed
+                            </MudText>
                             @if(completedOrders.Count() == 0)
                             {
                                 <MudText Typo="Typo.h6">No Items to show.</MudText>
@@ -703,21 +1582,18 @@
                                 <MudExpansionPanels MultiExpansion="true">
                                     <MudExpansionPanel Text="Panel One">
                                         <TitleContent>
-                                            <div class="d-flex">
-                                                <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
-                                                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Color="Color.Error" class="mr-3"></MudIcon>
-                                                    <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
-                                                </MudStack>
-                                                <MudSpacer />
-                                                <MudStack Spacing="0">
-                                                    <MudText>Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
-                                                    <MudText>Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
-                                                </MudStack>
+                                                <div class="d-flex">
+                                                    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="0">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Medium" Color="Color.Error" class="mr-3"></MudIcon>
+                                                        <MudText>Store: <strong>@item.OrderItems.FirstOrDefault()?.StoreName</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Order No. <strong>@item.OrderItems.FirstOrDefault()?.OrderId</strong></MudText>
+                                                        <MudText Typo="Typo.body1">Total: <strong>₱@item.OrderItems.FirstOrDefault()?.Total</strong></MudText>
+                                                    </MudStack>
 
-                                            </div>
+                                                </div>
                                         </TitleContent>
                                         <ChildContent>
-                                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
+                                                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Alternate" Reverse="false">
                                                 <MudTimelineItem Color="Color.Success" HideDot="false" Size="Size.Medium" Variant="Variant.Filled">
                                                     <ItemDot>
                                                         <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingCart" />
@@ -880,9 +1756,7 @@
     </MudItem>
     
 </MudItem>
-
-    
-
+</MudHidden>
 
 
 

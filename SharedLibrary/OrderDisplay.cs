@@ -13,6 +13,13 @@ namespace SharedLibrary
         public List<StatusEntry> Status {get;set;}
     }
 
+    public partial class CashierDisplay
+    {
+        public OrderItem OrderItems { get; set; }
+        public UserAdditionalDetails? UserAdditionalDetails { get; set; }
+        public StatusEntry Status { get;set;}   
+    }
+
     public partial class OrderJson
     {
      

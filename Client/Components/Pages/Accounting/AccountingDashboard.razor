@@ -1,8 +1,17 @@
 ﻿@page "/accounting-dashboard"
 @attribute [Authorize(Roles = "Accounting")]
 <PageTitle>Accounting Dashboard</PageTitle>
-<h3>ManagerDashboard</h3>
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+</MudItem>
 
 @code {
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Accounting", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Dashboard", href: "#", icon: Icons.Material.Filled.Dashboard)
+    };
 
 }

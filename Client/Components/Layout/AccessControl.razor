@@ -39,12 +39,14 @@
                     </MudBadge>
                 }
 
-                <MudMenu Class="my-3" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
+                <MudMenu Class="my-3" ActivationEvent="@MouseEvent.LeftClick" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight">
                     <ActivatorContent>
                         @* <MudImage Src="@profilePic" Elevation="4" Class="rounded-circle" ObjectFit="ObjectFit.Contain" Width="40" Height="40"></MudImage> *@
                         <MudAvatar Color="Color.Primary">@emailaddress?.Substring(0, 2).ToUpper()</MudAvatar>
                     </ActivatorContent>
-                    <ChildContent>
+                    <ChildContent>                        
+                        <MudText Typo="Typo.subtitle2" Class="text-muted text-center">@Role</MudText>
+                        <MudDivider/>
                         <MudMenuItem IconSize="Size.Small" Href="/account" Icon="@Icons.Material.Filled.Person">Account</MudMenuItem>
                         <MudMenuItem IconSize="Size.Small" OnClick="BeginLogout" Icon="@Icons.Material.Filled.Logout">Log Out</MudMenuItem>
                     </ChildContent>
@@ -76,6 +78,9 @@
                         <MudAvatar Color="Color.Primary">@emailaddress?.Substring(0, 2).ToUpper()</MudAvatar>
                     </ActivatorContent>
                     <ChildContent>
+                        
+                        <MudText Typo="Typo.subtitle2" Class="text-muted text-center">@Role</MudText>
+                        <MudDivider />
                         @if(IsCustomer){
                         <MudMenuItem IconSize="Size.Medium" Href="/" Icon="@Icons.Material.Filled.Home">Home</MudMenuItem>
                         <MudMenuItem IconSize="Size.Medium" Href="/menu" Icon="@Icons.Material.Filled.RestaurantMenu">Menu</MudMenuItem>
@@ -99,12 +104,28 @@
     private bool IsCustomer { get; set; }
     private bool isLoggedIn { get; set; }
     private string? emailaddress { get; set; }
-
+    private string? Role { get; set; }
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         IsCustomer = user.IsInRole("Customer");
+        if (user.IsInRole("Administrator"))
+        {
+            Role = "Administrator";
+        }
+        else if (user.IsInRole("Manager"))
+        {
+            Role = "Manager";
+        }
+        else if (user.IsInRole("Delivery"))
+        {
+            Role = "Delivery";
+        }
+        else if (user.IsInRole("Accounting"))
+        {
+            Role = "Accounting";
+        }
         isLoggedIn = user.Identity.IsAuthenticated;
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {

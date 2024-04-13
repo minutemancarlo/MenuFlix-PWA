@@ -1,18 +1,18 @@
 ﻿@page "/delivery-dashboard"
 @attribute [Authorize(Roles = "Delivery")]
 <PageTitle>Delivery Dashboard</PageTitle>
-<style>
+@* <style>
     .mud-chart-bar {
-        stroke-width: 20px;
+        stroke-width: 80px;
     }
 
 </style>
 <style>
     .mud-charts-bar-series,
     .mud-charts-xaxis {
-        transform: translateX(10px) scaleX(0.88);
+        transform: translateX(40px);
     }
-</style>
+</style> *@
 <MudItem xs="12">
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
@@ -21,7 +21,7 @@
         <MudItem xs="8">
             <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                 <div>
-                    <MudChart ChartType="ChartType.Bar" ChartOptions="@Options" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px"></MudChart>
+                    <MudChart ChartType="ChartType.StackedBar" ChartOptions="@Options" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Height="350px"></MudChart>
                 </div>
                 @* <MudText Typo="Typo.h6">Catered and Cancelled Orders</MudText> *@
             </MudStack>
@@ -54,10 +54,10 @@
 
     public List<ChartSeries> Series = new List<ChartSeries>()
         {
-        new ChartSeries() { Name = "Catered", Data = new double[] { 1, 20, 4, 0, 0, 0, 0, 0, 0 } },
-        new ChartSeries() { Name = "Cancelled", Data = new double[] { 10, 3, 25, 0, 0, 0, 0, 0, 0 } },
+        new ChartSeries() { Name = "Catered", Data = new double[] { 1, 20, 4, 15 } },
+        new ChartSeries() { Name = "Cancelled", Data = new double[] { 10, 3, 25, 5} },
         };
-    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr" };
 
     protected override Task OnInitializedAsync()
     {
