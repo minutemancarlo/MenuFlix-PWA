@@ -279,7 +279,60 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("orderforremit")]
+        public async Task<IActionResult> OrderForRemit([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
 
-        
+                parameters.Add("@OrderId", orderId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(                        
+                        "Update Orders set isRemitted=2 where OrderId = @OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("orderforreceive")]
+        public async Task<IActionResult> OrderForReeceive([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", orderId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        "Update Orders set isRemitted=1 where OrderId = @OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+
     }
 }

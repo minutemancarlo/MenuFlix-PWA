@@ -1,0 +1,127 @@
+﻿@using SharedLibrary
+@using System.Net.Http.Json
+@using System.Net
+@inject HttpClient httpClient
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.Help" /> Confirm Action</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Row Spacing="1">
+            <MudText Typo="Typo.subtitle1">@Action Payment for Order # </MudText>
+            <MudText Typo="Typo.subtitle1" Class="text-danger fw-bolder">@OrderId</MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" OnClick="Cancel">Cancel</MudButton>
+        @if (Action == "Receive")
+        {            
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Info"
+                              Size="Size.Medium"
+                              OnClick="@(async () => await OnReceive())"
+                              Loading="@(_loading)"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Saving Changes...</LoadingContent>
+                <ChildContent>Receive</ChildContent>
+            </MudLoadingButton>
+        }
+        else
+        {
+            <MudLoadingButton Variant="Variant.Filled"
+                              Color="Color.Success"
+                              Size="Size.Medium"
+                              OnClick="@(async () => await OnRemit())"
+                              Loading="@(_loading)"
+                              ButtonType="ButtonType.Button">
+                <LoadingContent>Saving Changes...</LoadingContent>
+                <ChildContent>Remit</ChildContent>
+            </MudLoadingButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string OrderId { get; set; }
+    [Parameter] public string Action { get; set; }
+    [Parameter] public Action? Refresh { get; set; }
+    private bool _loading = false;
+
+    private async Task OnRemit()
+    {
+        try
+        {
+            _loading = true;
+            var response = await httpClient.PostAsJsonAsync($"OrderManagement/orderforremit", OrderId);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Order Id:{OrderId} Payment Remitted", Severity.Success);
+                _loading = false;
+                MudDialog.Close(DialogResult.Ok(true));
+                Refresh?.Invoke();
+
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+                _loading = false;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+    }
+
+    private async Task OnReceive()
+    {
+        try
+        {
+            _loading = true;
+            var response = await httpClient.PostAsJsonAsync($"OrderManagement/orderforreceive", OrderId);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Order Id:{OrderId} Payment Received", Severity.Success);
+                _loading = false;
+                MudDialog.Close(DialogResult.Ok(true));
+                Refresh?.Invoke();
+            }
+            else
+            {
+
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorMessage);
+                Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+                _loading = false;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+    }
+    void Cancel() => MudDialog.Cancel();
+}

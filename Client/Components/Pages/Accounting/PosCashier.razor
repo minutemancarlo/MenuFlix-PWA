@@ -2,6 +2,9 @@
 @using SharedLibrary
 @using System.Security.Claims
 @using Newtonsoft.Json
+@using ClosedXML.Excel
+@using System.IO
+@using Client.Components.Pages.Accounting.Components
 @layout MainLayout
 
 @inject HttpClient httpClient
@@ -9,6 +12,11 @@
 
 @attribute [Authorize(Roles = "Accounting")]
 <PageTitle>Store POS</PageTitle>
+<style>
+    .my-custom-class {
+        backdrop-filter: blur(10px);
+    }
+</style>
 <MudItem xs="12">
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
@@ -20,16 +28,31 @@
                          Striped ColumnResizeMode="ResizeMode.Column" Groupable="true"
                          GroupExpanded="false" SortMode="SortMode.None"
                          EditMode="DataGridEditMode.Cell"
+                         SelectOnRowClick
                          EditTrigger="DataGridEditTrigger.Manual"
                          CommittedItemChanges="@CommittedItemChanges"
                          Filterable HeaderClass=" text-uppercase font-weight-bold">
-                <Columns>
+                         <ToolBarContent>
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Success" OnClick="@(async () => await OnGetOrders(emailaddress))">Refresh</MudButton>
+                    @* <MudButton Variant="Variant.Filled" StartIcon="@Icons.Custom.FileFormats.FileExcel" Size="Size.Small" Color="Color.Primary" OnClick="OnGenerateExcel">Generate Report</MudButton> *@
 
+                </ToolBarContent>
+                <Columns>                    
                     <PropertyColumn Property="x => x.OrderItems.OrderId" Grouping IsEditable="false" Hidden="true">
                         <GroupTemplate>
-                            <span style="font-weight:bold">Order Id: @context.Grouping.Key</span>                            
-                            @* <span style="font-weight:bold"> Total: ₱ @context.Grouping.FirstOrDefault().OrderItems.Total</span> *@                            
-                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Medium" Color="Color.Info" Class="float-end">Remit</MudButton>                            
+                            <span style="font-weight:bold">Order ID: @context.Grouping.Key</span>                            
+                            @* <span style="font-weight:bold"> Total: ₱ @context.Grouping.FirstOrDefault().OrderItems.Total</span> *@
+                            @* <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CreditCardOff" Size="Size.Medium" Color="Color.Error" Class="float-end">Void</MudButton> *@
+                            @if (context.Grouping.FirstOrDefault()?.OrderItems.isRemitted == 0)
+                            {
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AssuredWorkload" Size="Size.Small" Disabled Color="Color.Success" Class="float-end">Remit Payment</MudButton>
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Small" Color="Color.Info" Class="float-end" OnClick="@(async () => await OnReceive(context.Grouping.Key.ToString()))">Receive Payment</MudButton>
+                            }
+                            else
+                            {
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AssuredWorkload" Size="Size.Small" Color="Color.Success" Class="float-end" OnClick="@(async () => await OnRemit(context.Grouping.Key.ToString()))">Remit Payment</MudButton>
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Small" Disabled Color="Color.Info" Class="float-end" >Receive Payment</MudButton>
+                            }                            
                         </GroupTemplate>
                         <CellTemplate>
                             <span></span>
@@ -98,18 +121,76 @@
         // Snackbar.Add($"Event = CommittedItemChanges", Severity.Info);
     }
 
+    private async Task OnRemit(string orderid)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth= MaxWidth.Small, FullWidth=true,Position=DialogPosition.Center,ClassBackground = "my-custom-class"  };
+        var parameters = new DialogParameters<ConfirmationDialog>();
+        parameters.Add(x => x.OrderId, orderid);
+        parameters.Add(x => x.Action, "Remit");
+        parameters.Add(x => x.Refresh, async () => await OnGetOrders(emailaddress));
+        var dialog = DialogService.Show<ConfirmationDialog>("Simple Dialog", parameters, options);
+        var result = await dialog.Result;
+        if(!result.Canceled)
+            await OnGetOrders(emailaddress);
+    }
+
+    private async Task OnReceive(string orderid)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, Position = DialogPosition.Center, ClassBackground = "my-custom-class" };
+        var parameters = new DialogParameters<ConfirmationDialog>();
+        parameters.Add(x => x.OrderId, orderid);
+        parameters.Add(x => x.Action, "Receive");
+        parameters.Add(x => x.Refresh, async () => await OnGetOrders(emailaddress));
+        var dialog = DialogService.Show<ConfirmationDialog>("Simple Dialog", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+            await OnGetOrders(emailaddress);
+    }
+
+    private void OnGenerateExcel()
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Orders");
+            var currentRow = 1;
+            worksheet.Cell(currentRow, 1).Value = "Id";
+            worksheet.Cell(currentRow, 2).Value = "Item Name";
+            worksheet.Cell(currentRow, 3).Value = "Pcs";
+            worksheet.Cell(currentRow, 4).Value = "Price";
+            worksheet.Cell(currentRow, 5).Value = "Sub Total";
+            foreach (var user in cashierDisplay)
+            {
+                currentRow++;
+                worksheet.Cell(currentRow, 1).Value = user.OrderItems.OrderId;
+                worksheet.Cell(currentRow, 2).Value = user.OrderItems.ItemName;
+                worksheet.Cell(currentRow, 3).Value = user.OrderItems.Pcs;
+                worksheet.Cell(currentRow, 4).Value = user.OrderItems.Price;
+                worksheet.Cell(currentRow, 5).Value = user.OrderItems.SubTotal;
+            }
+
+            // using (var stream = new MemoryStream())
+            // {
+            //     workbook.SaveAs(stream);
+            //     var content = stream.ToArray();
+
+            //     return File(
+            //         content,
+            //         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            //         "users.xlsx");
+            // }
+            workbook.SaveAs("HelloWorld.xlsx");
+        }
+    }
+
+
+
     private async Task OnGetOrders(string emailaddress)
     {
 
         try
         {
             orderJson = new List<OrderJson>();
-            orders = new List<OrderDisplay>();
-            // newOrders = new List<OrderDisplay>();
-            // processingOrders = new List<OrderDisplay>();
-            // forDeliveryOrders = new List<OrderDisplay>();
-            // intransitOrders = new List<OrderDisplay>();
-            // cancelledOrders = new List<OrderDisplay>();
+            orders = new List<OrderDisplay>();            
             completedOrders = new List<OrderDisplay>();
             var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerordersall?emailaddress={emailaddress}");
             orderJson = ordersJson;
@@ -129,22 +210,21 @@
 
                 orders.Add(orderDisplay);
 
-            }
-            // newOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 1).ToList();
-            // processingOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 2).ToList();
-            // intransitOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 3).ToList();
-            // cancelledOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 0).ToList();
-            // forDeliveryOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 5).ToList();
+            }            
             completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
+            cashierDisplay.Clear();
             foreach (var item in completedOrders)
             {
-                var data = new CashierDisplay
-                    {
-                        OrderItems = item.OrderItems.FirstOrDefault(),
-                        Status = item.Status.FirstOrDefault(),
-                        UserAdditionalDetails = item.UserAdditionalDetails.FirstOrDefault(),
-                    };
-                cashierDisplay.Add(data);
+                if(item.OrderItems.FirstOrDefault().isRemitted != 2)
+                {
+                    var data = new CashierDisplay
+                        {
+                            OrderItems = item.OrderItems.FirstOrDefault(),
+                            Status = item.Status.FirstOrDefault(),
+                            UserAdditionalDetails = item.UserAdditionalDetails.FirstOrDefault(),
+                        };
+                    cashierDisplay.Add(data);
+                }                
             }
         }
         catch (Exception ex)

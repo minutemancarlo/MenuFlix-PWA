@@ -1,6 +1,25 @@
 ﻿@page "/accounting-cash-management"
-<h3>CashManagement</h3>
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@layout MainLayout
 
-@code {
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
 
+@attribute [Authorize(Roles = "Accounting")]
+<PageTitle>Store POS</PageTitle>
+<MudItem xs="12">
+    <MudItem>
+        <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+    </MudItem>
+</MudItem>
+
+@code
+{
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Accounting", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Cash Management", href: "#", icon: Icons.Material.Filled.AccountBalanceWallet)
+    };
 }
