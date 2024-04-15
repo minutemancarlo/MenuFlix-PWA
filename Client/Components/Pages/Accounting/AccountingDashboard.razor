@@ -1,17 +1,26 @@
 ﻿@page "/accounting-dashboard"
+@using SharedLibrary
+@using System.Security.Claims
+@using Newtonsoft.Json
+@layout MainLayout
+
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authProvider
 @attribute [Authorize(Roles = "Accounting")]
 <PageTitle>Accounting Dashboard</PageTitle>
 <MudItem xs="12">
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
     </MudItem>
-    <MudItem>
-        <div>
-            <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px" ChartOptions="@Options" />
-        </div>
-        <div>
-            <MudChart ChartType="ChartType.Line" ChartSeries="@Series1" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px" ChartOptions="@Options" />
-        </div>
+    <MudItem >
+        <MudStack Row AlignItems="AlignItems.Stretch" Style="height: 500px">
+            <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" ChartOptions="@Options" />
+            <MudSpacer/>
+            <MudChart ChartType="ChartType.Line" ChartSeries="@Series1" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" ChartOptions="@Options" />
+
+        </MudStack>
+        
+           
     </MudItem>
 </MudItem>
 
@@ -21,26 +30,56 @@
         new BreadcrumbItem("Accounting", href: "#", icon: Icons.Material.Filled.AccountCircle),
         new BreadcrumbItem("Dashboard", href: "#", icon: Icons.Material.Filled.Dashboard)
     };
+    private string emailaddress { get; set; }
+    private List<Claim> UserClaims { get; set; } = new List<Claim>();
 
     private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
     public ChartOptions Options = new ChartOptions();
+    public double[] seriesData { get; set; }
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    // {
+    //     new ChartSeries() { Name = "Cash Flow for the week", Data = new double[] { 40, 20, 25, 27, 46, 60, 48 } },             
+    // };
 
-    public List<ChartSeries> Series = new List<ChartSeries>()
-    {
-        new ChartSeries() { Name = "Cash Flow for the week", Data = new double[] { 40, 20, 25, 27, 46, 60, 48 } },             
-    };
-
-    public List<ChartSeries> Series1 = new List<ChartSeries>()
-    {
-        new ChartSeries() { Name = "Revenue for the week", Data = new double[] { 40, 20, 25, 27, 46, 60, 48 } },
-    };
+    public List<ChartSeries> Series1 = new List<ChartSeries>();
+    // {
+    //     new ChartSeries() { Name = "Revenue for the week", Data = new double[] { 40, 20, 25, 27, 46, 60, 48 } },
+    // };
     public string[] XAxisLabels;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
+        var auth = await authProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserClaims = user.Claims.ToList();
+            foreach (var item in UserClaims)
+            {
+                if (item.Type.Contains("emailaddress"))
+                {
+                    emailaddress = item.Value;
+                }
+            }
+
+        }
+        try
+        {
+            var dashboard1 = await httpClient.GetFromJsonAsync<List<CashierDashboardDisplay>>($"DashboardManager/getcashierdashboardall?emailaddress={emailaddress}");
+            // seriesData = new double { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0]. }
+           Series.Add(new ChartSeries() { Name = "Cash Flow for the week", Data = new double[] { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0].WednesdayTotal, dashboard1[0].ThursdayTotal, dashboard1[0].FridayTotal, dashboard1[0].SaturdayTotal } });
+
+            var dashboard2 = await httpClient.GetFromJsonAsync<List<CashierDashboardDisplay>>($"DashboardManager/getcashierdashboardall2?emailaddress={emailaddress}");
+            // seriesData = new double { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0]. }
+            Series1.Add(new ChartSeries() { Name = "Revenue for the week", Data = new double[] { dashboard2[0].SundayTotal, dashboard2[0].MondayTotal, dashboard2[0].TuesdayTotal, dashboard2[0].WednesdayTotal, dashboard2[0].ThursdayTotal, dashboard2[0].FridayTotal, dashboard2[0].SaturdayTotal } });
+            
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
         Options.LineStrokeWidth = 8;
         XAxisLabels = GetWeekDatesAsString(DateTime.Today);
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
 
