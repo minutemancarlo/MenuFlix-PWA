@@ -58,18 +58,18 @@
                             <span></span>
                         </CellTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.OrderItems.OrderId" Title="Order Id" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.OrderItems.ItemName" Title="Item Name" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.OrderItems.Pcs" Title="Pcs" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.OrderItems.Price" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.OrderItems.SubTotal" Title="Sub Total" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.OrderId" Title="Order Id" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false"/>
+                    <PropertyColumn Property="x => x.OrderItems.ItemName" Title="Item Name" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false"/>
+                    <PropertyColumn Property="x => x.OrderItems.Pcs" Title="Pcs" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.Price" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.SubTotal" Title="Sub Total" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
                     <PropertyColumn Property="x => x.OrderItems.Total" CellClass="fw-bold text-danger" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false">
                         <CellTemplate>
                             <MudText>₱ @context.Item.OrderItems.Total</MudText>
                         </CellTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.OrderItems.CreatedOn" Title="Order Created" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
-                    <PropertyColumn Property="x => x.Status.UpdatedOn" Title="Order Completed" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.CreatedOn" Title="Order Created" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
+                    <PropertyColumn Property="x => x.Status.UpdatedOn" Title="Order Completed" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
                 </Columns>
                 <NoRecordsContent>No available records to show.</NoRecordsContent>
                 <PagerContent>

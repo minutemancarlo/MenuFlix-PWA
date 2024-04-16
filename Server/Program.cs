@@ -24,14 +24,14 @@ builder.Services.AddIdentityCore<AppUser>()
 
 
 // Add a CORS policy for the client
-//builder.Services.AddCors(
-//    options => options.AddPolicy(
-//        "wasm",
-//        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:5001",
-//            builder.Configuration["FrontendUrl"] ?? "https://localhost:5002"])
-//            .AllowAnyMethod()
-//            .AllowAnyHeader()
-//            .AllowCredentials()));
+builder.Services.AddCors(
+    options => options.AddPolicy(
+        "wasm",
+        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:5001",
+            builder.Configuration["FrontendUrl"] ?? "https://localhost:5002"])
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
