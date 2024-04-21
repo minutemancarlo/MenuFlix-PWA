@@ -1,0 +1,111 @@
+﻿@page "/admin-usersview"
+@layout MainLayout
+@using System.Net.Http.Json
+@using Newtonsoft.Json
+@using SharedLibrary
+@using Client.Identity
+@using System.Security.Claims
+@using System.Net
+@inject IAccountManagement Acct
+@inject AuthenticationStateProvider AuthProvider
+@inject HttpClient httpClient
+@attribute [Authorize(Roles = "Administrator")]
+
+<PageTitle>Users</PageTitle>
+
+<MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
+<MudGrid class="d-flex justify-center align-center">
+    <MudStack>
+        <MudCard Elevation="4" Class="pa-3 pt-5">
+            <MudCardContent>
+                <MudDataGrid Items="@users"
+                            T="UsersDisplay"
+                             MultiSelection="false"
+                             SelectOnRowClick="false"
+                             @bind-SelectedItems="_selectedItems"
+                             @bind-SelectedItem="_currentDto"
+                             Elevation="0"
+                             Loading="_loading"
+                             QuickFilter="@_quickFilter"
+                             Hover
+                             Filterable="true"
+                             ColumnResizeMode="ResizeMode.Container"                             
+                             HeaderClass="text-uppercase darken-1 shades-text text-white blue font-weight-bold">
+                    <ToolBarContent>   
+                        <MudButton Variant="Variant.Filled" Class="my-2 mx-1" Size="Size.Small" OnClick="loadGrid" StartIcon="@Icons.Material.Filled.Refresh" Color="Color.Success">Refresh</MudButton>                        
+                        <MudSpacer />
+                        @* <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.FirstName" Title="First Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                        <PropertyColumn Property="x => x.LastName" Title="Last Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                        <PropertyColumn Property="x => x.Email" Title="Email Address" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                        <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                        <PropertyColumn Property="x => x.Role" Title="Role" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                        <PropertyColumn Property="x => x.Store" Title="Store Name" HeaderClass="blue fw-bold darken-1 shades-text justify-content-center text-white" Filterable="true" />
+                    </Columns>
+                    <NoRecordsContent>No available records to show.</NoRecordsContent>
+                    <PagerContent>
+                        <MudDataGridPager T="UsersDisplay" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudGrid>
+
+@code
+{
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Administrator", href: "#", icon: Icons.Material.Filled.AccountCircle),
+        new BreadcrumbItem("Users List", href: "#", icon: Icons.Material.Filled.Storefront)
+    };
+    private List<UsersDisplay> users = new List<UsersDisplay>();
+    private UsersDisplay _currentDto = new UsersDisplay();
+    private HashSet<UsersDisplay> _selectedItems = new();
+    private bool _loading = false;
+    private string _searchString = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadGrid();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task loadGrid()
+    {
+        _loading = true;
+        users = await httpClient.GetFromJsonAsync<List<UsersDisplay>>("UserManagement/getuserslist");
+        _loading = false;
+    }
+
+
+    private Func<UsersDisplay, bool> _quickFilter => x =>
+       {
+           if (string.IsNullOrWhiteSpace(_searchString))
+               return true;
+
+           if (x.FirstName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           if (x.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           if (x.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           if (x.Store.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           if (x.LastName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+               return true;
+
+           return false;
+       };
+
+
+
+
+}

@@ -1,0 +1,18 @@
+﻿<MudDialog>
+    <TitleContent>
+        For Dine In
+    </TitleContent>
+    <DialogContent>
+        <MudNumericField @bind-Value="IntValue" Label="Enter number of persons" Variant="Variant.Outlined" Min="1" Max="99" Margin="Margin.Dense" />
+    </DialogContent>
+    <DialogActions>        
+        <MudButton Color="Color.Primary" OnClick="Submit">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    public int IntValue { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(IntValue));
+    
+}

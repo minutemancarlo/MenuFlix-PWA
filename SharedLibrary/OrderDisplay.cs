@@ -56,6 +56,8 @@ namespace SharedLibrary
     {
         public string OrderId { get; set; }
         public int Status { get; set; }
+        public int OrderType { get;set; }
+        public int Pax { get; set; }
         public DateTime? UpdatedOn { get; set; }
         public string UpdatedBy { get; set; }
         

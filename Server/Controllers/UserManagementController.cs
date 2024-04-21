@@ -118,6 +118,24 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("getuserslist")]
+        public async Task<ActionResult<IEnumerable<UsersDisplay>>> GetUsersList()
+        {
+            try
+            {
+                var parameters = new DynamicParameters();                
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    var userDataGrid = await connection.QueryAsync<UsersDisplay>("GetUsersList", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(userDataGrid.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
 
     }
 }

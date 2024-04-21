@@ -17,6 +17,8 @@ namespace SharedLibrary
         public string UserId { get; set; }
         public int StoreId { get; set; }
         public int Status { get; set; }
+        public int OrderType { get; set; }
+        public int Pax { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 

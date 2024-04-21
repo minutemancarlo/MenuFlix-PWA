@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Pages\Manager\Components\PaxInputDialog.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="6.9.1" />
@@ -29,6 +33,18 @@
 
   <ItemGroup>
     <Folder Include="Identity\Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\Pages\Manager\Components\PaxInputDialog.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\Pages\Manager\Components\PaxInputDialog.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Components\Pages\Customer\PaxInputDialog.razor" />
   </ItemGroup>
 
 </Project>

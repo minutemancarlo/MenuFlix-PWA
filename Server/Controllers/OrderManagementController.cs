@@ -23,7 +23,9 @@ namespace Server.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@CartId", order.UserId);                
+                parameters.Add("@CartId", order.UserId);
+                parameters.Add("@OrderType", order.OrderType);
+                parameters.Add("@Pax", order.Pax);
                 using (var connection = new SqlConnection(_connectionString))
                 {                    
                     await connection.ExecuteAsync(
@@ -207,6 +209,34 @@ namespace Server.Controllers
                     await connection.ExecuteAsync(
                         //TODO: Add GETDATE on OrderHistory
                         "Update Orders set Status=5 where OrderId=@OrderId;Update OrderHistory set Status=5,UpdatedOn=GETDATE() where OrderId=@OrderId",
+                        parameters,
+                        commandType: CommandType.Text);
+
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("itemfordineinpickup")]
+        public async Task<IActionResult> UpdateItemForDineInPickup([FromBody] string orderId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@OrderId", orderId);
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    // Execute the stored procedure
+                    await connection.ExecuteAsync(
+                        //TODO: Add GETDATE on OrderHistory
+                        "Update Orders set Status=4 where OrderId=@OrderId;Update OrderHistory set Status=4,UpdatedOn=GETDATE() where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
 

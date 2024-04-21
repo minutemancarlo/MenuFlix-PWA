@@ -14,7 +14,13 @@
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3">
+            <MudText Typo="Typo.h6" Class="p-0">Order Type: <strong class="text-primary">@OrderType</strong> </MudText>
+            @if(OrderType == "Dine In")
+            {
+                <MudText Typo="Typo.h6" Class="p-0">Pax: <strong class="text-primary">@Pax</strong> </MudText>
+            }
             <MudPaper Elevation="4" Class="pa-3">
+                
                 <MudStack Row Justify="Justify.SpaceBetween">
                     <MudStack>
                         <MudText>
@@ -93,16 +99,33 @@
         }
         else if (Action == 2)
         {
-            <MudLoadingButton Variant="Variant.Filled"
-                              Color="Color.Success"
-                              Size="Size.Medium"
-                              FullWidth
-                              Loading="false"
-                              OnClick="OnSubmitForDelivery"
-                              ButtonType="ButtonType.Button">
-                <LoadingContent>Processing...</LoadingContent>
-                <ChildContent>Ready for Delivery</ChildContent>
-            </MudLoadingButton>
+            if (OrderType == "Dine In" || OrderType == "Pickup")
+            {
+                <MudLoadingButton Variant="Variant.Filled"
+                                  Color="Color.Success"
+                                  Size="Size.Medium"
+                                  FullWidth
+                                  Loading="false"
+                                  OnClick="@(() => OnSubmitForDelivery(0))"
+                                  ButtonType="ButtonType.Button">
+                    <LoadingContent>Processing...</LoadingContent>
+                    <ChildContent>Complete @OrderType</ChildContent>
+                </MudLoadingButton>
+            }
+            else
+            {
+                <MudLoadingButton Variant="Variant.Filled"
+                                  Color="Color.Success"
+                                  Size="Size.Medium"
+                                  FullWidth
+                                  Loading="false"
+                                  OnClick="@(() => OnSubmitForDelivery(1))"
+                                  ButtonType="ButtonType.Button">
+                    <LoadingContent>Processing...</LoadingContent>
+                    <ChildContent>Ready for Delivery</ChildContent>
+                </MudLoadingButton>
+            }
+            
         }
         else if (Action == 0 || Action == 3 || Action == 4 || Action == 5)
         {
@@ -122,7 +145,8 @@
     private List<OrderItem> itemsList { get; set; } = default!;
     private string? createdDate;
     private string? createdTime;
-
+    private string OrderType;
+    private int Pax;
 
 
 
@@ -145,6 +169,19 @@
             itemsList = item.OrderItems.ToList();
             createdDate = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:MMMM d, yyyy}";
             createdTime = $"{item.OrderItems.FirstOrDefault()?.CreatedOn:h:mm tt}";
+            if (item.Status.FirstOrDefault()?.OrderType == 1)
+            {
+                OrderType = "Dine In";
+            }
+            else if (item.Status.FirstOrDefault()?.OrderType == 2)
+            {
+                OrderType = "Pickup";
+            }
+            else
+            {
+                OrderType = "Delivery";
+            }
+            Pax = item.Status.FirstOrDefault().Pax;
         }
 
         await base.OnInitializedAsync();
@@ -155,7 +192,7 @@
         await Task.CompletedTask;
     }
 
-    private async Task OnSubmitForDelivery()
+    private async Task OnSubmitForDelivery(int status)
     {
         await OnSubmitItemReady();
         if (OrderItem.FindAll(x => x.OrderItems.Any(item => item.IsReady == false)).Count > 0)
@@ -166,7 +203,12 @@
         {
             try
             {
-                var response = await httpClient.PostAsJsonAsync($"OrderManagement/itemfordelivery", Title);
+                var response  = await httpClient.PostAsJsonAsync($"OrderManagement/itemfordelivery", Title);
+                if(status == 0)
+                {
+                     response = await httpClient.PostAsJsonAsync($"OrderManagement/itemfordineinpickup", Title);
+                }               
+                
 
                 if (response.IsSuccessStatusCode)
                 {

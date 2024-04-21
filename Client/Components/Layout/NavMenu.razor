@@ -19,7 +19,8 @@
         <MudDivider Class="my-2" />        
         <AuthorizeView Roles="Administrator">
             <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" Href="/admin-dashboard">Dashboard</MudNavLink>            
-            <MudNavLink Icon="@Icons.Material.Filled.Storefront" Href="/store">Store Management</MudNavLink>           
+            <MudNavLink Icon="@Icons.Material.Filled.Storefront" Href="/store">Store Management</MudNavLink>     
+            <MudNavLink Icon="@Icons.Material.Filled.Person" Href="/admin-usersview">Users List</MudNavLink>
         </AuthorizeView>        
 
         <AuthorizeView Roles="Manager">

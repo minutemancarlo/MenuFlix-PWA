@@ -35,14 +35,22 @@
                         </MudCard>
                     </MudItem>
                 </MudPaper>
-            </MudItem>
-            
+            </MudItem>            
             if (item == orders.Last())
             {
+                <MudDivider/>
                 <MudItem>
-                    <MudStack>
-                        <MudText Typo="Typo.h6"><strong>Total: </strong>₱@Total</MudText>
-                        <MudText Typo="Typo.h6"><strong>Delivery Fee: </strong>₱50</MudText>
+                    <MudStack Spacing="0" Class="pt-2">
+                        <MudText Typo="Typo.body1" Class="fw-bold">Order Type</MudText>
+                        <MudToggleGroup @bind-Value="@OrderType" T="int" SelectionMode="SelectionMode.SingleSelection"  Color="Color.Primary" CheckMark FixedContent>
+                            <MudToggleItem Value="1" Text="Dine In" />
+                            <MudToggleItem Value="2" Text="Pickup" />
+                            <MudToggleItem Value="3" Text="Deliver" />
+                        </MudToggleGroup>
+                    </MudStack>                    
+                    <MudStack Class="pt-3" Spacing="0">
+                        <MudText Typo="Typo.body1"><strong>Total: </strong>₱@Total</MudText>
+                        <MudText Typo="Typo.body1"><strong>Delivery Fee: </strong>₱50</MudText>
                     </MudStack>
                 </MudItem>
             }
@@ -53,10 +61,15 @@
         <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="OnSubmit">Checkout</MudButton>
     </DialogActions>
 </MudDialog>
+
+
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<CartDisplay> orders { get; set; } = new List<CartDisplay>();
     private decimal Total = 0;
+    private int OrderType;
+    private int Pax = 0;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,13 +77,44 @@
         await base.OnInitializedAsync();
     }
 
+
+
     private async Task OnSubmit()
     {
-        var cartIds = orders.Select(order => order.CartId);
-        string cartIdsCSV = string.Join(",", cartIds);
+
+
+
+       
 
         try
         {
+            if (OrderType == 0)
+            {
+                Snackbar.Add("Please select Order Type.", Severity.Warning);
+                return;
+            }
+            else if (OrderType == 1)
+            {
+                var options = new DialogOptions { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton=false,MaxWidth=MaxWidth.Small};
+                var dialog = DialogService.Show<PaxInputDialog>("Simple Dialog", options);
+                var result = await dialog.Result;
+
+                if (!result.Canceled)
+                {
+                    Pax = (int)result.Data;
+
+                    if (Pax == 0)
+                    {
+                        Snackbar.Add("Please enter number of pax for Dine in orders.", Severity.Warning);
+                        return;
+                    }
+                   
+                }
+            }
+
+            var cartIds = orders.Select(order => order.CartId);
+            string cartIdsCSV = string.Join(",", cartIds);
+
             var data = new OrderInfo
                 {
                     Id = 0,
@@ -82,6 +126,8 @@
                     UserId = cartIdsCSV,
                     StoreId = 0,
                     Status = 0,
+                    OrderType = OrderType,
+                    Pax = Pax,
                     CreatedOn = DateTime.Today
                 };
             var response = await httpClient.PostAsJsonAsync("OrderManagement/addorder", data);

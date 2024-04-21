@@ -131,6 +131,7 @@
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6" Class="fw-bolder">Order Type: @(item.Status.FirstOrDefault().OrderType==1?"Dine In":item.Status.FirstOrDefault().OrderType==2?"Pickup":"Delivery")</MudText>
                                     <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
                                     <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
                                 </MudCardContent>
@@ -171,6 +172,7 @@
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6" Class="fw-bolder">Order Type: @(item.Status.FirstOrDefault().OrderType == 1 ? "Dine In" : item.Status.FirstOrDefault().OrderType == 2 ? "Pickup" : "Delivery")</MudText>
                                     <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
                                     <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
                                 </MudCardContent>
@@ -211,6 +213,7 @@
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6" Class="fw-bolder">Order Type: @(item.Status.FirstOrDefault().OrderType == 1 ? "Dine In" : item.Status.FirstOrDefault().OrderType == 2 ? "Pickup" : "Delivery")</MudText>
                                     <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
                                     <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
                                 </MudCardContent>
@@ -251,6 +254,7 @@
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6" Class="fw-bolder">Order Type: @(item.Status.FirstOrDefault().OrderType == 1 ? "Dine In" : item.Status.FirstOrDefault().OrderType == 2 ? "Pickup" : "Delivery")</MudText>
                                     <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
                                     <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
                                 </MudCardContent>
@@ -291,6 +295,7 @@
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent Class="text-center">
+                                    <MudText Typo="Typo.h6" Class="fw-bolder">Order Type: @(item.Status.FirstOrDefault().OrderType == 1 ? "Dine In" : item.Status.FirstOrDefault().OrderType == 2 ? "Pickup" : "Delivery")</MudText>
                                     <MudText Typo="Typo.h6">Item Count: @item.OrderItems.Count()</MudText>
                                     <MudText Typo="Typo.h6">Total: @item.OrderItems.FirstOrDefault()?.Total</MudText>
                                 </MudCardContent>
