@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,13 @@ using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+//builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+}).AddCookie(IdentityConstants.ApplicationScheme);
 // Configure authorization
 builder.Services.AddAuthorizationBuilder();
 
@@ -45,7 +52,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 await using var scope = app.Services.CreateAsyncScope();
-await SeedData.InitializeAsync(scope.ServiceProvider);
+//await SeedData.InitializeAsync(scope.ServiceProvider);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -57,16 +64,17 @@ if (app.Environment.IsDevelopment())
 app.MapIdentityApi<AppUser>();
 
 // Activate the CORS policy
-//app.UseCors("wasm");
+app.UseCors("wasm");
 
 // Enable authentication and authorization after CORS Middleware
 // processing (UseCors) in case the Authorization Middleware tries
 // to initiate a challenge before the CORS Middleware has a chance
 // to set the appropriate headers.
 app.UseAuthentication();
+app.UseAuthorization();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
-app.UseAuthorization();
+
 
 // Provide an end point to clear the cookie for logout
 //

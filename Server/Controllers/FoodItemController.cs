@@ -168,6 +168,23 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("getfooditemsrecommended")]
+        public async Task<ActionResult<IEnumerable<FoodItemDataGrid>>> GetFoodItemsRecommended()
+        {
+            try
+            {                
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var fooditems = await connection.QueryAsync<FoodItemDataGrid>("GetRecommendedItems", null, commandType: CommandType.StoredProcedure);
+                    return Ok(fooditems.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
         [HttpGet("getfooditemsrandom")]
         public async Task<ActionResult<IEnumerable<CarouselDisplay>>> GetFoodItemsRandom()
         {

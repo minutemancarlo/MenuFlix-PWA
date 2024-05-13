@@ -35,7 +35,7 @@ builder.Services.AddHttpClient("API", client =>
 
 // Configure client for authentication interactions
 builder.Services.AddHttpClient("Auth", client =>
-    client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:44303/"))
+    client.BaseAddress = new Uri("https://s4dev.net/"))
     .AddHttpMessageHandler<CookieHandler>();
 
 

@@ -89,7 +89,7 @@
 
         </MudItem>
     </MudHidden>
-   <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+    <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">           
         <MudItem xs="12">
             <MudItem Class="py-5">
                 <MudText Typo="Typo.h6" Class="fw-normal mb-0 text-black">Shopping Cart</MudText>
@@ -106,28 +106,32 @@
                     }
                     <MudPaper Elevation="4" Style="background-color: rgba(245,245,245,1)" Class="card rounded-3 mb-4">
                         <MudStack Justify="Justify.SpaceAround" AlignItems="AlignItems.Center">
-                            <MudImage Src="@item.Logo" Fluid Height="200" Width="200" />
+                            <MudImage Src="@item.Logo" Height="200" Width="200" />
                         </MudStack>
-                        <MudStack Row Justify="Justify.SpaceBetween">
-                            <MudCheckBox Class="pa-0" @bind-Value="@item.isChecked"></MudCheckBox>
-                            <MudStack>
-                                <p class="lead fw-normal mb-2">@item.Name</p>
-                                <p><span class="text-muted">Category: </span>@item.Category</p>
-                                <p><span class="text-muted">Store: </span>@item.StoreName</p>
-                            </MudStack>
-                            <MudNumericField @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined" Step="1" Min="1" Max="99" />
-                            <MudStack>
+                        <MudStack>
+                            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                                 @if (item.Price != item.DiscountedPrice)
                                 {
-                                    <s class="text-danger"><h5 class="mb-0">₱@item.Price</h5></s>
+                                    <s class="text-danger"><MudText Class="text-danger" Typo="Typo.h5">₱@item.Price</MudText></s>
                                 }
-                                <h5 class="mb-0">₱@item.DiscountedPrice</h5>
+                                <MudText Typo="Typo.h5">₱@item.DiscountedPrice</MudText>
                             </MudStack>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))"></MudIconButton>
+                            <MudStack Row>
+                                <MudCheckBox @bind-Value="@item.isChecked"></MudCheckBox>
+                                <MudText Class="lead fw-normal pt-3">@item.Name</MudText>
+                            </MudStack>                            
+                                <MudText Class="text-muted"><strong>Category: </strong>@item.Category</MudText>                                
+                                <MudStack Justify="Justify.SpaceAround" AlignItems="AlignItems.Center" >
+                                    <MudSpacer/>
+                                    <MudNumericField FullWidth="false" @bind-Value="@item.Pcs" Margin="Margin.Dense" TextChanged="@(() => OnUpdateItem(item))" Variant="Variant.Outlined" Step="1" Min="1" Max="99" />
+                                <MudSpacer />
+                                </MudStack>
+                                
+                            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => OnDeleteItem(item.CartId))">Remove</MudButton>
                         </MudStack>
-                        
-                        
-                    </MudPaper>                   
+
+
+                    </MudPaper>
                 }
             </MudItem>
             <MudItem xs="12">
@@ -143,13 +147,14 @@
                             {
                                 <MudText Typo="Typo.h6">No Items on Cart</MudText>
                             }
-                        </MudStack>                        
+                        </MudStack>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
 
         </MudItem>
-   </MudHidden>
+        
+    </MudHidden>
 </MudItem>
 
 @code {
@@ -196,7 +201,7 @@
     {
         try
         {
-            cartItems = await httpClient.GetFromJsonAsync<List<CartDisplay>>($"Cart/getcartitems?emailaddress={emailaddress}");            
+            cartItems = await httpClient.GetFromJsonAsync<List<CartDisplay>>($"Cart/getcartitems?emailaddress={emailaddress}");
         }
         catch (Exception ex)
         {
@@ -254,14 +259,14 @@
         try
         {
             var data = new SharedLibrary.Cart
-            {
+                {
                     IsProcessed = 0,
-                            UserId = emailaddress,
-                            Actions = 2,
-                            Pcs = 0,
-                            ItemId = 0,
-                            CartId = cartId
-            };            
+                    UserId = emailaddress,
+                    Actions = 2,
+                    Pcs = 0,
+                    ItemId = 0,
+                    CartId = cartId
+                };
             var response = await httpClient.PostAsJsonAsync("Cart/cartactions", data);
 
             if (response.IsSuccessStatusCode)
@@ -302,7 +307,7 @@
                 var response = await httpClient.PostAsJsonAsync("Cart/cartactions", data);
 
                 if (response.IsSuccessStatusCode)
-                {            
+                {
                     await OnGetCartItems(emailaddress);
                     await OnGetCartNumbers();
                 }
@@ -327,7 +332,7 @@
         List<CartDisplay> checkedItems = cartItems.Where(item => item.isChecked).ToList();
         if (checkedItems.Count == 0)
         {
-            Snackbar.Add("Please select Items to checkout",Severity.Warning);
+            Snackbar.Add("Please select Items to checkout", Severity.Warning);
             return;
         }
 
@@ -344,9 +349,9 @@
             return;
         }
         var parameters = new DialogParameters<CheckoutDialog>();
-        parameters.Add(x => x.orders,checkedItems);
+        parameters.Add(x => x.orders, checkedItems);
 
-        var options = new DialogOptions() { CloseButton = true, DisableBackdropClick=true, MaxWidth = MaxWidth.Medium };
+        var options = new DialogOptions() { CloseButton = true, DisableBackdropClick = true, MaxWidth = MaxWidth.Medium };
         var dialog = await DialogService.ShowAsync<CheckoutDialog>("Checkout", parameters, options);
         var result = await dialog.Result;
         if (!result.Canceled)
@@ -385,5 +390,5 @@
         }
 
     }
-   
+
 }
