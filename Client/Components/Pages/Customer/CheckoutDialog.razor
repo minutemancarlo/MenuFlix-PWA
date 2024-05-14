@@ -35,22 +35,47 @@
                         </MudCard>
                     </MudItem>
                 </MudPaper>
-            </MudItem>            
+            </MudItem>
             if (item == orders.Last())
             {
-                <MudDivider/>
+                <MudDivider />
                 <MudItem>
                     <MudStack Spacing="0" Class="pt-2">
                         <MudText Typo="Typo.body1" Class="fw-bold">Order Type</MudText>
-                        <MudToggleGroup @bind-Value="@OrderType" T="int" SelectionMode="SelectionMode.SingleSelection"  Color="Color.Primary" CheckMark FixedContent>
+                        <MudToggleGroup @bind-Value="@OrderType" T="int" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" CheckMark FixedContent>
                             <MudToggleItem Value="1" Text="Dine In" />
                             <MudToggleItem Value="2" Text="Pickup" />
                             <MudToggleItem Value="3" Text="Deliver" />
                         </MudToggleGroup>
-                    </MudStack>                    
+                    </MudStack>
+                    <MudStack Spacing="0" Class="pt-2">
+                        <MudText Typo="Typo.body1" Class="fw-bold">Payment Option</MudText>
+                        <MudToggleGroup @bind-Value="@PaymentType" T="int" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" CheckMark FixedContent>
+                            <MudToggleItem Value="1" Text="Gcash" />
+                            <MudToggleItem Value="2" Text="Cash on Delivery" />
+                        </MudToggleGroup>
+                    </MudStack>
+
                     <MudStack Class="pt-3" Spacing="0">
-                        Pay Using Gcash QR or Cash on Delivery.
-                        <MudImage Width="350" Height="500" Src="@GcashQr"/>
+                        @if (PaymentType == 1)
+                        {
+                            <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                <MudImage Width="350" Height="500" Src="@GcashQr" ObjectFit="ObjectFit.ScaleDown" />
+                                <hr/>
+                                <MudText>Gcash Receipt:</MudText>
+                                <MudImage Width="350" Height="500" Src="@imageBase64" ObjectFit="ObjectFit.ScaleDown" />
+                                <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" MaximumFileCount="1" FilesChanged="UploadFiles">
+                                    <ButtonTemplate>
+                                        <MudFab HtmlTag="label"
+                                                Size="MudBlazor.Size.Small"
+                                                Color="MudBlazor.Color.Secondary"
+                                                StartIcon="@Icons.Material.Filled.Image"
+                                                Label="Select Image"
+                                                for="@context.Id" />
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+                            </MudStack>
+                        }
                         <MudText Typo="Typo.body1" Class="pt-3"><strong>Total: </strong>₱@Total</MudText>
                         <MudText Typo="Typo.body1"><strong>Delivery Fee: </strong>₱50</MudText>
                     </MudStack>
@@ -71,12 +96,13 @@
     [Parameter] public string GcashQr { get; set; }
     private decimal Total = 0;
     private int OrderType;
+    private int PaymentType = 0;
     private int Pax = 0;
-
-
+    string paymentImage = "add-image.png";
+    string imageBase64 = "add-image.png";
     protected override async Task OnInitializedAsync()
     {
-        Total=orders.Sum(item => item.DiscountedTotal);
+        Total = orders.Sum(item => item.DiscountedTotal);
         await base.OnInitializedAsync();
     }
 
@@ -87,10 +113,13 @@
 
 
 
-       
+
 
         try
         {
+
+
+
             if (OrderType == 0)
             {
                 Snackbar.Add("Please select Order Type.", Severity.Warning);
@@ -98,7 +127,9 @@
             }
             else if (OrderType == 1)
             {
-                var options = new DialogOptions { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton=false,MaxWidth=MaxWidth.Small};
+
+
+                var options = new DialogOptions { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton = false, MaxWidth = MaxWidth.Small };
                 var dialog = DialogService.Show<PaxInputDialog>("Simple Dialog", options);
                 var result = await dialog.Result;
 
@@ -111,8 +142,18 @@
                         Snackbar.Add("Please enter number of pax for Dine in orders.", Severity.Warning);
                         return;
                     }
-                   
+
                 }
+
+
+
+            }
+
+            if (PaymentType == 0)
+            {
+
+                Snackbar.Add("Please select Payment Option.", Severity.Warning);
+                return;
             }
 
             var cartIds = orders.Select(order => order.CartId);
@@ -130,14 +171,16 @@
                     StoreId = 0,
                     Status = 0,
                     OrderType = OrderType,
+                    PaymentType = PaymentType,
                     Pax = Pax,
+                    PaymentImage = paymentImage,
                     CreatedOn = DateTime.Today
                 };
             var response = await httpClient.PostAsJsonAsync("OrderManagement/addorder", data);
 
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Order Submitted!",Severity.Success);
+                Snackbar.Add("Order Submitted!", Severity.Success);
 
             }
             else
@@ -157,6 +200,30 @@
 
 
         MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        try
+        {
+            // Read the content of the file as a byte array
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(5120000).CopyToAsync(memoryStream); //Maximum file size is 5 mb
+                var bytes = memoryStream.ToArray();
+
+                // Convert the byte array to a base64 string
+                var base64String = Convert.ToBase64String(bytes);
+                paymentImage = base64String;
+                // Construct the data URL
+                imageBase64 = $"data:{file.ContentType};base64,{base64String}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Maximum image file size is 5 MB", MudBlazor.Severity.Success);
+        }
+
     }
 
 

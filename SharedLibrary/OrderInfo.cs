@@ -19,6 +19,8 @@ namespace SharedLibrary
         public int Status { get; set; }
         public int OrderType { get; set; }
         public int Pax { get; set; }
+        public int PaymentType { get; set; }
+        public string? PaymentImage { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 
