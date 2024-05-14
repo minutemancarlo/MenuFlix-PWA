@@ -16,8 +16,8 @@
                     <MudForm Model="@store" @ref="@form" Validation="@(modelValidator.ValidateValue)" ValidationDelay="0">
                         <MudStack Row Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Center">
                             <MudPaper Style="width: 192; height: 192;" Class="text-center">
-                                <MudImage Src="@imageUrl" Height="192" Width="192" />
-                                
+                                <MudText>Store Logo:</MudText>
+                                <MudImage Src="@imageUrl" Height="192" Width="192" />                                
                                     <MudFileUpload T="IBrowserFile" Accept=".png" MaximumFileCount="1" FilesChanged="UploadFiles">
                                         <ButtonTemplate>
                                             <MudFab HtmlTag="label"
@@ -27,11 +27,23 @@
                                                     Label="Select Image"
                                                     for="@context.Id" />
                                         </ButtonTemplate>
-                                    </MudFileUpload>
-                                
-
+                                    </MudFileUpload>                                
                             </MudPaper>
-                            <MudSpacer />
+                            <MudPaper Style="width: 192; height: 192;" Class="text-center">
+                                <MudText>Store Gcash:</MudText>
+
+                                <MudImage Src="@imageQrUrl" Height="192" Width="192" ObjectFit="ObjectFit.ScaleDown" />
+                                <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" MaximumFileCount="1" FilesChanged="UploadFilesQR">
+                                    <ButtonTemplate>
+                                        <MudFab HtmlTag="label"
+                                                Size="MudBlazor.Size.Small"
+                                                Color="MudBlazor.Color.Secondary"
+                                                StartIcon="@Icons.Material.Filled.Image"
+                                                Label="Select Image"
+                                                for="@context.Id" />
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+                            </MudPaper>
                             <MudStack>
                                 <MudTextField Label="Store Name"
                                               Margin="Margin.Dense"
@@ -137,6 +149,7 @@
     string emailaddress = String.Empty;
     private bool _loading = false;
     private string imageUrl = "add-image.png";
+    private string imageQrUrl = "add-image.png";
     private bool _read = false;
     private bool dataloading = false;
     private UpdateStoreInfo updateStoreInfo = new UpdateStoreInfo();
@@ -160,6 +173,7 @@
 
         await OnGetStoreInfo();
         imageUrl = store.Logo;
+        imageQrUrl = store.GcashQr;
         await base.OnInitializedAsync();
     }
 
@@ -174,6 +188,7 @@
             store.TIN = info.TIN;
             store.Name = info.Name;
             store.Logo = info.Logo;
+            store.GcashQr = info.GcashQr;
             store.Status = info.Status;
             store.PhoneNumber = info.PhoneNumber;
             store.Email = info.Email;
@@ -195,6 +210,7 @@
         }
         dataloading = false;
         updateStoreInfo.isLogoChanged = false;
+        updateStoreInfo.isQrChanged = false;
     }
 
 
@@ -223,6 +239,31 @@
 
     }
 
+    private async Task UploadFilesQR(IBrowserFile file)
+    {
+        try
+        {
+            // Read the content of the file as a byte array
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(5120000).CopyToAsync(memoryStream); //Maximum file size is 5 mb
+                var bytes = memoryStream.ToArray();
+
+                // Convert the byte array to a base64 string
+                var base64String = Convert.ToBase64String(bytes);
+                store.GcashQr = base64String;
+                updateStoreInfo.isQrChanged = true;
+                // Construct the data URL
+                imageQrUrl = $"data:{file.ContentType};base64,{base64String}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Maximum image file size is 5 MB", MudBlazor.Severity.Success);
+        }
+
+    }
+
 
 
 
@@ -238,6 +279,7 @@
 
                 updateStoreInfo.Id = int.Parse(store.Id);
                 updateStoreInfo.Logo = store.Logo;
+                updateStoreInfo.GcashQr = store.GcashQr;
                 updateStoreInfo.Name = store.Name;
                 updateStoreInfo.Email = store.Email;
                 updateStoreInfo.Phone = store.PhoneNumber;

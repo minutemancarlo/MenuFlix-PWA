@@ -10,6 +10,7 @@ namespace SharedLibrary
     {
         public int Id { get; set; }
         public string Logo { get; set; }
+        public string GcashQr { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Phone {  get; set; }
@@ -20,5 +21,6 @@ namespace SharedLibrary
         public string PostalCode { get; set; }
         public string Description { get; set; }
         public bool isLogoChanged { get; set; }
+        public bool isQrChanged { get; set; }
     }
 }

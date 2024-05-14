@@ -348,8 +348,12 @@
             Snackbar.Add("Please setup your account details.", Severity.Warning);
             return;
         }
+
+        
+
         var parameters = new DialogParameters<CheckoutDialog>();
         parameters.Add(x => x.orders, checkedItems);
+        parameters.Add(x => x.GcashQr, checkedItems.FirstOrDefault().GcashQr);
 
         var options = new DialogOptions() { CloseButton = true, DisableBackdropClick = true, MaxWidth = MaxWidth.Medium };
         var dialog = await DialogService.ShowAsync<CheckoutDialog>("Checkout", parameters, options);

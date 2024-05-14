@@ -50,7 +50,7 @@
                     </MudStack>                    
                     <MudStack Class="pt-3" Spacing="0">
                         Pay Using Gcash QR or Cash on Delivery.
-                        <MudImage Width="350" Height="500" Src="gcash.jpg"/>
+                        <MudImage Width="350" Height="500" Src="@GcashQr"/>
                         <MudText Typo="Typo.body1" Class="pt-3"><strong>Total: </strong>₱@Total</MudText>
                         <MudText Typo="Typo.body1"><strong>Delivery Fee: </strong>₱50</MudText>
                     </MudStack>
@@ -68,6 +68,7 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<CartDisplay> orders { get; set; } = new List<CartDisplay>();
+    [Parameter] public string GcashQr { get; set; }
     private decimal Total = 0;
     private int OrderType;
     private int Pax = 0;

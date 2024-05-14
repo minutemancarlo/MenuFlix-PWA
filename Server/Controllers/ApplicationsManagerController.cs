@@ -32,7 +32,7 @@ namespace Server.Controllers
             {
                 // Save the file to the server
                 string imagePath = SaveImageToDisk(storeApplication.Logo); // Save the image and get the saved path
-
+                storeApplication.GcashQr = SaveImageToDisk(storeApplication.GcashQr);
                 // Create parameters for the stored procedure
                 var parameters = new DynamicParameters();
                 parameters.Add("@Name", storeApplication.Name);
@@ -46,6 +46,7 @@ namespace Server.Controllers
                 parameters.Add("@PostalCode", storeApplication.PostalCode);
                 parameters.Add("@Logo", imagePath);
                 parameters.Add("@Description", storeApplication.Description);
+                parameters.Add("@GcashQr", storeApplication.GcashQr);
                 parameters.Add("@OwnerId", storeApplication.OwnerId); // Assuming OwnerId is the UserId
 
                 using (var connection = new SqlConnection(_connectionString))
@@ -149,6 +150,15 @@ namespace Server.Controllers
                 {
                     imagePath = SaveImageToDisk(store.Logo); // Save the image and get the saved path
                 }
+
+                string qrPath = "";
+                if (store.isQrChanged)
+                {
+                    qrPath = SaveImageToDisk(store.GcashQr); // Save the image and get the saved path
+                }
+
+
+
                 var parameters = new DynamicParameters();
                 parameters.Add("@Id", store.Id);
                 parameters.Add("@Name", store.Name);
@@ -160,6 +170,7 @@ namespace Server.Controllers
                 parameters.Add("@Province", store.Province);
                 parameters.Add("@PostalCode", store.PostalCode);
                 parameters.Add("@Logo", imagePath);
+                parameters.Add("@GcashQr", qrPath);
                 parameters.Add("@Description", store.Description);
                 parameters.Add("@StatusCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 using (var connection = new SqlConnection(_connectionString))
