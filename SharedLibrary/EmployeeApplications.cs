@@ -10,6 +10,7 @@ namespace SharedLibrary
     {
         public int ApplicationId { get; set; }
         public int Position { get; set; }
+        public string? License { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
         public string AddressLine1 { get; set; }

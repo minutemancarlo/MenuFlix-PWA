@@ -72,13 +72,15 @@ namespace Server.Controllers
         {
             try
             {
-                
+                string imagePath = SaveImageToDisk(apply.License); // Save the image and get the saved path
+
                 // Create parameters for the stored procedure
                 var parameters = new DynamicParameters();
                 parameters.Add("@StoreId", apply.StoreId);
                 parameters.Add("@Position", apply.Position);
                 parameters.Add("@Email", apply.Email);
-               
+                parameters.Add("@License", imagePath);
+
 
                 using (var connection = new SqlConnection(_connectionString))
                 {                    

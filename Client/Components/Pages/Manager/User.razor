@@ -4,6 +4,7 @@
 @using SharedLibrary
 @using Client.Identity
 @using System.Security.Claims
+@using Client.Components.Pages.Manager.Components
 @inject IAccountManagement Acct
 @inject AuthenticationStateProvider AuthProvider
 @inject HttpClient httpClient
@@ -52,7 +53,15 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Position Applied" CellClass="text-center" HeaderClass="blue text-center darken-1 shades-text text-white" Filterable="false" Sortable="false">
                             <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Baseline">
                                 <MudText Class="py-1 fw-bold text-center" Typo="Typo.body2">@(context.Item.Position == 1 ? "Store Cashier" : "Delivery Rider")</MudText>
+                                @if (context.Item.Position != 1)
+                                {
+                                    <MudTooltip Text="View Driver's License" Color="Color.Info" Arrow="true">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Info" OnClick="@(() => OpenDialog(context.Item.License))" />
+                                    </MudTooltip>
+                                }
+                                </MudStack>
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Action" HeaderClass="blue darken-1 shades-text text-white" Filterable="false">
@@ -120,6 +129,14 @@
         _loading = true;
         users = await httpClient.GetFromJsonAsync<List<EmployeeApplications>>($"ApplicationsManager/getapplicantsall?emailaddress={emailaddress}");
         _loading = false;
+    }
+
+    private void OpenDialog(string path)
+    {
+        var parameters = new DialogParameters<ViewLicense>();
+        parameters.Add(x => x.ImagePath, path);
+        var options = new DialogOptions { CloseOnEscapeKey = true,MaxWidth=MaxWidth.Medium};
+        DialogService.Show<ViewLicense>("Driver's License", parameters,options);
     }
 
     private async Task OnChangeStatus()

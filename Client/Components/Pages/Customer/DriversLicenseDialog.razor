@@ -1,0 +1,56 @@
+﻿<MudDialog>
+    <DialogContent>
+    <MudStack>
+            <MudPaper Class="text-center" Elevation="0">
+                <MudImage Src="@image" Height="240" Alt="Drivers License" Width="320" ObjectFit="ObjectFit.Fill" />                
+                    <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" MaximumFileCount="1" FilesChanged="UploadFiles">
+                        <ButtonTemplate>
+                            <MudFab HtmlTag="label"
+                                    Size="MudBlazor.Size.Small"
+                                    Color="MudBlazor.Color.Secondary"
+                                    StartIcon="@Icons.Material.Filled.Image"
+                                    Label="Select Image"
+                                    for="@context.Id" />
+                        </ButtonTemplate>
+                    </MudFileUpload>                
+            </MudPaper>
+    </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private string image = "add-image.png";
+    private string image64 = String.Empty;
+
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        try
+        {
+            // Read the content of the file as a byte array
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.OpenReadStream(5120000).CopyToAsync(memoryStream); //Maximum file size is 5 mb
+                var bytes = memoryStream.ToArray();
+
+                // Convert the byte array to a base64 string
+                var base64String = Convert.ToBase64String(bytes);
+                image64 = base64String;
+                // Construct the data URL
+                image = $"data:{file.ContentType};base64,{base64String}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Maximum image file size is 5 MB", MudBlazor.Severity.Success);
+        }
+
+    }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(image64));
+    void Cancel() => MudDialog.Cancel();
+}

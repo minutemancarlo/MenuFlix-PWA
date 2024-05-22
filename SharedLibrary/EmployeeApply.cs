@@ -11,5 +11,6 @@ namespace SharedLibrary
         public string Email { get; set; }
         public int StoreId { get; set; }
         public int Position { get; set; }
+        public string License { get; set; }
     }
 }

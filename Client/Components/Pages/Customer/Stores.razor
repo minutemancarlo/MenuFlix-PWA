@@ -49,6 +49,8 @@
     private List<StoreApplications> stores = new List<StoreApplications>();
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     string emailaddress = String.Empty;
+    string image = string.Empty;
+    string image64 = string.Empty;
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -79,11 +81,33 @@
     {
         try
         {
+            if(position == 2)
+            {                
+                var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, DisableBackdropClick = true, ClassBackground = "my-custom-class" };                
+                var dialog = await DialogService.ShowAsync<DriversLicenseDialog>("Please upload your drivers license", options);
+                var result = await dialog.Result;
+                if (!result.Canceled)
+                {
+                    image64 = result.Data.ToString();
+                }
+
+
+                if (string.IsNullOrEmpty(image64) || image64.Contains("add-image.png"))
+            {
+                    Snackbar.Add($"Please Upload and Submit your Drivers License", Severity.Warning);
+                    return;
+                }
+            }
+
+
+            
+
             var data = new EmployeeApply
                 {
                     StoreId = int.Parse(storeId),
                     Email = emailaddress,
-                    Position = position
+                    Position = position,
+                    License = image64
                 };
             var response = await httpClient.PostAsJsonAsync($"ApplicationsManager/applyposition", data);
 
@@ -110,5 +134,7 @@
 
         }
     }
+
+   
 
 }
