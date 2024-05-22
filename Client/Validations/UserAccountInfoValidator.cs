@@ -18,10 +18,10 @@ namespace Client.Validations
             RuleFor(user => user.LastName).NotEmpty().WithMessage("Last name is required.");
             RuleFor(user => user.PhoneNumber).NotEmpty().WithMessage("Phone number is required.")
                                              .Matches(@"^\d{11}$").WithMessage("Phone number must be 11 digits.");
-            RuleFor(user => user.AddressLine1).NotEmpty().WithMessage("Address line 1 is required.");
-            RuleFor(user => user.CityTown).NotEmpty().WithMessage("City/Town is required.");
-            RuleFor(user => user.Province).NotEmpty().WithMessage("Province is required.");
-            RuleFor(user => user.PostalCode).NotEmpty().WithMessage("Zip code is required.");
+            //RuleFor(user => user.AddressLine1).NotEmpty().WithMessage("Address line 1 is required.");
+            //RuleFor(user => user.CityTown).NotEmpty().WithMessage("City/Town is required.");
+            //RuleFor(user => user.Province).NotEmpty().WithMessage("Province is required.");
+            //RuleFor(user => user.PostalCode).NotEmpty().WithMessage("Zip code is required.");
         }
     }
 }

@@ -18,12 +18,14 @@
                                       Class="py-2"
                                       Variant="Variant.Outlined"
                                       Margin="Margin.Dense"
+                                      ShrinkLabel
                                       OnlyValidateIfDirty="false"
                                       Label="First Name" />
                         <MudTextField @bind-Value="model.LastName"
                                       For="@(() => model.LastName)"
                                       Margin="Margin.Dense"
                                       Class="py-2"
+                                      ShrinkLabel
                                       OnlyValidateIfDirty="false"
                                       Variant="Variant.Outlined"
                                       Label="Last Name" />
@@ -33,27 +35,57 @@
                                   For="@(() => model.PhoneNumber)"
                                   MaxLength="11"
                                   Class="py-2"
+                                  ShrinkLabel
                                   Margin="Margin.Dense"
                                   OnlyValidateIfDirty="false"
                                   Variant="Variant.Outlined"
                                   HelperText="09123456789"
                                   Label="Phone Number" />
-                    <MudTextField @bind-Value="model.AddressLine1"
+                    <MudSelect T="string" Label="Region" @ref="_region" ShrinkLabel Required RequiredError="Region is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" Class="py-2" ValueChanged="@((string newValue) => OnChange(AddressMode.Province, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var item in address.Region)
+                        {
+                            <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudStack Row Class="py-2" AlignItems="AlignItems.Stretch">
+                        <MudSelect T="string" @ref="_province" Label="Province" ShrinkLabel FullWidth="true" Required RequiredError="Province is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.Municipality, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var item in address.Province)
+                            {
+                                <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudSelect T="string" @ref="_municipality" ShrinkLabel Label="Municipality" Required RequiredError="Municipality is Required" OnlyValidateIfDirty="true" FullWidth="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.Barangay, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var item in address.Municipality)
+                            {
+                                <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudSelect T="string" @ref="_barangay" ShrinkLabel Label="Barangay" FullWidth="true" Required RequiredError="Barangay is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.None, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var item in address.Barangay)
+                            {
+                                <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>                    
+                   @*  <MudTextField @bind-Value="model.AddressLine1"
                                   For="@(() => model.AddressLine1)"
                                   Variant="Variant.Outlined"
                                   Class="py-2"
                                   OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
-                                  Label="Address Line 1" />
+                                  Label="Address Line 1" /> *@
                     <MudTextField @bind-Value="model.AddressLine2"
                                   For="@(() => model.AddressLine2)"
                                   Variant="Variant.Outlined"
                                   OnlyValidateIfDirty="false"
                                   Margin="Margin.Dense"
                                   Class="py-2"
+                                  ShrinkLabel
                                   HelperText="Optional"
                                   Label="Address Line 2" />
-                    <MudStack Row>
+                    @* <MudStack Row>
                         <MudTextField @bind-Value="model.CityTown"
                                       For="@(() => model.CityTown)"
                                       Variant="Variant.Outlined"
@@ -74,9 +106,10 @@
                                       Class="py-2"
                                       OnlyValidateIfDirty="false"
                                       Margin="Margin.Dense"
-                                      Variant="Variant.Outlined"                                      
+                                      Variant="Variant.Outlined"
                                       Label="Zip Code" />
-                    </MudStack>
+                    </MudStack> *@
+                  
                 </MudForm>
                 <MudCardActions>
                     <MudLoadingButton Variant="Variant.Filled"
@@ -87,7 +120,8 @@
                                       ButtonType="ButtonType.Button">
                         <LoadingContent>Submitting...</LoadingContent>
                         <ChildContent>Submit</ChildContent>
-                    </MudLoadingButton>                    
+                    </MudLoadingButton>
+                    @* <MudButton OnClick="Test">Test</MudButton> *@
                 </MudCardActions>
             </MudCardContent>
         </MudCard>
@@ -101,6 +135,25 @@
     public List<Claim> UserClaims { get; set; } = new List<Claim>();
     string emailaddress = String.Empty;
     private bool _loading = false;
+    private Address address { get; set; } = new();
+    private string regionCode { get; set; }
+    private string provinceCode { get; set; }
+    private string municipalityCode { get; set; }
+    private string barangayCode { get; set; }
+    MudSelect<string>? _region;
+    MudSelect<string>? _province;
+    MudSelect<string>? _municipality;
+    MudSelect<string>? _barangay;
+
+    private enum AddressMode
+    {
+        Region,
+        Province,
+        Municipality,
+        Barangay,
+        None
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -109,21 +162,108 @@
         {
             UserClaims = user.Claims.ToList();
             foreach (var item in UserClaims)
-            {                
+            {
                 if (item.Type.Contains("emailaddress"))
                 {
-                    emailaddress = item.Value;                                        
+                    emailaddress = item.Value;
                 }
             }
 
         }
+        address.Province = new List<Province>();
+        address.Municipality = new List<Municipality>();
+        address.Barangay = new List<Barangay>();
+        await GetRegions();
         await GetUserAdditionalDetails();
         await base.OnInitializedAsync();
     }
 
+    // private async Task Test()
+    // {
+    //     // Console.WriteLine($"{address.Barangay},{address.Municipality},{address.Province},{address.Region}");
+    //     var regionName = address.Region.FirstOrDefault(x => x.Code == regionCode)?.Name;
+    //     var provinceName = address.Province.FirstOrDefault(x => x.Code == provinceCode)?.Name;
+    //     var municipalityName = address.Municipality.FirstOrDefault(x => x.Code == municipalityCode)?.Name;
+    //     var barangayName = address.Barangay.FirstOrDefault(x => x.Code == barangayCode)?.Name;
+    //     Console.WriteLine($"{barangayName}, {municipalityName}, {provinceName} {regionName}");
+    // }
+
+    private async Task GetRegions()
+    {
+        try
+        {
+            address.Region = await httpClient.GetFromJsonAsync<List<Region>>("https://psgc.gitlab.io/api/regions/");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception Occured in getting regions: {ex.Message}");
+        }
+    }
+
+    private async Task OnChange(AddressMode mode, string code)
+    {
+        switch (mode)
+        {
+
+            case AddressMode.Province:
+                try
+                {
+                    regionCode = code;
+                    address.Province = new List<Province>();
+                    address.Province = await httpClient.GetFromJsonAsync<List<Province>>($"https://psgc.gitlab.io/api/regions/{code}/provinces/");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting province: {ex.Message}");
+                }
+                break;
+
+            case AddressMode.Municipality:
+
+                try
+                {
+                    provinceCode = code;
+                    address.Municipality = new List<Municipality>();
+                    address.Municipality  = await httpClient.GetFromJsonAsync<List<Municipality>>($"https://psgc.gitlab.io/api/provinces/{code}/cities-municipalities/");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting municipality: {ex.Message}");
+                }
+                break;
+            case AddressMode.Barangay:
+
+                try
+                {
+                    municipalityCode = code;
+                    address.Barangay = new List<Barangay>();
+                    bool isCity = address.Municipality.FirstOrDefault(x => x.Code == municipalityCode).IsCity;
+
+                    if (isCity)
+                    {
+                        address.Barangay = await httpClient.GetFromJsonAsync<List<Barangay>>($"https://psgc.gitlab.io/api/cities/{code}/barangays/");
+                    }
+                    else
+                    {
+                        address.Barangay = await httpClient.GetFromJsonAsync<List<Barangay>>($"https://psgc.gitlab.io/api/municipalities/{code}/barangays/");
+                    }
+
+                    
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting municipality: {ex.Message}");
+                }
+                break;
+            case AddressMode.None:
+                barangayCode = code;
+                break;
+        }
+    }
+
     private async Task Submit()
     {
-        _loading=true;
+        _loading = true;
         try
         {
             await form.Validate();
@@ -132,11 +272,24 @@
             {
                 model.Email = emailaddress;
                 model.AddressLine2 = string.IsNullOrEmpty(model.AddressLine2) ? "N/A" : model.AddressLine2;
+                var regionName = address.Region.FirstOrDefault(x => x.Code == regionCode)?.Name;
+                var provinceName = address.Province.FirstOrDefault(x => x.Code == provinceCode)?.Name;
+                var municipalityName = address.Municipality.FirstOrDefault(x => x.Code == municipalityCode)?.Name;
+                var barangayName = address.Barangay.FirstOrDefault(x => x.Code == barangayCode)?.Name;
+
+                model.Province = provinceName;
+                model.AddressLine1 = barangayName;
+                model.CityTown = municipalityName;
+                model.PostalCode = regionName;
                 var response = await httpClient.PostAsJsonAsync("UserAdditionalDetails/createupdate", model);
 
                 if (response.IsSuccessStatusCode)
                 {
                     Snackbar.Add("Submitted!", MudBlazor.Severity.Success);
+                    address.Province = new List<Province>();
+                    address.Municipality = new List<Municipality>();
+                    address.Barangay = new List<Barangay>();
+                    await GetRegions();
                     await GetUserAdditionalDetails();
                 }
                 else
@@ -144,20 +297,21 @@
                     var errorMessage = await response.Content.ReadAsStringAsync();
                     Console.WriteLine(errorMessage);
                     Snackbar.Add($"An exception occurred: {errorMessage}", MudBlazor.Severity.Error);
-                }
-                _loading = false;
+                }                
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             Snackbar.Add($"An exception occurred:{ex.Message}", MudBlazor.Severity.Error);
+
+        }finally{
             _loading = false;
         }
 
 
-        
-        
+
+
     }
 
     private async Task GetUserAdditionalDetails()
@@ -171,12 +325,28 @@
             model.FirstName = userAdditionalDetails.FirstName;
             model.LastName = userAdditionalDetails.LastName;
             model.PhoneNumber = userAdditionalDetails.PhoneNumber;
-            model.AddressLine1 = userAdditionalDetails.AddressLine1;
             model.AddressLine2 = userAdditionalDetails.AddressLine2;
+
+            var regionCode = address.Region.FirstOrDefault(x => x.Name == userAdditionalDetails.PostalCode)?.Code;
+            _region.SelectedValues = [ regionCode ];
+
+            await OnChange(AddressMode.Province, regionCode);
+            var provinceCode = address.Province.FirstOrDefault(x => x.Name == userAdditionalDetails.Province)?.Code;            
+            _province.SelectedValues = [provinceCode];
+
+            await OnChange(AddressMode.Municipality, provinceCode);
+            var municipalityCode = address.Municipality.FirstOrDefault(x => x.Name == userAdditionalDetails.CityTown)?.Code;
+            _municipality.SelectedValues = [municipalityCode];
+
+            await OnChange(AddressMode.Barangay, municipalityCode);
+            var barangayCode = address.Barangay.FirstOrDefault(x => x.Name == userAdditionalDetails.AddressLine1)?.Code;                        
+            _barangay.SelectedValues = [barangayCode];
+
+            model.AddressLine1 = userAdditionalDetails.AddressLine1;
             model.CityTown = userAdditionalDetails.CityTown;
             model.Province = userAdditionalDetails.Province;
             model.PostalCode = userAdditionalDetails.PostalCode;
         }
-      
+
     }
 }

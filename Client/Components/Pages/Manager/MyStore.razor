@@ -73,20 +73,48 @@
                                               For="@(() => store.PhoneNumber)" />
                             </MudStack>
                         </MudStack>
-                        <MudTextField @bind-Value="store.AddressLine1"
+                        <MudSelect T="string" Label="Region" @ref="_region" ReadOnly="@_read" ShrinkLabel Required RequiredError="Region is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" Class="py-2" ValueChanged="@((string newValue) => OnChange(AddressMode.Province, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var item in address.Region)
+                            {
+                                <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudStack Row Class="py-2" AlignItems="AlignItems.Stretch">
+                            <MudSelect T="string" @ref="_province" Label="Province" ReadOnly="@_read" ShrinkLabel FullWidth="true" Required RequiredError="Province is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.Municipality, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var item in address.Province)
+                                {
+                                    <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudSelect T="string" @ref="_municipality" ShrinkLabel ReadOnly="@_read" Label="Municipality" Required RequiredError="Municipality is Required" OnlyValidateIfDirty="true" FullWidth="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.Barangay, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var item in address.Municipality)
+                                {
+                                    <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudSelect T="string" @ref="_barangay" ShrinkLabel ReadOnly="@_read" Label="Barangay" FullWidth="true" Required RequiredError="Barangay is Required" OnlyValidateIfDirty="true" Variant="Variant.Outlined" ValueChanged="@((string newValue) => OnChange(AddressMode.None, newValue))" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var item in address.Barangay)
+                                {
+                                    <MudSelectItem Value="@(item.Code)">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudStack>
+                        @* <MudTextField @bind-Value="store.AddressLine1"
                                       For="@(() => store.AddressLine1)"                                      
                                       OnlyValidateIfDirty="true"
                                       Margin="Margin.Dense"
                                       Class="pt-4 pb-1 px-1"
                                       Variant="Variant.Outlined"
-                                      Label="Address Line 1" />
+                                      Label="Address Line 1" /> *@
                         <MudTextField @bind-Value="store.AddressLine2"
                                       For="@(() => store.AddressLine2)"
                                       Margin="Margin.Dense"
                                       Class="pa-1"                                      
                                       Variant="Variant.Outlined"
                                       Label="Address Line 2" />
-                        <MudStack Row>
+                      @*   <MudStack Row>
                             <MudTextField @bind-Value="store.CityTown"
                                           For="@(() => store.CityTown)"
                                           Margin="Margin.Dense"
@@ -109,7 +137,7 @@
                                           MaxLength="4"
                                           Variant="Variant.Outlined"
                                           Label="Postal Code" />
-                        </MudStack>
+                        </MudStack> *@
                         <MudTextField @bind-Value="store.Description"
                                       For="@(() => store.Description)"
                                       Margin="Margin.Dense"
@@ -153,6 +181,24 @@
     private bool _read = false;
     private bool dataloading = false;
     private UpdateStoreInfo updateStoreInfo = new UpdateStoreInfo();
+    private Address address { get; set; } = new();
+    private string regionCode { get; set; }
+    private string provinceCode { get; set; }
+    private string municipalityCode { get; set; }
+    private string barangayCode { get; set; }
+    MudSelect<string>? _region;
+    MudSelect<string>? _province;
+    MudSelect<string>? _municipality;
+    MudSelect<string>? _barangay;
+
+    private enum AddressMode
+    {
+        Region,
+        Province,
+        Municipality,
+        Barangay,
+        None
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,11 +216,87 @@
                 }
             }
         }
-
+        address.Province = new List<Province>();
+        address.Municipality = new List<Municipality>();
+        address.Barangay = new List<Barangay>();
+        await GetRegions();
         await OnGetStoreInfo();
         imageUrl = store.Logo;
         imageQrUrl = store.GcashQr;
         await base.OnInitializedAsync();
+    }
+
+    private async Task GetRegions()
+    {
+        try
+        {
+            address.Region = await httpClient.GetFromJsonAsync<List<Region>>("https://psgc.gitlab.io/api/regions/");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception Occured in getting regions: {ex.Message}");
+        }
+    }
+
+    private async Task OnChange(AddressMode mode, string code)
+    {
+        switch (mode)
+        {
+
+            case AddressMode.Province:
+                try
+                {
+                    regionCode = code;
+                    address.Province = new List<Province>();
+                    address.Province = await httpClient.GetFromJsonAsync<List<Province>>($"https://psgc.gitlab.io/api/regions/{code}/provinces/");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting province: {ex.Message}");
+                }
+                break;
+
+            case AddressMode.Municipality:
+
+                try
+                {
+                    provinceCode = code;
+                    address.Municipality = new List<Municipality>();
+                    address.Municipality = await httpClient.GetFromJsonAsync<List<Municipality>>($"https://psgc.gitlab.io/api/provinces/{code}/cities-municipalities/");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting municipality: {ex.Message}");
+                }
+                break;
+            case AddressMode.Barangay:
+
+                try
+                {
+                    municipalityCode = code;
+                    address.Barangay = new List<Barangay>();
+                    bool isCity = address.Municipality.FirstOrDefault(x => x.Code == municipalityCode).IsCity;
+
+                    if (isCity)
+                    {
+                        address.Barangay = await httpClient.GetFromJsonAsync<List<Barangay>>($"https://psgc.gitlab.io/api/cities/{code}/barangays/");
+                    }
+                    else
+                    {
+                        address.Barangay = await httpClient.GetFromJsonAsync<List<Barangay>>($"https://psgc.gitlab.io/api/municipalities/{code}/barangays/");
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception Occured in getting municipality: {ex.Message}");
+                }
+                break;
+            case AddressMode.None:
+                barangayCode = code;
+                break;
+        }
     }
 
     private async Task OnGetStoreInfo()
@@ -191,22 +313,38 @@
             store.GcashQr = info.GcashQr;
             store.Status = info.Status;
             store.PhoneNumber = info.PhoneNumber;
-            store.Email = info.Email;
-            store.AddressLine1 = info.AddressLine1;
-            store.AddressLine2 = info.AddressLine2;
-            store.CityTown = info.CityTown;
-            store.Province = info.Province;
-            store.PostalCode = info.PostalCode;
+            store.Email = info.Email;            
+            store.AddressLine2 = info.AddressLine2;            
             store.OwnerId = info.OwnerId;
             store.Description = info.Description;
             store.Id = info.Id;
-            _read = true;
+            // _read = true;
+
+            var regionCode = address.Region.FirstOrDefault(x => x.Name == info.PostalCode)?.Code;
+            _region.SelectedValues = [regionCode];
+
+            await OnChange(AddressMode.Province, regionCode);
+            var provinceCode = address.Province.FirstOrDefault(x => x.Name == info.Province)?.Code;
+            _province.SelectedValues = [provinceCode];
+
+            await OnChange(AddressMode.Municipality, provinceCode);
+            var municipalityCode = address.Municipality.FirstOrDefault(x => x.Name == info.CityTown)?.Code;
+            _municipality.SelectedValues = [municipalityCode];
+
+            await OnChange(AddressMode.Barangay, municipalityCode);
+            var barangayCode = address.Barangay.FirstOrDefault(x => x.Name == info.AddressLine1)?.Code;
+            _barangay.SelectedValues = [barangayCode];
+            store.AddressLine1 = info.AddressLine1;
+            store.CityTown = info.CityTown;
+            store.Province = info.Province;
+            store.PostalCode = info.PostalCode;
+
         }
         else
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
             Console.WriteLine(errorMessage);
-            _read = false;
+            // _read = false;
         }
         dataloading = false;
         updateStoreInfo.isLogoChanged = false;
@@ -282,14 +420,19 @@
                 updateStoreInfo.GcashQr = store.GcashQr;
                 updateStoreInfo.Name = store.Name;
                 updateStoreInfo.Email = store.Email;
-                updateStoreInfo.Phone = store.PhoneNumber;
-                updateStoreInfo.AddressLine1 = store.AddressLine1;
-                updateStoreInfo.AddressLine2 = store.AddressLine2;
-                updateStoreInfo.CityTown = store.CityTown;
-                updateStoreInfo.Province = store.Province;
-                updateStoreInfo.PostalCode = store.PostalCode;
+                updateStoreInfo.Phone = store.PhoneNumber;                
+                updateStoreInfo.AddressLine2 = store.AddressLine2;                
                 updateStoreInfo.Description = store.Description;
 
+                var regionName = address.Region.FirstOrDefault(x => x.Code == regionCode)?.Name;
+                var provinceName = address.Province.FirstOrDefault(x => x.Code == provinceCode)?.Name;
+                var municipalityName = address.Municipality.FirstOrDefault(x => x.Code == municipalityCode)?.Name;
+                var barangayName = address.Barangay.FirstOrDefault(x => x.Code == barangayCode)?.Name;
+
+                updateStoreInfo.Province = provinceName;
+                updateStoreInfo.AddressLine1 = barangayName;
+                updateStoreInfo.CityTown = municipalityName;
+                updateStoreInfo.PostalCode = regionName;
 
                 var options = new DialogOptions
                     {
@@ -308,15 +451,21 @@
                     {
                         Snackbar.Add("Failed to submit.", MudBlazor.Severity.Error);
                     }
+                    address.Province = new List<Province>();
+                    address.Municipality = new List<Municipality>();
+                    address.Barangay = new List<Barangay>();
+                    await GetRegions();
                     await OnGetStoreInfo();
                 }
-            }
-            _loading = false;
+            }            
         }
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, MudBlazor.Severity.Error);
-            Console.WriteLine(ex.Message);
+            Console.WriteLine(ex.Message);            
+        }
+        finally
+        {
             _loading = false;
         }
 

@@ -29,18 +29,18 @@ namespace Client.Validations
                 .NotEmpty().WithMessage("Phone Number is required.")
                 .Matches(@"^\d{11}$").WithMessage("Phone Number must be 11 digits.");
 
-            RuleFor(x => x.AddressLine1)
-                .NotEmpty().WithMessage("Address Line 1 is required.");
+            //RuleFor(x => x.AddressLine1)
+            //    .NotEmpty().WithMessage("Address Line 1 is required.");
 
-            RuleFor(x => x.CityTown)
-                .NotEmpty().WithMessage("City/Town is required.");
+            //RuleFor(x => x.CityTown)
+            //    .NotEmpty().WithMessage("City/Town is required.");
 
-            RuleFor(x => x.Province)
-                .NotEmpty().WithMessage("Province is required.");
+            //RuleFor(x => x.Province)
+            //    .NotEmpty().WithMessage("Province is required.");
 
-            RuleFor(x => x.PostalCode)
-                .NotEmpty().WithMessage("Postal Code is required.")
-                .Matches(@"^\d{4}$").WithMessage("Postal Code must be 4 digits.");
+            //RuleFor(x => x.PostalCode)
+            //    .NotEmpty().WithMessage("Postal Code is required.")
+            //    .Matches(@"^\d{4}$").WithMessage("Postal Code must be 4 digits.");
             RuleFor(x => x.Description)
                 .NotEmpty().WithMessage("Store Description is required.");
         }
