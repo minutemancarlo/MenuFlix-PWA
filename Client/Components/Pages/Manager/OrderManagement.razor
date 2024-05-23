@@ -1,15 +1,17 @@
 ﻿@page "/manager-orders"
+@using Microsoft.AspNetCore.SignalR.Client
 @using SharedLibrary
 @using Client.Validations
 @using FluentValidation
 @using System.Security.Claims
 @using Newtonsoft.Json
 @using Client.Components.Pages.Manager.Components
+@inject HubConnection HubConnection
 
 @layout MainLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
-
+@inject IJSRuntime JS
 @attribute [Authorize(Roles = "Manager")]
 <style>
     .my-custom-class {
@@ -106,10 +108,10 @@
             </MudCard>
         </MudStack>
     </MudItem>
-    <MudStack Row Justify="Justify.SpaceBetween" Class="py-3">
+    @* <MudStack Row Justify="Justify.SpaceBetween" Class="py-3">
         <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Refresh" OnClick="@(() => OnGetOrders(emailaddress))" Color="Color.Success" Size="Size.Medium">Refresh</MudButton>
         <MudSpacer />
-    </MudStack>
+    </MudStack> *@
     @if (_view == 1)
     {
         <MudItem Class="d-flex justify-content-center" xs="12">
@@ -336,6 +338,14 @@
     private List<OrderDisplay> cancelledOrders { get; set; } = new List<OrderDisplay>();
     private List<OrderDisplay> completedOrders { get; set; } = new List<OrderDisplay>();
     private int _view = 1;
+
+    public class Order
+    {
+        public int Id { get; set; }
+        public string Description { get; set; }
+        
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -351,6 +361,15 @@
                 }
             }
             await OnGetOrders(emailaddress);
+            // Set up SignalR
+            HubConnection.On<Order>("ReceiveOrderUpdate", async (order) =>
+            {
+                await JS.InvokeVoidAsync("playSound");
+                await OnGetOrders(emailaddress); // Re-fetch orders when an update is received
+                StateHasChanged();
+            });
+
+            await HubConnection.StartAsync();
 
         }
         await base.OnInitializedAsync();

@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using MudBlazor;
 using SharedLibrary;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -55,6 +57,18 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.HideTransitionDuration = 500;
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
+
+// Configure SignalR client
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var navigationManager = serviceProvider.GetRequiredService<NavigationManager>();
+    var hubConnection = new HubConnectionBuilder()
+        .WithUrl(navigationManager.ToAbsoluteUri("/notificationHub"))
+        .WithAutomaticReconnect()
+        .Build();
+
+    return hubConnection;
 });
 
 await builder.Build().RunAsync();

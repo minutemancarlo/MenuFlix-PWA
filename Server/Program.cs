@@ -48,7 +48,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 await using var scope = app.Services.CreateAsyncScope();
@@ -118,4 +118,7 @@ app.MapGet("/roles", (ClaimsPrincipal user) =>
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+// Map SignalR hub
+app.MapHub<NotificationHub>("/notificationHub");
+
 app.Run();

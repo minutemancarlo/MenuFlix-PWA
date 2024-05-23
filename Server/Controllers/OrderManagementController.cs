@@ -4,6 +4,7 @@ using System.Data;
 using SharedLibrary;
 using System.Data.SqlClient;
 using System.Net.Mail;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Server.Controllers
 {
@@ -14,11 +15,13 @@ namespace Server.Controllers
         private readonly string _connectionString;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _env;
-        public OrderManagementController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment env)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public OrderManagementController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
             _httpContextAccessor = httpContextAccessor;
             _env = env;
+            _hubContext = hubContext;
         }
 
         [HttpPost("addorder")]
@@ -44,6 +47,7 @@ namespace Server.Controllers
                         "InsertOrders",
                         parameters,
                         commandType: CommandType.StoredProcedure);
+                    await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", order);
                     return Ok();
                 }
 
