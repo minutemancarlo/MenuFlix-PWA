@@ -32,15 +32,15 @@
                          EditTrigger="DataGridEditTrigger.Manual"
                          CommittedItemChanges="@CommittedItemChanges"
                          Filterable HeaderClass=" text-uppercase font-weight-bold">
-                         <ToolBarContent>
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Success" OnClick="@(async () => await OnGetOrders(emailaddress))">Refresh</MudButton>
-                    @* <MudButton Variant="Variant.Filled" StartIcon="@Icons.Custom.FileFormats.FileExcel" Size="Size.Small" Color="Color.Primary" OnClick="OnGenerateExcel">Generate Report</MudButton> *@
+                <ToolBarContent>
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Refresh" Class="my-2 mx-1" Size="Size.Small" Color="Color.Success" OnClick="@(async () => await OnGetOrders(emailaddress))">Refresh</MudButton>
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Class="my-2 mx-1" Size="Size.Small" Color="Color.Primary" OnClick="OnRemitAll">Remit All</MudButton>
 
                 </ToolBarContent>
-                <Columns>                    
+                <Columns>
                     <PropertyColumn Property="x => x.OrderItems.OrderId" Grouping IsEditable="false" Hidden="true">
                         <GroupTemplate>
-                            <span style="font-weight:bold">Order ID: @context.Grouping.Key</span>                            
+                            <span style="font-weight:bold">Order ID: @context.Grouping.Key</span>
                             @* <span style="font-weight:bold"> Total: ₱ @context.Grouping.FirstOrDefault().OrderItems.Total</span> *@
                             @* <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CreditCardOff" Size="Size.Medium" Color="Color.Error" Class="float-end">Void</MudButton> *@
                             @if (context.Grouping.FirstOrDefault()?.OrderItems.isRemitted == 0)
@@ -51,15 +51,15 @@
                             else
                             {
                                 <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AssuredWorkload" Size="Size.Small" Color="Color.Success" Class="float-end" OnClick="@(async () => await OnRemit(context.Grouping.Key.ToString()))">Remit Payment</MudButton>
-                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Small" Disabled Color="Color.Info" Class="float-end" >Receive Payment</MudButton>
-                            }                            
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCard" Size="Size.Small" Disabled Color="Color.Info" Class="float-end">Receive Payment</MudButton>
+                            }
                         </GroupTemplate>
                         <CellTemplate>
                             <span></span>
                         </CellTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.OrderItems.OrderId" Title="Order Id" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false"/>
-                    <PropertyColumn Property="x => x.OrderItems.ItemName" Title="Item Name" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false"/>
+                    <PropertyColumn Property="x => x.OrderItems.OrderId" Title="Order Id" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
+                    <PropertyColumn Property="x => x.OrderItems.ItemName" Title="Item Name" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
                     <PropertyColumn Property="x => x.OrderItems.Pcs" Title="Pcs" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
                     <PropertyColumn Property="x => x.OrderItems.Price" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
                     <PropertyColumn Property="x => x.OrderItems.SubTotal" Title="Sub Total" HeaderClass="fw-bold blue darken-1 shades-text text-white" Filterable="false" Groupable="false" />
@@ -121,16 +121,68 @@
         // Snackbar.Add($"Event = CommittedItemChanges", Severity.Info);
     }
 
+    private async Task OnRemitAll()
+    {
+        bool result = await OnConfirm();
+        if (result)
+        {
+            List<string> forRemit = new List<string>();
+
+            foreach (var order in cashierDisplay)
+            {
+                if (order.OrderItems.isRemitted == 1)
+                {
+                    forRemit.Add(order.OrderItems.OrderId);
+                }
+            }
+            try
+            {
+
+                var response = await httpClient.PostAsJsonAsync($"OrderManagement/remitall", forRemit);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add($"Payments Remitted", Severity.Success);
+                    await OnGetOrders(emailaddress);
+                }
+                else
+                {
+
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(errorMessage);
+                    Snackbar.Add($"An exception occurred:{errorMessage}", Severity.Error);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Snackbar.Add($"An exception occurred:{ex.Message}", Severity.Error);
+
+            }
+        }
+    }
+
+    private async Task<bool> OnConfirm()
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Action",
+            "Confirm remitting all received orders.",
+            yesText: "Confirm", cancelText: "Cancel");
+        StateHasChanged();
+        return result == null ? false : true;
+    }
+
     private async Task OnRemit(string orderid)
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth= MaxWidth.Small, FullWidth=true,Position=DialogPosition.Center,ClassBackground = "my-custom-class"  };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, Position = DialogPosition.Center, ClassBackground = "my-custom-class" };
         var parameters = new DialogParameters<ConfirmationDialog>();
         parameters.Add(x => x.OrderId, orderid);
         parameters.Add(x => x.Action, "Remit");
         parameters.Add(x => x.Refresh, async () => await OnGetOrders(emailaddress));
         var dialog = DialogService.Show<ConfirmationDialog>("Simple Dialog", parameters, options);
         var result = await dialog.Result;
-        if(!result.Canceled)
+        if (!result.Canceled)
             await OnGetOrders(emailaddress);
     }
 
@@ -190,7 +242,7 @@
         try
         {
             orderJson = new List<OrderJson>();
-            orders = new List<OrderDisplay>();            
+            orders = new List<OrderDisplay>();
             completedOrders = new List<OrderDisplay>();
             var ordersJson = await httpClient.GetFromJsonAsync<List<OrderJson>>($"OrderManagement/getcustomerordersall?emailaddress={emailaddress}");
             orderJson = ordersJson;
@@ -210,12 +262,12 @@
 
                 orders.Add(orderDisplay);
 
-            }            
+            }
             completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
             cashierDisplay.Clear();
             foreach (var item in completedOrders)
             {
-                if(item.OrderItems.FirstOrDefault().isRemitted != 2)
+                if (item.OrderItems.FirstOrDefault().isRemitted != 2)
                 {
                     var data = new CashierDisplay
                         {
@@ -224,7 +276,7 @@
                             UserAdditionalDetails = item.UserAdditionalDetails.FirstOrDefault(),
                         };
                     cashierDisplay.Add(data);
-                }                
+                }
             }
         }
         catch (Exception ex)

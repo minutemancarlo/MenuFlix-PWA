@@ -7,11 +7,12 @@
 @using Newtonsoft.Json
 @using Client.Components.Pages.Manager.Components
 @inject HubConnection HubConnection
-
+@inject NavigationManager Navigation
 @layout MainLayout
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider authProvider
 @inject IJSRuntime JS
+@* @implements IAsyncDisposable *@
 @attribute [Authorize(Roles = "Manager")]
 <style>
     .my-custom-class {
@@ -348,6 +349,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Navigation.LocationChanged += OnLocationChanged;
         var auth = await authProvider.GetAuthenticationStateAsync();
         var user = auth.User;
         if (user.Identity != null && user.Identity.IsAuthenticated)
@@ -361,19 +363,43 @@
                 }
             }
             await OnGetOrders(emailaddress);
-            // Set up SignalR
-            HubConnection.On<Order>("ReceiveOrderUpdate", async (order) =>
-            {
-                await JS.InvokeVoidAsync("playSound");
-                await OnGetOrders(emailaddress); // Re-fetch orders when an update is received
-                StateHasChanged();
-            });
+           
 
-            await HubConnection.StartAsync();
+            // Set up SignalR
+            
+                HubConnection.On<Order>("ReceiveOrderUpdate", async (order) =>
+                {
+                    await JS.InvokeVoidAsync("playSound");
+                    await OnGetOrders(emailaddress); // Re-fetch orders when an update is received
+                    StateHasChanged();
+                });
+
+                await HubConnection.StartAsync();
+            
+            
 
         }
         await base.OnInitializedAsync();
     }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Stop the SignalR connection when the user navigates away
+        if (HubConnection.State == HubConnectionState.Connected)
+        {
+            await HubConnection.StopAsync();
+        }
+    }
+
+    // public async ValueTask DisposeAsync()
+    // {
+    //     Navigation.LocationChanged -= OnLocationChanged;
+
+    //     if (HubConnection != null)
+    //     {
+    //         await HubConnection.DisposeAsync();
+    //     }
+    // }
 
     private async Task OnClicked(string Orderid, UserAdditionalDetails userdetails, int status)
     {

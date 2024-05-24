@@ -36,13 +36,13 @@ builder.Services.AddHttpClient("API", client =>
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 // Configure client for authentication interactions
-//builder.Services.AddHttpClient("Auth", client =>
-//    client.BaseAddress = new Uri("https://s4dev.net/"))
-//    .AddHttpMessageHandler<CookieHandler>();
-
 builder.Services.AddHttpClient("Auth", client =>
-    client.BaseAddress = new Uri("https://localhost:44303/"))
+    client.BaseAddress = new Uri("https://s4dev.net/"))
     .AddHttpMessageHandler<CookieHandler>();
+
+//builder.Services.AddHttpClient("Auth", client =>
+//    client.BaseAddress = new Uri("https://localhost:44303/"))
+//    .AddHttpMessageHandler<CookieHandler>();
 
 
 

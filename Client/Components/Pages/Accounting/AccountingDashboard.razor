@@ -12,16 +12,53 @@
     <MudItem>
         <MudBreadcrumbs Items="_items" Class="pointer-events-none"></MudBreadcrumbs>
     </MudItem>
+    <MudItem>
+        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">No. Of Orders Today</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.WbTwilight" Color="Color.Default" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    
+                    <MudText Typo="Typo.h3" Class="fw-bold">@count</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Info">@formattedDate</MudButton>
+                </MudCardActions>
+            </MudCard>
+
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Total Cash Received Today</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Default" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    
+                    <MudText Typo="Typo.h3" Class="fw-bold">₱ @total</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Info">@formattedDate</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudStack>
+    </MudItem>
     <MudItem >
         <MudStack Row AlignItems="AlignItems.Stretch" Style="height: 500px">
             <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" ChartOptions="@Options" />
             <MudSpacer/>
             <MudChart ChartType="ChartType.Line" ChartSeries="@Series1" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" ChartOptions="@Options" />
-
-        </MudStack>
-        
-           
+        </MudStack>                   
     </MudItem>
+
 </MudItem>
 
 @code {
@@ -46,7 +83,13 @@
     //     new ChartSeries() { Name = "Revenue for the week", Data = new double[] { 40, 20, 25, 27, 46, 60, 48 } },
     // };
     public string[] XAxisLabels;
+    public int count;
+    public double total;
 
+    DateTime today = DateTime.Now;
+    public string formattedDate;
+
+    
     protected override async Task OnInitializedAsync()
     {
         var auth = await authProvider.GetAuthenticationStateAsync();
@@ -67,12 +110,17 @@
         {
             var dashboard1 = await httpClient.GetFromJsonAsync<List<CashierDashboardDisplay>>($"DashboardManager/getcashierdashboardall?emailaddress={emailaddress}");
             // seriesData = new double { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0]. }
-           Series.Add(new ChartSeries() { Name = "Cash Flow for the week", Data = new double[] { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0].WednesdayTotal, dashboard1[0].ThursdayTotal, dashboard1[0].FridayTotal, dashboard1[0].SaturdayTotal } });
+            Series.Add(new ChartSeries() { Name = "Cash Flow for the week", Data = new double[] { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0].WednesdayTotal, dashboard1[0].ThursdayTotal, dashboard1[0].FridayTotal, dashboard1[0].SaturdayTotal } });
 
             var dashboard2 = await httpClient.GetFromJsonAsync<List<CashierDashboardDisplay>>($"DashboardManager/getcashierdashboardall2?emailaddress={emailaddress}");
             // seriesData = new double { dashboard1[0].SundayTotal, dashboard1[0].MondayTotal, dashboard1[0].TuesdayTotal, dashboard1[0]. }
             Series1.Add(new ChartSeries() { Name = "Revenue for the week", Data = new double[] { dashboard2[0].SundayTotal, dashboard2[0].MondayTotal, dashboard2[0].TuesdayTotal, dashboard2[0].WednesdayTotal, dashboard2[0].ThursdayTotal, dashboard2[0].FridayTotal, dashboard2[0].SaturdayTotal } });
-            
+
+            List<CashierCard> cards = await httpClient.GetFromJsonAsync<List<CashierCard>>($"DashboardManager/getcashiercard?emailaddress={emailaddress}");
+            count = cards.FirstOrDefault().TotalCount;
+            total = cards.FirstOrDefault().GrandTotal;
+            formattedDate = today.ToString("MMMM dd, yyyy");
+
         }catch(Exception ex)
         {
             Console.WriteLine(ex.Message);

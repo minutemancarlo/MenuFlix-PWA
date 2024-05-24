@@ -525,7 +525,7 @@
             forDeliveryOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 5).ToList();
             completedOrders = orders.Where(x => x.Status.LastOrDefault()?.Status == 4).ToList();
             completedOrders = completedOrders.Where(s => s.Status.LastOrDefault()?.UpdatedBy == UserId).ToList();
-            isVisibleOverlay = false;
+            isVisibleOverlay = false;            
         }
         catch (Exception ex)
         {

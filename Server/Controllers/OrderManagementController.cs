@@ -170,8 +170,7 @@ namespace Server.Controllers
                     await connection.ExecuteAsync(
                         "UpdateOrderItemStatus",
                         parameters,
-                        commandType: CommandType.StoredProcedure);
-
+                        commandType: CommandType.StoredProcedure);                    
                     return Ok();
                 }
 
@@ -199,7 +198,7 @@ namespace Server.Controllers
                         "Update Orders set Status=2 where OrderId=@OrderId;Update OrderHistory set Status=2,UpdatedOn=GETDATE() where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
-
+                    
                     return Ok();
                 }
 
@@ -227,7 +226,7 @@ namespace Server.Controllers
                         "Update Orders set Status=5 where OrderId=@OrderId;Update OrderHistory set Status=5,UpdatedOn=GETDATE() where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
-
+                    
                     return Ok();
                 }
 
@@ -255,7 +254,7 @@ namespace Server.Controllers
                         "Update Orders set Status=4 where OrderId=@OrderId;Update OrderHistory set Status=4,UpdatedOn=GETDATE() where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
-
+                    
                     return Ok();
                 }
 
@@ -283,7 +282,7 @@ namespace Server.Controllers
                         "Update Orders set Status=0 where OrderId=@OrderId;Update OrderHistory set Status=0,UpdatedOn=GETDATE() where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
-
+                    await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", null);
                     return Ok();
                 }
 
@@ -314,7 +313,7 @@ namespace Server.Controllers
                         "UpdatedBy=(Select Top 1 Id from AspNetUsers Where Email=@Email) where OrderId=@OrderId",
                         parameters,
                         commandType: CommandType.Text);
-
+                    await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", null);
                     return Ok();
                 }
 
@@ -372,6 +371,30 @@ namespace Server.Controllers
                     return Ok();
                 }
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("remitall")]
+        public async Task<IActionResult> RemitAll([FromBody] List<string> orders)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    foreach (var item in orders)
+                    {
+                        await connection.ExecuteAsync(
+                            "Update Orders set isRemitted=2 where OrderId = @OrderId",
+                            new { OrderId = item },
+                            commandType: CommandType.Text);
+                    }
+
+                    return Ok();
+                }
             }
             catch (Exception ex)
             {

@@ -62,5 +62,25 @@ namespace Server.Controllers
                 return BadRequest($"Exception Occured: {ex.Message}");
             }
         }
+
+        [HttpGet("getcashiercard")]
+        public async Task<ActionResult<IEnumerable<CashierCard>>> GetCashierCard(string emailaddress)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();                
+                parameters.Add("@Email", emailaddress);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var results = await connection.QueryAsync<CashierCard>("GetCashierCard", parameters, commandType: CommandType.StoredProcedure);
+                    return Ok(results.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Exception Occured: {ex.Message}");
+            }
+        }
+
     }
 }
